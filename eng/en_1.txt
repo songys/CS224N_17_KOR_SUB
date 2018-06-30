@@ -1,0 +1,2139 @@
+﻿>> Okay everyone.
+00:11
+We're ready.
+00:12
+Okay well welcome to CS224N in Linguistics 284.
+00:20
+This is kind of amazing.
+00:22
+Thank you for everyone who's here that's involved and also the people who don't fit
+00:27
+in here and the people who are seeing it online on SCPD.
+00:32
+Yeah it's totally amazing the number of people who've signed up to do this class
+00:37
+and so in some sense it seems like you don't need any advertisements for
+00:42
+why the combination of natural language process and
+00:45
+deep learning is a good thing to learn about.
+00:48
+But nonetheless today, this class is really going
+00:53
+to give some of that advertisement, so I'm Christopher Manning.
+00:57
+So what we're gonna do is I'm gonna start off by saying
+01:02
+a bit of stuff about what natural language processing is and what deep learning is,
+01:07
+and then after that we'll spend a few minutes on the course logistics.
+01:12
+And a word from my co-instructor, Richard.
+01:16
+And then, get through some more material on why is language
+01:20
+understanding difficult, and then starting to do an intro to deep learning for NLP.
+01:26
+So we've gotten off to a rocky start today,
+01:29
+cause I guess we started about ten minutes late because of that fire alarm going off.
+01:34
+Fortunately, there's actually not a lot of hard content in this first lecture.
+01:39
+This first lecture is really to explain what an NLP class is and say
+01:44
+some motivational content about how and why deep learning is changing the world.
+01:48
+That's going to change immediately on the Thursday lecture because for
+01:53
+the Thursday lecture is then we're gonna start with sort of vectors and
+01:57
+derivatives and chain rules and all of that stuff.
+02:00
+So you should get mentally prepared for
+02:02
+that change of level between the two lectures.
+02:06
+Okay, so first of all what is natural language processing?
+02:10
+So natural language processing, that's the sort of computer scientist's name for
+02:15
+the field.
+02:16
+Essentially synonymous with computational linguistics which is
+02:19
+sort of the linguist's name of the field.
+02:21
+And so it's in this intersection of computer science and linguistics and
+02:26
+artificial intelligence.
+02:27
+Where what we're trying to do is get computers to
+02:31
+do clever things with human languages to be able to understand and
+02:36
+express themselves in human languages the way that human beings do.
+02:41
+So natural language processing counts as a part of artificial intelligence.
+02:46
+And there are obviously other important parts of artificial intelligence,
+02:50
+of doing computer vision, and robotics,
+02:52
+and knowledge representation, reasoning and so on.
+02:55
+But language has had a very special part of artificial intelligence,
+03:02
+and that's because that language has been this very distinctive properties of
+03:07
+human beings, and we think and go about the world largely in terms of language.
+03:12
+So lots of creatures around the planet have pretty good vision systems,
+03:17
+but human beings are alone for language.
+03:20
+And when we think about how we express our ideas and go about doing things that
+03:24
+language is largely our tool for thinking and our tool for communication.
+03:28
+So it's been one of the key technologies that people have thought
+03:31
+about in artificial intelligence and it's the one that we're going to look at today.
+03:35
+So our goal is how can we get computers to process or
+03:39
+understand human languages in order to perform tasks that are useful.
+03:44
+So that could be things like making appointments, or buying things, or
+03:49
+it could be more highfalutin goals of sort of, understanding the state of the world.
+03:54
+And so this is a space in which there's starting to be a huge amount of commercial
+04:00
+activity in various directions, some of things like making appointments.
+04:05
+A lot of it in the direction of question answering.
+04:07
+So, luckily for people who do language, the arrival of mobile has just been super,
+04:14
+super friendly in terms of the importance of language has gone way way higher.
+04:20
+And so now really all of the huge tech firms whether it's Siri,
+04:23
+Google Assistant, Facebook and Cortana.
+04:26
+But what they're furiously doing is
+04:30
+putting out products that use natural language to communicate with users.
+04:35
+And that's an extremely compelling thing to do.
+04:38
+It's extremely compelling on phones because phones have these dinky
+04:42
+little keyboards that are really hard to type things on.
+04:46
+And a lot of you guys are very fast at texting, I know that, but
+04:51
+really a lot of those problems are much worse for a lot of other people.
+04:55
+So it's a lot harder to put in Chinese characters than it is to put in
+04:58
+English letters.
+04:59
+It's a lot harder if you're elderly.
+05:02
+It's a lot harder if you've got low levels of literacy.
+05:05
+But then there are also being new vistas opening up.
+05:09
+So Amazon has had this amazing success with Alexa, which is really shown
+05:13
+the utility of having devices that are just ambient in the environment, and
+05:18
+that again you can communicate with by talking to them.
+05:21
+As a quick shout-out for Apple, I mean, really,
+05:24
+we do have Apple to thank for launching Siri.
+05:27
+It was, essentially, Apple taking the bet on saying we can
+05:32
+turn human language into consumer technology that
+05:35
+really did set off this arms race every other company is now engaging on.
+05:40
+Okay, I just sort of loosely said meaning.
+05:44
+One of the things that we'll talk about more is meaning is a kind of a complex,
+05:51
+hard thing and it's hard to know what it means to understand fully meaning.
+05:56
+At any rate that's certainly a very tough goal which people refer to as AI-complete
+06:01
+and it involves all forms of our understanding of the world.
+06:04
+So a lot of the time when we say understand the meaning,
+06:07
+we might be happy if we sort of half understood the meaning.
+06:10
+And we'll talk about different ways that we can hope to do that.
+06:15
+Okay, so one of the other things that we hope that you'll get in
+06:20
+this class is sort of a bit of appreciation for human language and
+06:25
+what it's levels are and how it's processed.
+06:29
+Now obviously we're not gonna do a huge amount of that if you really wanna
+06:32
+learn a lot about that.
+06:33
+There are lots of classes that you can take in the linguistics department and
+06:36
+learn much more about it.
+06:37
+But I really hope you can at least sort of get a bit of a high level of
+06:40
+understanding.
+06:41
+So this is kind of the picture that people traditionally have given for
+06:45
+levels of language.
+06:47
+So at the beginning there's input.
+06:49
+So input would commonly be speech.
+06:52
+And then you're doing phonetic and
+06:53
+phonological analysis to understand that speech.
+06:57
+Though commonly it is also text.
+06:59
+And then there's some processing that's done there which has
+07:02
+sort of been a bit marginal from a linguistics point of view, OCR,
+07:06
+working out the tokenization of the words.
+07:08
+But then what we do is go through a series of processing steps
+07:12
+where we work out complex words like incomprehensible,
+07:16
+it has the in in front and the ible at the end.
+07:19
+And that sort of morphological analysis, the parts of words.
+07:22
+And then we try and
+07:23
+understand the structure of sentences, that syntactic analysis.
+07:26
+So if I have a sentence like 'I sat on the bench',
+07:31
+that 'I' is the subject of the verb 'sat', and the 'on the bench' is the location.
+07:37
+Then after that we attempt to do semantic understanding.
+07:40
+And that's semantic interpretation's working out the meaning of sentences.
+07:45
+But simply knowing the meaning of the words of a sentence isn't
+07:49
+sufficient to actually really understand human language.
+07:53
+A lot is conveyed by the context in which language is used.
+07:58
+And so that then leads into areas like pragmatics and discourse processing.
+08:03
+So in this class, where we're gonna spend most of our time is in that middle
+08:08
+piece of syntactic analysis and semantic interpretation.
+08:12
+And that's sort of bulk of our natural language processing class.
+08:16
+We will say a little bit right at the top left where this discussion,
+08:21
+speech signal analysis.
+08:23
+And interestingly, that was actually the first place where deep learning
+08:28
+really proved itself as super, super useful for tasks involving human language.
+08:34
+Okay, so applications of Natural Language Processing are now
+08:39
+really spreading out thick and fast.
+08:42
+And every day you're variously using applications of
+08:45
+Natural Language Processing.
+08:47
+And they vary on a spectrum.
+08:49
+So they vary from very simple ones to much more complex ones.
+08:54
+So at the low level, there are things like spell checkings, or
+08:58
+doing the kind of autocomplete on your phone.
+09:01
+So that's a sort of a primitive language understanding task.
+09:05
+Variously, when you're doing web searches,
+09:08
+your search engine is considering synonyms, and things like that for you.
+09:12
+And, well, that's also a language understanding task.
+09:17
+But what we are gonna be more interested in is trying to
+09:20
+push our language understanding computers up to more complex tasks.
+09:25
+So some of the next level up kind of tasks that we're actually gonna want to have
+09:29
+computers look at text information, be it websites, newspapers or whatever.
+09:34
+And get the information out of it, to actually understand the text well enough
+09:37
+that they know what it's talking about to at least some extent.
+09:41
+And so that could be things like expecting particular kinds of information, like
+09:45
+products and their prices or people and what jobs they have and things like that.
+09:51
+Or it could be doing other related tasks to understanding the document,
+09:55
+such as working out the reading level or intended audience of the document.
+09:59
+Or whether this tweet is saying something positive or
+10:02
+negative about this person, company, band or whatever.
+10:06
+And then going even a higher level than that, what we'd like our computers
+10:11
+to be able to do is complete whole level language understanding tasks.
+10:17
+And some of the prominent tasks of that kind that we're going to talk about.
+10:21
+Machine translation, going from one human language to another human language.
+10:25
+Building spoken dialogue systems, so you can chat to a computer and
+10:29
+have a natural conversation, just as you do with human beings.
+10:33
+Or having computers that can actually exploit the knowledge of the world
+10:38
+that available on things like Wikipedia and other sources.
+10:42
+And so it could actually just intelligently answer questions for
+10:46
+you, like a know everything human being could.
+10:49
+Okay, and we're starting to see a lot of those things actually being used
+10:54
+regularly in industry.
+10:56
+So every time you're doing a search, in little places, there are bits of
+11:00
+natural language processing and natural language understanding happening.
+11:04
+So if you're putting in forms of words with endings,
+11:07
+your search engine's considering taking them off.
+11:11
+If there are spelling errors, they're being corrected.
+11:13
+Synonyms are being considered, and things like that.
+11:15
+Similarly, when you're being matched for advertisements.
+11:19
+But what's really exciting is that we're now starting to see much
+11:24
+bigger applications of natural language processing being commercially successful.
+11:29
+So in the last few years, there's just been amazing,
+11:31
+amazing advances in machine translation that I'll come back to later.
+11:36
+There have been amazing advances in speech recognition so that we just now
+11:41
+get hugely good performance in speech recognition even on our cell phones.
+11:46
+Products like sentiment analysis they have become hugely commercially
+11:49
+important, right?
+11:51
+It depends on your favorite industries but there are lots of Wall Street Journal
+11:55
+firms that every hour of the day are scanning news articles looking for
+11:59
+sentiment about companies to make buy and sell decisions.
+12:02
+And just recently, really over the last 12 months,
+12:05
+there's been this huge growth of interest in how to build chatbots and
+12:10
+dialog agents for all sorts of interface tasks.
+12:13
+And that sort of seems like it's growing to become a huge new industry.
+12:17
+Okay, see I'm getting behind already.
+12:21
+So in just a couple of minutes,
+12:24
+I want to say that corresponding things about deep learning.
+12:28
+But before getting into that,
+12:30
+let me just say a minute about what's special about human language.
+12:35
+Maybe we'll come back to this, but
+12:37
+I think it's interesting to have a sense of right at the beginning.
+12:41
+So there's an important difference between language and
+12:46
+most other kinds of things that people think of when they do signal processing
+12:51
+and data mining and all of those kinds of things.
+12:56
+So for most things, there's just sort of data that's either the world out there.
+13:03
+It has some kind of, pick up some visual system for it.
+13:08
+Or someone's sort of buying products at the local Safeway.
+13:13
+And then someone else is picking up the sales log and saying,
+13:16
+let me analyze this and see what I can find, right?
+13:18
+So it's just sort of all this random data and
+13:21
+then then someone's trying to make sense of it.
+13:23
+So fundamentally, human language isn't like that.
+13:27
+Human language isn't just sort of a massive data exhaust that you're trying to
+13:30
+process into something useful.
+13:32
+Human language, almost all of it is that there's some
+13:35
+human being who actually had some information they wanted to communicate.
+13:40
+And they constructed a message to communicate that
+13:43
+information to other human beings.
+13:45
+So it's actually a deliberate form of sending a particular
+13:50
+message to other people.
+13:52
+Okay, and an amazing fact about human language is it's this very complex
+13:57
+system that somehow two,
+13:59
+three, four year old kids amazingly can start to pick it up and use it.
+14:04
+So there's something good going on there.
+14:06
+Another interesting property of language is that language is actually
+14:11
+what you could variously call a discrete, symbolic, or categorical signaling system.
+14:16
+So we have words for concepts like rocket or violin.
+14:21
+And basically, we're communicating with other people via symbols.
+14:25
+There are some tiny exceptions for expressive signaling, so
+14:29
+you can distinguish saying, I love it versus I LOVE it.
+14:33
+And that sounds stronger.
+14:34
+But 99% of the time it's using these symbols to communicate meaning.
+14:40
+And presumably, that came about in a sort of EE information theory sense.
+14:45
+Because by having symbols,
+14:47
+they're very reliable units that can be signaled reliably over a distance.
+14:52
+And so that's an important thing to be aware of, right?
+14:54
+Language is symbols.
+14:55
+So if symbols aren't just some invention of logic or classical AI.
+15:01
+But then, when we move beyond that,
+15:03
+there's actually something interesting going on.
+15:05
+So when human beings communicate with language
+15:09
+that although what they're wanting to communicate involves symbols.
+15:13
+That the way they communicate those symbols is using a continuous substrate.
+15:19
+And a really interesting thing about language is you
+15:22
+can convey exactly the same message by using different continuous substrates.
+15:27
+So commonly, we use voice and so there are audio waves.
+15:31
+You can put stuff on a piece of paper and then you have a vision problem.
+15:36
+You can also use sign language to communicate.
+15:38
+And that's a different kind of continuous substrate.
+15:41
+So all of those can be used.
+15:43
+But there's sort of a symbol underlying all of those different encodings.
+15:48
+Okay, so what the picture we have is that the communication medium is continuous.
+15:55
+Human languages are a symbol system.
+15:59
+And then the interesting part is what happens after that.
+16:03
+So the dominant idea in most of the history of philosophy and
+16:08
+science and artificial intelligence was to sort of project
+16:13
+the symbol system of language into our brains.
+16:17
+And think of brains as symbolic processors.
+16:20
+But that doesn't actually seem to have any basis in what brains are like.
+16:24
+Everything that we know about brains is that they're completely
+16:27
+continuous systems as well.
+16:30
+And so the interesting idea that's been emerging out of this work in deep
+16:35
+learning is to say, no, what we should be doing is also thinking of our
+16:39
+brains as having continuous patterns of activation.
+16:43
+And so then the picture we have is that we're going from continuous to symbolic,
+16:48
+back to continuous every time that we use language.
+16:51
+So that's interesting.
+16:52
+It also points out one of the problems of doing language understanding that we'll
+16:57
+come back to a lot of times.
+16:59
+So in languages we have huge vocabularies.
+17:03
+So languages have tens of thousands of words minimum.
+17:07
+And really, languages like English with a huge scientific vocabulary,
+17:11
+have hundreds of thousands of words in them.
+17:14
+It depends how you count.
+17:15
+If you start counting up all of the morphological forms, you can argue some
+17:18
+languages have an infinite number of words cuz they have productive morphology.
+17:22
+But however you count, it means we've got this huge problem of sparsity and
+17:26
+that's one of the big problems that we're gonna have to deal with.
+17:30
+Okay, now I'll change gears and say a little bit of an intro to deep learning.
+17:36
+So deep learning has been this area that has erupted over the sort of this decade.
+17:43
+And I mean, it's just been enormously,
+17:45
+enormously exciting how deep learning has succeeded and how it has expanded.
+17:50
+So really, at the moment it seems like every month you see in the tech news
+17:55
+that there's just amazing new improvements that are coming out from deep learning.
+18:00
+So one month it's super human computer vision systems,
+18:04
+the next month it's machine translation that's vastly improved.
+18:07
+The month after that people are working out how to get computers to
+18:11
+produce their own artistry that's incredibly realistic.
+18:14
+Then the month after that,
+18:15
+people are producing new text-to-speech systems that sound amazingly lifelike.
+18:20
+I mean, there's just been this sort of huge dynamic of progress.
+18:23
+So what is underlying all of that?
+18:26
+So, well, as a starting point, deep learning, it's part of machine learning.
+18:31
+So in general, it's this idea of how can we get computers to learn stuff
+18:36
+automatically, rather than just us having to tell them things and coding by hand
+18:41
+in the kind of traditional write computer program to tell it what you want it to do.
+18:47
+But deep learning is also profoundly different to the vast majority of
+18:52
+what happened in machine learning in the 80s, 90s, and 00s.
+18:56
+And this central difference is that for most of traditional machine learning,
+19:01
+if I call it that.
+19:02
+So this is all of the stuff like decision trees, logistic regressions,
+19:07
+naive bayes, support vector machines, and any of those sort of things.
+19:11
+Essentially the way that we did things was,
+19:15
+what we did was have a human being who looked carefully at a particular
+19:19
+problem and worked out what was important in that problem.
+19:23
+And then designed features that would be useful features for
+19:29
+handling the problem that they would then encode by hand.
+19:34
+Normally by writing little bits of Python code or
+19:36
+something like that to recognize those features.
+19:39
+They're probably a little bit small to read, but over on the right-hand side,
+19:44
+these are showing some features for an entity recognition system.
+19:47
+Finding person names, company names, and so on in text.
+19:51
+And this is just the kind of system I've written myself.
+19:54
+So, well, if you want to know whether a word is a company, you'd wanna look
+19:57
+whether it was capitalized, so you have a feature like that.
+20:01
+It turns out that looking at the words to the left and
+20:03
+right would be useful to have features for that.
+20:06
+It turns out that looking at substrings of words is
+20:09
+useful cause they're kind of common patterns of
+20:12
+letter sequences that indicate names of people versus of names of companies.
+20:15
+So you put in features for substrings.
+20:19
+If you see hyphens and things, that's an indicator of some things.
+20:22
+You put in a feature for that.
+20:24
+So you keep on putting in features and commonly these kind of systems would end
+20:28
+up with millions of hand-designed features.
+20:30
+And that was essentially how Google search was done until about 2015 as well, right?
+20:37
+They liked the word signal rather than feature.
+20:40
+But the way you improved Google search was every month some
+20:44
+bunch of engineers came up with some new signal.
+20:47
+That they could show with an experiment that if you added in these extra features,
+20:51
+Google search got a bit better.
+20:53
+And [INAUDIBLE] a degree and that would get thrown in, and
+20:56
+things would get a bit better.
+20:57
+But the thing to think about is, well, this was advertised as machine learning,
+21:03
+but what was the machine actually learning?
+21:06
+It turns out that the machine was learning almost nothing.
+21:10
+So the human being was learning a lot about the problem, right?
+21:13
+They were looking at the problem hard, doing lots of data analysis, developing
+21:18
+theories, and learning a lot about what was important for this property.
+21:22
+What was the machine doing?
+21:24
+It turns out that the only thing the machine was doing
+21:27
+was numeric optimization.
+21:29
+So once you had all these signals,
+21:32
+what you're then going to be doing was building a linear classifier.
+21:35
+Which meant that you were putting a parameter weight in front of each feature.
+21:39
+And the machine learning system's job was to adjust those numbers so
+21:44
+as to optimize performance.
+21:46
+And that's actually something that computers are really good at.
+21:49
+Computers are really good at doing numeric optimization and
+21:52
+it's something that human beings are actually less good at.
+21:55
+Cuz humans, if you say, here are 100 features,
+21:57
+put a real number in front of each one to maximize performance.
+22:01
+Well, they've got sort of a vague idea but
+22:03
+they certainly can't do that as well as a computer can.
+22:06
+So that was useful but is doing numeric optimization,
+22:11
+is that what machine learning means?
+22:13
+It doesn't seem like it should be.
+22:15
+Okay, so what we found that in practice machine learning was sort of 90%
+22:21
+human beings working out how to describe data and work out important features.
+22:27
+And only sort of 10% the computer running this learning
+22:30
+numerical optimization algorithm.
+22:34
+Okay, so how does that differ with deep learning?
+22:38
+So deep learning works,
+22:40
+is part of this field that's called representation learning.
+22:43
+And the idea of representation learning is to say, we can just feed to our computers
+22:50
+raw signals from the world, whether that's visual signals or language signals.
+22:55
+And then the computer can automatically, by itself, come up with
+23:00
+good intermediate representations that will allow it to do tasks well.
+23:05
+So in some sense, it's gonna be inventing its own features
+23:09
+in the same way that in the past the human being was inventing the features.
+23:14
+So precisely deep learning,
+23:18
+the real meaning of the word deep learning is the argument that you could
+23:23
+actually have multiple layers of learned representations.
+23:29
+And that you'd be able to outperform other methods of learning
+23:34
+by having multiple layers of learned representations.
+23:39
+That was where the term deep learning came from.
+23:43
+Nowadays, half the time, deep learning just means you're using neural networks.
+23:49
+And the other half of the time it means there's some tech reporter writing a story
+23:53
+and it's vaguely got to do with intelligent computers and
+23:56
+all other bets are off.
+23:57
+Okay, [LAUGH] yeah.
+24:01
+So with the kind of coincidence where sort of deep learning
+24:07
+really means neural networks a lot of the time, we're gonna be part of that.
+24:10
+So what we're gonna focus on in this class is different kinds of neural networks.
+24:15
+So at the moment, they're clearly the dominant family
+24:19
+of ways in which people have reached success in doing deep learning.
+24:23
+But it's not the only possible way that you could do it that people have
+24:27
+certainly looked at trying to use various other kinds of probabilistic models and
+24:31
+other things in deep architectures.
+24:33
+And I think that may well be more of that work in the future.
+24:38
+What are these neural networks that we are talking about?
+24:41
+That's something we'll come back to and talk a lot about both on Thursday and
+24:45
+next week.
+24:46
+I mean you noticed a lot of these neural terminology.
+24:51
+I mean in some sense if you're kind of coming from a background of statistics or
+24:55
+something like that, you could sort of say neural networks,
+24:58
+they're kind of nothing really more than stack logistic regressions or
+25:02
+perhaps more generally kinda stacked generalized linear models.
+25:05
+And in some sense that's true.
+25:08
+There are some connections to neuroscience in some cases,
+25:12
+so that's not a big focus on this class at all.
+25:15
+But on the other hand, there's something very qualitatively different,
+25:21
+that by the kind of architectures that people are building now for
+25:26
+these complex stacking of neural unit architectures,
+25:30
+you end up with a behavior and a way of thinking and a way of doing things that's
+25:35
+just hugely different, than anything that was coming before in earlier statistics.
+25:40
+We're not really gonna take a historical approach,
+25:42
+we're gonna concentrate on methods that work well right now.
+25:47
+If you'd like to read a long history of deep learning,
+25:51
+though I'll warn you it's a pretty dry and boring history,
+25:54
+there's this very long arxiv paper by Jürgen Schmidhuber that you could look at.
+25:59
+Okay, so why is deep learning exciting?
+26:04
+So in general our manually designed features tend to be overspecified,
+26:08
+incomplete, take a long time to design and validate, and
+26:12
+only get you to a certain level of performance at the end of the day.
+26:16
+Where the learned features are easy to adapt, fast to train, and
+26:20
+they can keep on learning so that they get to a better level of
+26:24
+performance than we've been able to achieve previously.
+26:28
+So, deep learning ends up providing this sort of very flexible, almost universal
+26:33
+learning framework which is just great for representing all kinds of information.
+26:37
+Linguistic information but also world information or visual information.
+26:42
+It can be used in both supervised fashions and unsupervised fashions.
+26:48
+The real reason why deep learning is exciting to most people
+26:52
+is it has been working.
+26:55
+So starting from approximately 2010, there were initial successes where
+27:00
+deep learning were shown to work far better than any of the traditional machine
+27:04
+learning methods that have been used for the last 30 years.
+27:09
+But going even beyond that,
+27:10
+what has just been totally stunning is over the last six or seven years,
+27:15
+there's just been this amazing ramp in which deep learning methods have been
+27:19
+keeping on being improved and getting better at just an amazing speed.
+27:24
+Which is actually sort of being, maybe I'm biased, but
+27:28
+in the length of my lifetime, I'd actually just say it's unprecedented,
+27:34
+in terms of seeing a field that has been progressing quite so quickly in its
+27:39
+ability to be sort of rolling out better methods of doing things, month on month.
+27:45
+And that's why you're sort of seeing all of this huge industry excitement,
+27:49
+new products, and you're all here today.
+27:52
+So why has deep learning succeeded so brilliantly?
+27:57
+And I mean this is actually a slightly more subtle and
+28:02
+in some sense not quite so uplifting a tale.
+28:06
+Because when you look at a lot of the key techniques that we use for
+28:10
+deep learning were actually invented in the 80s or 90s.
+28:15
+They're not new.
+28:16
+We're using a lot of stuff that was done in the 80s and 90s.
+28:20
+And somehow, they didn't really take off then.
+28:26
+So what is the difference?
+28:28
+Well it turns out that actually some of the difference,
+28:31
+actually maybe quite a lot of the difference, is just that
+28:35
+technological advances have happened that make this all possible.
+28:41
+So we now have vastly greater amounts of data available because of our
+28:45
+online society where just about everything is available as data.
+28:49
+And having vast amounts of data really favors deep learning models.
+28:54
+In the 80s and 90s,
+28:55
+there sort of wasn't really enough compute power to do deep learning well.
+29:00
+So having sort of several more decades of compute power
+29:04
+has just made it that we can now build systems that work.
+29:07
+I mean in particular there's been this amazing confluence
+29:10
+that deep learning has proven to be just super well suited to the kind of parallel
+29:16
+vector processing that's available now for very little money in GPUs.
+29:21
+So there's been this sort of marriage between deep learning and
+29:24
+GPUs, which has enabled a lot of stuff to have happened.
+29:28
+So that's actually quite a lot of what's going on.
+29:30
+But it's not the only thing that's going on and it's not the thing that's leading
+29:34
+to this sort of things keeping on getting better and better month by month.
+29:37
+I mean, people have also come up with
+29:40
+better ways of learning intermediate representations.
+29:44
+They've come up with much better ways of doing end-to-end joint system learning.
+29:49
+They've come up with much better ways of
+29:52
+transferring information between domains and between contexts and things.
+29:56
+So there are also a lot of new algorithms and algorithmic advances and they're sort
+30:01
+of in some sense the more exciting stuff that we're gonna focus on for
+30:04
+more of the time.
+30:07
+Okay, so
+30:08
+really the first big breakthrough in deep learning was in speech recognition.
+30:14
+It wasn't as widely heralded as the second big breakthrough in deep learning.
+30:19
+But this was really the big one that started.
+30:23
+At the University of Toronto, George Dahl working with Geoff Hinton
+30:27
+started showing on tiny datasets, that
+30:31
+they could do exciting things with deep neural networks for speech recognition.
+30:36
+So George Dahl then went off to Microsoft and then fairly shortly after that,
+30:44
+another student from Toronto went to Google and they started
+30:48
+building big speech recognition systems that use deep learning networks.
+30:53
+And speech recognition's a problem that's been worked on for
+30:56
+decades by hundreds of people.
+30:58
+And there are big companies.
+30:59
+And there was this sort of fairly standardized technology of
+31:03
+using Gaussian mixture models for the acoustic analysis and
+31:06
+hidden Markov models and blah blah blah.
+31:09
+Which people have been honing for decades trying to improve a few percent a year.
+31:14
+And what they were able to show was by changing from that
+31:17
+to using deep learning models for doing speech recognition, that they
+31:22
+were immediately able to get just these enormous decreases in word error rate.
+31:27
+About a 30% decrease in word error rate.
+31:30
+Then the second huge example of the success of deep learning,
+31:35
+which ended up being a much bigger thing in terms of everybody noticing it,
+31:40
+was in the ImageNet computer vision competition.
+31:44
+So in 2012 again students of Geoff Hinton at Toronto set about building a computer
+31:51
+vision system of doing ImageNet task of classifying objects into categories.
+31:57
+And that was again a task that had been run for several years.
+32:01
+And performance seemed fairly stalled with traditional computer vision methods and
+32:06
+running deep neural networks on GPUs that they were able to get an over
+32:11
+one-third error reduction in one fell swoop.
+32:14
+And that progress is continued through the years, but
+32:19
+we won't say a lot on that here.
+32:22
+Okay, that's taken me a fair way.
+32:25
+So let's stop for a moment and do the logistics, and
+32:28
+I'll say more about deep learning and NLP.
+32:30
+Okay, so this class is gonna have two instructors.
+32:34
+I'm Chris Manning and I'm a Stanford faculty, then the other one is Richard,
+32:37
+who's the chief scientist of faith of Salesforce, and so
+32:40
+I'll let him say a minute or two hello.
+32:43
+>> Hi there, great to be here.
+32:44
+I guess, just a brief little bit about myself.
+32:47
+In 2014, I graduated, I got my PhD here with Chris and
+32:52
+Enring in deep learning for NLP.
+32:54
+And then almost became a professor, but then started a little company,
+32:58
+built an ad platform, did some research.
+33:01
+And then earlier last year,
+33:03
+we got acquired by Salesforce, which is how I ended up there.
+33:06
+I've been teaching CS224D the last two years and
+33:09
+super excited to merge to two classes.
+33:13
+>> Okay.
+33:16
+>> I think next week, I'll do the two lectures, so you'll see a lot of me.
+33:20
+>> [LAUGH] >> I'll do all the boring equations.
+33:23
+>> [LAUGH] Okay, and then TAs, we've got many really wonderful,
+33:28
+competent, great TAs for this class.
+33:32
+Yeah, so normally I go through all the TAs, but there are sort of so
+33:35
+many, both of them and you, that maybe I won't go through them all, but
+33:39
+maybe they could all just sort of stand up for a minute if you're a TA in the class.
+33:44
+They're all in that corner, okay, [LAUGH] and they're clustered.
+33:47
+[LAUGH] Okay, right, yeah, so at this point,
+33:54
+I mean, apologies about the room capacity.
+34:00
+So the fact of the matter is if this class is being kind of videoed and broadcast,
+34:05
+this is sort of the largest SCPD classroom that they record in.
+34:09
+So, there's no real choice for this,
+34:11
+this is the same reason that this is where 221 is, and this is where 229 is.
+34:16
+But it's a shame that there aren't enough seats for everybody, sorry about that.
+34:23
+It will be available shortly after each class, also as a video.
+34:28
+In general for the other information, look at the website, but there's a couple
+34:33
+things that I do just wanna say a little bit about, prerequisites and work to do.
+34:37
+So, when it comes down to it,
+34:39
+these are the things that you sort of really need to know.
+34:42
+And we'll expect you to know, and if you don't know, you should start working
+34:47
+out what you don't know and what to do about it very quickly.
+34:51
+So the first one is we're gonna do the assignments in Python, so
+34:55
+proficiency in Python, there's a tutorial on the website,
+34:59
+not hard to learn if you do something else.
+35:02
+Essentially, Python has just become the lingua franca of nearly all the deep
+35:05
+learning toolkits, so that seems the thing to use.
+35:09
+We're gonna do a lot of stuff with calculus and vectors and
+35:13
+matrices, so multivariate calculus, linear algebra.
+35:17
+It'll start turning up on Thursday and even more next week.
+35:22
+Sort of basic probability and statistics, you don't need to know anything
+35:26
+fancy about martingales or something, I don't either.
+35:29
+But you should know the elements of that stuff.
+35:33
+And then we're gonna assume you know some fundamentals of machine learning.
+35:36
+So if you've done 221 or 229, that's fine.
+35:39
+Again, you don't need to know all of that content, but
+35:43
+we sort of assume that you've seen loss functions, and you have some idea about
+35:47
+how you do optimization with gradient descent and things like that.
+35:52
+Okay, so in terms of what we hope to teach, the first thing is an understanding
+35:58
+of and ability to use effective modern methods for deep learning.
+36:01
+So we'll be covering all the basics, but
+36:03
+especially an emphasis on the main methods that are being used in NLP,
+36:07
+which is things like recurrent networks, attention, and things like that.
+36:11
+Some big picture understanding of human languages and
+36:13
+the difficulties in understanding and producing them.
+36:16
+And then the third one is essentially the intersection of those two things.
+36:20
+So the ability to build systems for important NLP problems.
+36:25
+And you guys will be building some of those for the various assignments.
+36:29
+So in terms of the work to be done, this is it.
+36:32
+So there's gonna be three assignments.
+36:34
+There's gonna be a midterm exam.
+36:36
+And then at the end, there's this bigger thing where you sort of have
+36:41
+a choice between either you can come up with your own exciting
+36:45
+world shattering final project and propose it to us.
+36:48
+And we gotta make sure every final project has a mentor, which can either be Richard
+36:53
+or me, one of the TAs, or someone else who knows stuff about deep learning.
+36:57
+Or else, we can give you an exciting project, and so
+37:02
+there'll be sort of a default final project,
+37:05
+otherwise known as Assignment 4.
+37:11
+There's gonna be a final poster session.
+37:14
+So every team for the final project, you're gonna have teams up to three for
+37:18
+the final project, has to be at the final poster session.
+37:22
+Now we thought about having it in our official exam slot, but
+37:25
+that was on Friday afternoon, and so we decided people might not like that.
+37:30
+So we're gonna have it in the Tuesday early afternoon session,
+37:35
+which is when the language class exams are done.
+37:39
+So no offense to languages, but
+37:40
+we're assuming that none of you are doing first year intensive language classes.
+37:46
+Or at least, you better find a teammate who isn't.
+37:48
+>> [LAUGH] >> Okay, yeah, so
+37:52
+we've got some late days.
+37:55
+Note that each assignment has to be handed in within three days so we can grade it.
+38:05
+Yeah, okay, yeah, so Assignment 1, we're gonna hand out on Thursday,
+38:13
+so for that assignment, it's gonna be pure Python, except for
+38:17
+using the NumPy library, which is kinda the basic vector and matrices library.
+38:22
+And people are gonna do things from scratch, because I think
+38:27
+it's a really important educational skill that you've actually done things and
+38:31
+gotten it to work from scratch.
+38:33
+And you really know for
+38:34
+yourself what the derivatives are because you've calculated them.
+38:38
+And because you've implemented them, and you've found that you can calculate
+38:41
+derivatives and implement them, and the thing does actually learn and work.
+38:45
+If you've never done this,
+38:47
+the whole thing's gonna seem like black magic ever after.
+38:50
+So it's really important to actually work through it by yourself.
+38:53
+But nevertheless, one of what things that's being transforming deep learning is
+38:57
+that there are now these very good software packages,
+39:00
+which actually make it crazily easy to build deep learning models.
+39:04
+That you can literally take one of these libraries and sort of write 60 lines
+39:09
+of Python, and you can be training a state-of-the-art deep learning system
+39:13
+that will work super well, providing you've got the data to train it on.
+39:18
+And that's sort of actually been an amazing development over
+39:21
+the last year or two.
+39:22
+And so for Assignments 2 and 3, we're gonna be doing that.
+39:26
+In particular, we're gonna be using TensorFlow, which is the Google
+39:29
+deep learning library, which is sort of, well, Google's very close to us.
+39:34
+But it's also very well engineered and
+39:36
+has sort of taken off as the most used library now.
+39:39
+But there really are a whole bunch of other good libraries for deep learning.
+39:42
+And I mentioned some of them below.
+39:45
+Okay, do people have any questions on class organization?
+39:51
+Or anything else up until now, or do I just power on?
+39:56
+>> [INAUDIBLE] >> Yeah Okay, so, and something
+40:02
+I'm gonna do is repeat all questions, so they'll actually work on the video.
+40:07
+So, the question is, how are our assignments gonna be submitted?
+40:10
+They're gonna be submitted electronically online,
+40:13
+instructions will be on the first assignment.
+40:16
+But yeah, everything has to be electronic, what we use in Gradescope for the grading.
+40:21
+For written stuff, if you wanna hand write it, you have to scan it for
+40:24
+yourself, and submit it online.
+40:27
+Any other questions?
+40:28
+>> [INAUDIBLE] >> Yeah.
+40:33
+So, the question was, are the slides on the website?
+40:35
+Yes, they are.
+40:36
+The slides were on the website before the class began, and we're gonna try and
+40:41
+keep that up all quarter.
+40:43
+So, you should just be able to find them, cs224n.stanford.edu.
+40:47
+Any other questions, yeah?
+40:56
+Yeah, so that was on the logistics, if you're doing assignment four.
+41:00
+It's partly different, and partly the same, so if you're doing the default
+41:04
+assignment four, and we'll talk all about final projects in a couple of weeks.
+41:09
+You don't have to write a final project proposal, or talk to a mentor,
+41:14
+because we've designed the project for you as a starting off point of the project.
+41:21
+But on the other hand, otherwise, it's the same.
+41:24
+So, it's gonna be an open ended project,
+41:27
+in which there are lots of things that you can try to make the system better, and
+41:31
+we want you to try, and we want you to be able to report on what are the different
+41:35
+exciting things you've tried, whether they did, or didn't make your system better.
+41:38
+And so, we will be expecting people doing assignment four to also write up and
+41:44
+present a poster on what they've done.
+41:48
+Any other questions?
+41:50
+Yes, so their question was on whether we're using Piazza.
+41:56
+Yes, we're using Piazza for communication.
+41:59
+So, we've already setup the Piazza, and we attempted to enroll all the enrolled
+42:04
+students, so hopefully if you're an involved student, there's somewhere in
+42:09
+your junk mailbox, or in one of those places, a copy of a Piazza announcement.
+42:14
+Any other questions?
+42:20
+Okay, 20 some minutes to go.
+42:22
+I'll power ahead.
+42:24
+Very quickly, why is NLP hard?
+42:28
+I think most people, maybe especially computer scientist,
+42:33
+going into this just don't understand why NLP is hard.
+42:37
+It's just a sequence of words, and they've been dealing with programming languages.
+42:41
+And you're just gonna read the sequence the words.
+42:45
+Why is this hard?
+42:47
+It turns out it's hard for a bunch of reasons,
+42:50
+because human languages aren't like programming languages.
+42:53
+So, human languages are just all ambiguous.
+42:59
+Programming languages are constructed to be unambiguous,
+43:02
+that's why they have rules like you can.
+43:05
+And else goes with the nearest 'if' and
+43:07
+you have to get the indentation right in Python.
+43:10
+Human languages aren't like that, so human languages are when there's
+43:16
+an 'else' just interpret it with whatever 'if' makes most sense to the hearer.
+43:22
+And when we do reference in programming language,
+43:26
+we use variable names like x and y, and this variable.
+43:31
+Whereas, in human languages, we say things like this and that and she, and
+43:36
+you're just meant to be able to figure out from context who's being talked about.
+43:41
+But that's a big problem, but it's perhaps, not even the biggest problem.
+43:46
+The biggest problem is that humans
+43:49
+use language as an efficient communication system.
+43:53
+And the way they do that is by not saying most things, right?
+43:57
+When you write a program, we say everything that's needed to get it to run.
+44:02
+Where in a human language, you leave out most of the program, because you think
+44:07
+that your listener will be able to work out which code should be there, right?
+44:12
+So, it's sorta more a code snippet on StackOverflow, and
+44:15
+the listener is meant to be able to fill in the rest of the program.
+44:19
+So, human language gets its efficiency.
+44:22
+We kinda actually communicate very fast by human language, right?
+44:26
+The rate at which we can speak.
+44:28
+It's not 5G communications speeds, right?
+44:33
+It's a slow communication channel.
+44:35
+But the reason why it works efficiently is we can say minimal messages.
+44:39
+And our listener fills in all the rest with their world knowledge,
+44:43
+common sense knowledge, and contextual knowledge of the situation.
+44:47
+And that's the biggest reason why natural language is hard.
+44:51
+So, as sort of a profound version of why natural language is hard: I
+44:56
+really like this XKCD cartoon, but you definitely can't read, and
+45:01
+I can barely read on the computer in front of me.
+45:04
+>> [LAUGH] >> But I think if you think about it,
+45:06
+it says actually a lot about why natural language understanding is hard.
+45:12
+So, the two women speaking to each other.
+45:16
+One says, 'anyway, I could care less,' and the other one says,
+45:20
+'I think you mean you couldn't care less, saying you could care less
+45:25
+implies you care to some extent,' and the other one says,
+45:29
+'I don't know,' and then continues.
+45:36
+We're these unbelievably complicated beings drifting through a void,
+45:40
+trying in vain to connect with one another by
+45:43
+blindly flinging words out in to the darkness.
+45:46
+Every trace of phrasing, and spelling and tone and
+45:48
+timing carries countless signals and contexts and subtexts and more.
+45:53
+And every listener interprets these signals in their own way.
+45:57
+Language isn't a formal system of language, it's glorious chaos.
+46:01
+You can never know for sure what any words will mean to anyone.
+46:05
+All you can do is try to get better at guessing how your words affect people.
+46:09
+So, you have a chance of finding the ones that will make them
+46:12
+feel something like you want them to feel.
+46:15
+Everything else is pointless.
+46:18
+I assume you're giving me tips on how you interpret words,
+46:21
+because you want me to feel less alone.
+46:23
+If so, then thank you, that means a lot.
+46:27
+But if you're just running my sentences passed some mental check list, so
+46:30
+you can show off how well you know it, then I could care less.
+46:34
+>> [LAUGH] >> And I think if you reflect on this XKCD
+46:39
+comic, there's actually a lot of profound content there as to what human
+46:44
+language understanding is like, and what the difficulties of it are.
+46:49
+But that's probably a bit hard to do in detail, so
+46:52
+I'm just gonna show you some simple examples for a minute.
+46:56
+You get lots of ambiguities, including funny ambiguities, in natural language.
+47:02
+So, here are a couple of,
+47:04
+here's one of my favorites that came out recently from TIME magazine.
+47:10
+The Pope's baby steps on gays, no, that's not how you meant to interpret this.
+47:15
+You're meant to interpret this as the Pope's baby steps on gays.
+47:21
+>> [LAUGH] >> Okay.
+47:33
+So a question, I mean, why do you get those two interpretations?
+47:39
+What is it about human language, and English here,
+47:43
+about English that allows you to have these two interpretations?
+47:48
+What are the different things going on?
+47:51
+Is anyone game to give an explanation of how we
+48:18
+Okay, yeah, right.
+48:22
+I'll repeat the explanation as I go.
+48:24
+You started off with saying it was idiomatic, and some sense,
+48:28
+baby steps is sort of an, sort of a metaphor,
+48:32
+an idiom where baby steps is meaning little steps like a baby would take,
+48:37
+but I mean, before you even get to that, you can kind of just think a large part of
+48:42
+this is just a structural ambiguity, which then governs the rest of it.
+48:46
+So, one choice Is that you have this noun phrase of the Pope's baby, and
+48:51
+then you start interpreting it as a real baby.
+48:54
+And then steps is being interpreted as a verb.
+48:58
+So, something we find in a lot of languages, including English,
+49:01
+is the same word can have fundamentally different roles.
+49:05
+He, and the verbal interpretation verb, steps would be being used as a verb.
+49:11
+But the other reading is as you said it's a noun compound, so
+49:14
+you can put nouns together, and make noun compounds very freely in English.
+49:19
+Computer people do it all the time, right?
+49:22
+As soon as you've got something like disk drive enclosure, or network interface hub,
+49:27
+or something like that, you're just nailing nouns together to make big nouns.
+49:32
+So, you can put together baby and steps as two nouns, and
+49:36
+make baby steps as a noun phrase.
+49:39
+And then you can make the Pope's baby steps is a larger noun phrase.
+49:43
+And then you're getting this very different interpretation.
+49:45
+But simultaneously, at the same time, you're also changing the meaning of baby.
+49:50
+So in one case, the baby was this metaphorical baby, and then in the other
+49:54
+one it's a perhaps counter-factually it's a literal baby.
+50:01
+Let's do at least one more of that.
+50:04
+Here's another good fun one.
+50:07
+Boy paralyzed after tumor fights back to gain black belt.
+50:10
+>> [LAUGH] >> Which is, again,
+50:13
+not how you're meant to read it.
+50:15
+You're meant to read it as boy,
+50:19
+paralyzed after tumor, fights back to gain black belt.
+50:23
+So, how could we characterize the ambiguity in that one?
+50:31
+[LAUGH] So, someone suggested missing punctuation,
+50:37
+and if, to some extent, that's true.
+50:42
+And to some extent, you can use commas to try and
+50:45
+make readings clearer in some cases.
+50:48
+But there are lots of places where there are ambiguities in language,
+50:53
+where it's just not usual standard to put in punctuation, to disambiguate.
+50:59
+And indeed, if you're the kind of computer scientist who feels like you want to start
+51:03
+putting matching parentheses around pieces of human language to make the unclear
+51:08
+interpretation much clearer, you're not then a typical language user anymore.
+51:13
+[LAUGH] >> Okay, anyone else gonna have a go,
+51:17
+yeah?
+51:28
+Yeah, so, this is sort of the ambiguities are in the syntax of the sentence.
+51:35
+So, when you have this 'paralyzed' that could either be the main
+51:38
+verb of the sentence, so.
+51:40
+The boy is paralyzed, then all of after tumor fights back to gain black
+51:46
+belt is then this sort of subordinate clause of saying when it happened.
+51:51
+And so then the 'tumor' is the subject of 'fights back',
+51:57
+or you can have this alternative where 'paralyzed'
+52:03
+can also be what's called a passive participle.
+52:07
+So, it's introducing a participial phrase of 'paralyzed after tumor'.
+52:13
+And so that can then be a modifier of the boy in the same way an adjective can,
+52:18
+young boy fights back to gain black belt.
+52:21
+It could be boy paralyzed after tumor fights back to gain black belt.
+52:25
+And then it's the boy that's the subject of fights.
+52:29
+Okay, I have on this slide a couple more examples, but I think I won't go through
+52:33
+them in detail, since I'm sort of behind as things are going.
+52:40
+Okay, so what I wanted to get into a little bit of for
+52:46
+the last bit of class until my time runs out
+52:49
+is to introduce this idea of deep learning and NLP.
+52:54
+And so, I mean essentially, this is combining
+52:57
+the two things that we've been talking about so far, deep learning and NLP.
+53:03
+So, we're going to use the ideas of deep learning, neural networks,
+53:06
+representation learning, and we're going to apply them to
+53:09
+problems in language understanding, natural language processing.
+53:14
+And so, in the last couple of years,
+53:16
+especially this is just an area that's sorta really starting to take off,
+53:21
+and just for the rest of today's class we'll say, a little bit
+53:25
+about what are some of the stuff happening where they're at a very high level and
+53:30
+that'll sort of prepare for Thursday, starting to dive right into the specifics.
+53:35
+And so, that, so
+53:40
+there is so different, different classifications you can look at.
+53:45
+So on the one hand, deep learning is being applied to lots of different levels of
+53:49
+language that things like speech words, syntax, semantics.
+53:53
+It's been applied to lots of different sort of tools, algorithms that we use for
+53:57
+natural language processing.
+53:59
+So, that's things like labeling words for part-of-speech, finding person and
+54:04
+organization names, or coming up with syntactic structures of sentences.
+54:08
+And then it's been applied to lots of
+54:11
+language applications that put a lot of this together.
+54:14
+So things that I've mentioned before, like machine translation, sentiment analysis,
+54:18
+dialogue agents.
+54:19
+And one of the really, really interesting things is that deep learning models have
+54:24
+been giving a very unifying method of using the same tools and
+54:30
+technologies to understand a lot of these problems.
+54:34
+So yes, there are some specifics of different problems.
+54:37
+But something that's been quite stunning in the development of deep learning is
+54:41
+that there's actually been a very small toolbox of key techniques,
+54:47
+which have turned out to be just vastly applicable
+54:51
+with enormous accuracy to just many, many problems.
+54:55
+Which actually includes not only many, many language problems, but also,
+55:00
+most of the rest of what happens in deep learning,
+55:03
+whether it's looking at vision problems, or applying deep learning through
+55:08
+any other kind of signal analysis, knowledge representation, or
+55:12
+anything that you see these few key tools being used to solve all the problems.
+55:17
+And what is somewhat embarrassing for human beings part is that typically,
+55:22
+they're sort of working super well,
+55:25
+much better than the techniques that human beings had previously slaved on for
+55:30
+decades developing, without very much customization for different tasks.
+55:35
+Okay, so deep learning and language it all starts off with word meaning, and so
+55:42
+this is a very central idea gonna develop starting off with the second class.
+55:49
+So, what we're gonna do with words is say were going to represent a word,
+55:55
+in particular we're going to represent the meaning of the word.
+55:58
+As a vector of your numbers.
+56:00
+So here's my vector for the word expect.
+56:04
+And so I made that, whatever it is, an 8-dimensional vector,
+56:07
+I think, since that was good for my slide.
+56:10
+But really, we don't use much that small vectors.
+56:12
+So minimally, we might use something like 25-dimensional vectors.
+56:17
+Commonly, we might be using something like 300-dimensional vectors.
+56:21
+And if we're really going to town
+56:24
+because we wanna have the best ever system doing something,
+56:27
+we might be using a 1000-dimensional vector or something like that.
+56:31
+So when we have vectors for words,
+56:34
+that means we're placing words in a high-dimensional vector space.
+56:38
+And what we find out is, when we have these methods for
+56:43
+learning word vectors from deep learning and place words into these
+56:47
+high-dimensional vector spaces, these act as wonderful semantic spaces.
+56:52
+So, words with similar meanings will cluster together in the vector space, but
+56:57
+actually more than that.
+56:58
+We'll find out that there are directions in the vector space
+57:01
+that actually tell you about components and meaning.
+57:04
+So we, one of the problems of human beings is that they're not
+57:08
+very good at looking at high-dimensional spaces.
+57:11
+So, for the human beings, we always have to project down onto two or
+57:14
+three dimensions.
+57:15
+And so, in the background, you can see a little bit of a word cloud
+57:20
+of a 2D projection of a word vector space, which you can't read at all.
+57:25
+But we could sort of start to zoom in on it.
+57:29
+And then you get something that's just about readable.
+57:32
+So in one part of the space, this is where country words are clustering.
+57:38
+And in another part of the space, this is where you're seeing verbs clustering.
+57:42
+And you're seeing kind of it's grouping together verbs that mean most similarly.
+57:47
+So 'come' and 'go' are very similar, 'say' and 'think' are similar, 'think' and
+57:51
+'expect' are similar.
+57:53
+'Expecting' and 'thinking' are actually similar to 'seeing things' a lot of
+57:57
+the time, because people often use see as an analogy for think.
+58:00
+Yes?
+58:11
+Okay, so the question is, what do the axes in these vector spaces mean?
+58:15
+And, in some sense, the glib answer is nothing.
+58:21
+So when we learn these vector spaces, well actually we have these 300 D vectors.
+58:26
+And they have these axes corresponding to those vectors.
+58:29
+And often in practice, we do sort of look at some of those elements in
+58:34
+along the axes and see if we can interpret them because it's easy to do.
+58:38
+But really, there's no particular reason to think that elements and
+58:43
+meaning should follow those vector lines.
+58:45
+They could be any other angle in the vector space, and so
+58:48
+they don't necessarily mean anything.
+58:50
+When we wanna do a 2D projection like this, what we're then using
+58:55
+is some method to try and most faithfully get out some of
+59:00
+the main meaning from the high dimensional vector space so we can show it to you.
+59:04
+So the simplest method that many of you might have seen before in other places,
+59:09
+is doing PCA, doing a principal components analysis.
+59:13
+There's another method that we'll get to called t-SNE, which is kind of
+59:16
+a non-linear dimensionality reduction which is commonly used.
+59:20
+But these are just to try and give human beings some sense of what's going on.
+59:25
+And it's important to realize that any of these low dimensional projections
+59:30
+can be extremely, extremely misleading, right?
+59:33
+Because they are just leaving out a huge amount of the information
+59:37
+that's actually in the vector space.
+59:40
+Here's, I'm just looking at closest words, to the word frog.
+59:45
+I'm using the GLOVE embeddings that we did at Stanford and we'll talk about more,
+59:48
+in the next couple of lectures.
+59:50
+So frogs and toad are the nearest words, which looks good.
+59:55
+But if we then look at these other words that we don't understand,
+59:59
+it turns out that they're also names for other pretty kinds of frogs.
+60:04
+So these word meaning vectors are a great basis of starting to do things.
+60:10
+But I just wanna give you a sense, for
+60:11
+the last few minutes, that we can do a lot beyond that.
+60:15
+And the surprising thing is we're gonna keep using some of these vectors.
+60:19
+So traditionally, if we're looking at complex words like uninterested, we might
+60:24
+just think of them as being made up as morphemes of sort of smaller symbols.
+60:30
+But what we're gonna do is say, well no.
+60:33
+We can also think of parts of words
+60:35
+as vectors that represent the meaning of those parts of words.
+60:40
+And then what we'll wanna do is build a neural network which can compose
+60:45
+the meaning of larger units out of these smaller pieces.
+60:50
+That was work that Minh-Thang Luong and Richard did a few years ago at Stanford.
+60:56
+Going beyond that, we want to understand the structure of sentences.
+61:01
+And so another tool we'll use deep learning for is to make
+61:06
+syntactic pauses that find out the structure of sentences.
+61:11
+So Danqi Chen who's over there, is one of the TAs for the class.
+61:16
+So something that she worked on a couple of years ago was doing neural
+61:22
+network methods for dependency parsing.
+61:25
+And that was hugely successful.
+61:27
+And essentially, if you've seen any of the recent Google announcements
+61:31
+with their Parsey McParseface and syntax net.
+61:34
+That essentially what that's using is a more honed and
+61:37
+larger version of the technique that Danqi introduced.
+61:42
+So once we've got some of the structure of sentences,
+61:46
+we then might want to understand the meaning of sentences.
+61:51
+And people have worked on the meaning of sentences for decades.
+61:55
+And I certainly don't wanna be little other ways of working
+62:00
+out the meaning of sentences.
+62:02
+But in the terms of doing deep learning for NLP,
+62:05
+in this class I also wanna give a sense of how we'll do things differently.
+62:11
+So the traditional way of doing things, which is commonly lambda calculus,
+62:16
+calculus-based semantic theories.
+62:19
+That you're giving meaning functions for individual words by hand.
+62:24
+And then there's a careful, logical algebra for
+62:28
+how you combine together the meanings of words to get kind of semantic expressions.
+62:36
+Which have also sometimes been used for programming languages where people worked
+62:40
+on denotational semantics for programming languages.
+62:43
+But that's not what we're gonna do here.
+62:45
+What we're gonna do is say, well, if we start off with the meaning of words
+62:50
+being vectors, we'll make meanings for phrases which are also vectors.
+62:55
+And then we have bigger phrases and
+62:57
+sentences also have their meaning being a vector.
+63:00
+And if we wanna know what the relationships between meanings of
+63:04
+sentences or between sentences and the world, such as a visual scene,
+63:09
+the way we'll do that is we'll try to learn a neural network that can
+63:14
+make those decisions for us.
+63:19
+Yeah, let's see.
+63:20
+So we can use it for all kinds of semantics.
+63:25
+This was actually one of the pieces of work that Richard did while he was
+63:28
+a PhD student, was doing sentiment analysis.
+63:33
+And so this was trying to do a much better,
+63:36
+careful, real meaning representation and
+63:40
+understanding of the positive and negative sentiments of sentences
+63:44
+by actually working out which parts of sentences have different meanings.
+63:49
+So the sentences, This movie doesn't care about cleverness, wit,
+63:55
+or any other kind of intelligent humor, and the system is actually very accurately
+63:59
+able to work out, well there's all of this positive stuff down here, right?
+64:04
+There's cleverness, wit, intelligent humor.
+64:07
+It's all very positive, and that's the kind of thing a traditional sentiment
+64:11
+analysis system would fall apart on, and just say this is a positive sentence.
+64:16
+But our neural network system is noticing that there's
+64:19
+this movie doesn't care at the beginning and
+64:21
+is accurately deciding the overall sentiment for the sentence is negative.
+64:27
+Okay, I'm gonna run out of time, so I'll skip a couple of things, but
+64:32
+let me just mention two other things that've been super exciting.
+64:36
+So there's this enormous excitement now about trying to build chat bots,
+64:42
+dialogue agents.
+64:44
+Of having speech and language understanding interfaces
+64:49
+that humans can interact with mobile computers.
+64:52
+There's Alexa and other things like that with and
+64:56
+I think it's fair to say that the state of the technology at the moment
+65:01
+is that speech recognition has made humongous advances, right?
+65:05
+So I mean, speech recognition has been going on for decades,
+65:10
+and as someone involved with language technology, I'd been claiming to people,
+65:16
+from the 1990s, no, speech recognition is really good.
+65:18
+We've worked out really good speech recognition systems.
+65:21
+But the fact of the matter is they were sorta not very good and real human beings
+65:27
+would not use them if they had any choice because the accuracy was just so low.
+65:32
+Whereas, in the last few years neural network-based deep
+65:36
+learning speech recognition systems have become amazingly good.
+65:41
+I think, I mean maybe this isn't true of the young people in this room
+65:45
+apart from me.
+65:46
+But I think a lot of people don't actually realize how good that they've gotten.
+65:51
+Because I think that there are a lot of people that try things out in 2012 and
+65:56
+decide, they're pretty reasonable, but not fantastic, and
+65:59
+haven't really used it since.
+66:02
+So I encourage all of you, if you don't regularly use speech recognition to go
+66:06
+home and try saying some things to your phone.
+66:09
+And, I think it's now just amazing how well the speech recognition works.
+66:14
+But there's a problem.
+66:16
+The speech recognition works flawlessly.
+66:19
+And then your phone has no idea what you're saying, and so it says,
+66:23
+would you like me to Google that for you?
+66:25
+So the big problem, and
+66:28
+the centerpiece of the kind of stuff that we're working on in this class, is well
+66:32
+how can we actually make the natural language understanding equally good?
+66:36
+And so that's a big concentration that what we're going to work on.
+66:40
+One place that's actually,
+66:42
+have any of you played with Google's Inbox program on cell phones?
+66:48
+Any of you tried that out?
+66:49
+A few of you have.
+66:52
+So one cool but very simple example of a deployed deep
+66:57
+learning dialogue agent is Google Inbox's Suggested Replies.
+67:03
+So you having recurrent neural network that's going through the message and
+67:08
+is then suggesting three replies to your message to send back to the other person.
+67:14
+And you know although there are lots of concerns in that program of sort of
+67:19
+privacy and other things, and they're careful how they're doing it.
+67:22
+Actually often the replies it comes up with are really rather good.
+67:26
+If you're looking to cut down on your email load, give Google Inbox a try and
+67:31
+you might find that actually you can reply to quite a bit of your email using it.
+67:36
+Okay, the one other example I wanted to mention before finishing
+67:41
+was Machine Translation.
+67:43
+So Machine Translation, this is actually when natural language processing started.
+67:48
+It didn't actually start with language understanding in general.
+67:51
+Where natural language processing started was, it was the beginning of the Cold War.
+67:57
+Americans and Russians alarmed that each other knew too much about something they
+68:01
+couldn't understand what people were saying.
+68:04
+And coming off of the successes of code breaking in World War II,
+68:08
+people thought, we can just get our computers to do language translation.
+68:14
+And in the early days it worked really terribly, and
+68:17
+things started to get a bit better in the 2000s, and I presume you've all seen
+68:22
+kind of classic Google Translate, and that's a lot of half worked.
+68:26
+You could sorta get the gist of what it's saying, but it still worked very terribly.
+68:31
+Whereas just in the last couple of years really only starting in 2014,
+68:36
+there's then started to be use of end-to-end trained deep learning
+68:41
+systems to do machine translation which is then called neural machine translation.
+68:48
+And it's certainly not the case that all the problems in MT are solved,
+68:52
+there's still lots of work to do to improve machine translation.
+68:56
+But again, this is a case in which just overnight
+69:00
+replacing the 200 person years of work on Google Translate
+69:05
+with a new deep learning based machine translation system has overnight
+69:11
+produced a huge improvement in translation quality.
+69:14
+And there was a big long article about that
+69:17
+in the New York Times magazine a few weeks ago that you might've seen.
+69:22
+And so rather than traditional approaches to translation where
+69:26
+again just running a big, deep, recurrent neural network where
+69:31
+it starts off reading through a source sentence generating vector
+69:36
+internal representations that represent the sentence so far.
+69:40
+And then once it's gone to the end of the sentence,
+69:44
+it then starts to generate out words in the translation.
+69:48
+So generating words in sequence in the translation
+69:51
+is then what's referred to as kind of neural language models,
+69:54
+and that is also a key technology that we use in a lot of things that we do.
+69:58
+So that's both what's used in the kind of Google Inbox, recurrent
+70:03
+neural network, and in the generation side of a neural machine translation system.
+70:09
+Okay, so we've gotten to, I just have one more minute and
+70:15
+try and get us out of here not too late even though we started late.
+70:18
+I mean, the final thing I want to say it's just sort of to emphasize
+70:24
+the fact the amazing thing that's happening here is it's all vectors, right?
+70:29
+We're using this for all representations of language,
+70:33
+whether it's sounds, parts of words, words, sentences,
+70:38
+conversations, they're all getting turned into these real value vectors.
+70:44
+And that's something that we'll talk about a lot more.
+70:46
+I'll talk about it for word vectors on Thursday and
+70:50
+Richard will talk a lot more about the vectors next time.
+70:55
+I mean, that's something that appalls many people, but I think it's important to
+70:59
+realize it's actually something a lot more subtle than many people realize.
+71:04
+You could think that there's no structure in this big long vector of numbers.
+71:08
+But equally you could say, well I could reshape that vector and
+71:12
+I could turn into a matrix or a higher order array which we call a tensor.
+71:16
+Or I could say different parts of it or
+71:18
+directions of it represent different kinds of information.
+71:21
+It's actually a very flexible data structure with
+71:24
+huge representational capacity and
+71:26
+that's what deep learning systems really take advantage of in all that they do.
+71:33
+Okay, thanks a lot.
+71:35
+>> [APPLAUSE]
