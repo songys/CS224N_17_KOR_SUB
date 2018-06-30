@@ -1,0 +1,3140 @@
+00:04
+Stanford University is that nishan Barak
+00:10
+are going to be giving an introduction
+00:12
+to tensor flow so tensor flow is
+00:14
+Google's deep learning framework which I
+00:17
+hope everyone will be excited to learn
+00:18
+and anyways you have to learn it because
+00:21
+we're going to be using it in assignment
+00:24
+two and three so this should really also
+00:26
+help out for the second assignment and
+00:28
+so before we get started with that I
+00:30
+just want to do a couple of quick
+00:32
+announcements so the first one was on
+00:35
+final projects so this is really the
+00:38
+time to be thinking about final projects
+00:40
+and if you've got ideas for final
+00:43
+projects and want to do the final
+00:45
+project you should be working out how to
+00:47
+talk to one of me Kevin Dungy Richard
+00:52
+Ignacio or Arun over the next couple of
+00:55
+weeks and again you know obviously
+00:57
+you've got to find the times it's hard
+00:59
+to fit everybody in but we are making a
+01:01
+real effort to project advice office
+01:03
+hours
+01:04
+there are also some ideas for projects
+01:06
+that have been stuck up on the projects
+01:08
+page so encourage people to look at that
+01:10
+now people have also asked us about
+01:12
+assignment four so we've also stuck up a
+01:15
+description of assignment four and so
+01:18
+look at that if you're considering
+01:19
+whether to do assignment four so
+01:21
+assignment four is going to be doing
+01:23
+question answering over the squad
+01:25
+dataset and you can look in more details
+01:27
+about that so then there are two other
+01:30
+things I wanted to mention and we'll
+01:32
+also put up messages on Piazza et cetera
+01:35
+about this I mean the first one is that
+01:38
+for assignments three we want people to
+01:42
+have experience of doing things on a GPU
+01:45
+and we've arranged with Azure or
+01:48
+Microsoft Azure to use their GPUs for
+01:51
+doing that and for people to use for the
+01:54
+final project and so we're trying to get
+01:56
+that all organizers at the moment
+01:58
+there's a limit to how many GPUs we can
+02:01
+have so what we're going to be doing for
+02:04
+assignment 3 and for the final project
+02:06
+is to allow teams of up to three and
+02:09
+really it's in our interests and the
+02:11
+resource limits interests
+02:13
+if many people could be teamed up so
+02:16
+we'd like to encourage people to team up
+02:18
+for assignment three and so we put up a
+02:21
+Google Form for people to enter their
+02:24
+team's and we need people to be doing
+02:26
+that in advance
+02:27
+because we need to get that set up at
+02:29
+least a week in advance so we can get
+02:31
+the Microsoft people to set up accounts
+02:33
+for people so that people can use as
+02:36
+your so please think about groups for
+02:38
+assignment three and then fill in the
+02:40
+Google Form for that and then the final
+02:43
+thing is for next week we're going to
+02:46
+make some attempts at reorganizing the
+02:48
+office hours and get some rooms for
+02:49
+office hours so they can hopefully run
+02:52
+more smoothly in the countdown towards
+02:54
+the deadline for assignment two than
+02:57
+they did for assignment one so keep an
+03:00
+eye out for that and expect that some of
+03:01
+the office hour times and locations will
+03:04
+be varying a bit compared to what
+03:06
+they've been for the first three weeks
+03:08
+and so that's it from me and over to ish
+03:14
+[Music]
+03:15
+so today we are going to be talking
+03:18
+about data flow which is under deep
+03:20
+learning framework from Google so why
+03:23
+study deep learning frameworks up first
+03:25
+of all one of the research in deep
+03:28
+learning and machine learning can be
+03:30
+attributed because of these deep
+03:32
+learning frameworks they have allowed
+03:33
+researchers to iterate extremely quickly
+03:35
+and also have made deep learning and
+03:37
+other algorithms in ml much more
+03:39
+accessible to practitioners so if you
+03:42
+see your phone a lot smarter than it was
+03:43
+three years ago it's probably because
+03:45
+one of because one of these deep
+03:47
+learning frameworks so the deep learning
+03:49
+frameworks help the scale machine
+03:51
+learning code which is why Google and
+03:53
+Facebook can now scale the billions of
+03:54
+users they can compute gradients
+03:56
+automatically obviously since you all
+03:59
+have must have finished your first
+04:00
+assignment you must know that gradient
+04:02
+calculation isn't trivial and so this
+04:04
+takes care of it automatically and we
+04:06
+can focus on the high-level math instead
+04:07
+it also standardizes ml across different
+04:10
+spaces so regardless of whether I am at
+04:13
+Google or Facebook some we still use
+04:15
+some some form of tensor flow or another
+04:17
+deep learning framework and they're
+04:19
+pretty there's a lot of
+04:20
+cross-pollination between the frameworks
+04:22
+as well a lot of pre-trained models are
+04:24
+also available online so people like us
+04:27
+who have limited resources in terms of
+04:29
+GPUs do not have to start from scratch
+04:31
+every time we can stand on the shoulders
+04:33
+of giants and on the data that they have
+04:35
+collected and sort of take it up from
+04:38
+there
+04:39
+they also allow interfacing with GPUs
+04:41
+which is an a fascinating feature
+04:43
+because GPU is actually speed up your
+04:44
+code a lot faster because of the
+04:46
+paralyzation which is why tensorflow
+04:49
+studying printer flow is sort of almost
+04:51
+necessary in order to make progress in
+04:53
+deep learning just because it can
+04:54
+facilitate your research and your
+04:56
+projects we will be using transfer flow
+04:58
+for peer to three and also for the final
+05:00
+project which also is an added incentive
+05:02
+for studying tensor flow today so what
+05:06
+is tensor flow actually it's just a deep
+05:08
+learning framework an open-source
+05:10
+software library for numerical
+05:11
+computation using flow graphs from
+05:13
+google it was developed by their brain
+05:15
+team which specializes in machine
+05:17
+learning research and in their words
+05:19
+trance also is an interface for
+05:20
+expressing machine learning algorithms
+05:22
+and an implementation for executing such
+05:24
+algorithms so now LLL barak to sort of
+05:27
+kick over and give a high-level overview
+05:29
+of how tensorflow works and the
+05:32
+underlying paradigm set at that so many
+05:35
+researchers have spent so much time
+05:36
+thinking about starting a sauce so I'm
+05:48
+going to be introducing some of the main
+05:49
+ideas behind tensor flow it's
+05:51
+programming paradigm and some of its
+05:54
+main features so the biggest idea of all
+05:57
+of the big ideas about tensor flow is
+05:59
+that numeric computation is expressed as
+06:01
+a computational graph if there was one
+06:04
+lesson that you took out of this
+06:05
+presentation today at the back of your
+06:07
+mind is that the backbone of any tensor
+06:10
+flow program is going to be a graph
+06:12
+where the graph nodes are going to be
+06:15
+operations jordans as ops in your code
+06:17
+and they have any number of inputs in a
+06:20
+single output and the edges between our
+06:23
+nodes are going to be tensors that flow
+06:25
+between them and the best way of
+06:26
+thinking about what tensors are in
+06:28
+practice is as n dimensional arrays the
+06:31
+advantage of using slow graphs at the
+06:34
+backbone of your deep learning framework
+06:36
+is that it allows you to build complex
+06:38
+models in terms of small and simple
+06:41
+operations and this is going to make a
+06:42
+gradient calculations extremely simple
+06:45
+when we get to that you're going to be
+06:47
+very very grateful for the automatic
+06:49
+differentiation when you're coding large
+06:51
+models in your final project and in the
+06:53
+future another way of thinking about a
+06:56
+tensor flow graph is that each operation
+06:58
+is a function that can be in valuated at
+07:01
+that point and hopefully we will see why
+07:03
+that is the case later in the
+07:04
+presentation so let us look at an
+07:06
+example of a neural network with one
+07:09
+hidden layer and what its computational
+07:11
+graph in tensor flow might look like so
+07:13
+we have some hidden layer that we are
+07:14
+trying to compute as the reloj
+07:16
+activation of some parameter matrix W
+07:19
+times some input X plus a bias term so
+07:22
+if you recall from last lecture the relu
+07:24
+is an activation function standing for
+07:26
+rectified linear unit in the same way
+07:28
+that a sigmoid is an activation function
+07:30
+we are applying some nonlinear function
+07:33
+over our linear input that is what gives
+07:36
+neural networks there on expressive
+07:38
+function and the relu takes the max of
+07:41
+your input and 0 on the right we see
+07:43
+what the graph might look like in tensor
+07:45
+flow we have variables for our BMW we
+07:48
+have a placeholder we'll get to that
+07:50
+soon with the X and nodes for each of
+07:52
+the operations in our graphs so let's
+07:54
+actually dissect those no types
+07:55
+variables are going to be stateful nodes
+07:59
+which outputs their current value in our
+08:01
+case it's just B and W what we mean by
+08:04
+saying that variables are stateful is
+08:07
+that they retain their current value
+08:09
+over multiple executions and it's easy
+08:11
+to restore saved values to variables so
+08:14
+variables have a number of other useful
+08:16
+features they can be saved to your disk
+08:18
+during an after training which is what
+08:20
+facilitates the use that niche talked
+08:22
+about earlier that allows people from
+08:24
+different companies and groups to save
+08:26
+the store and send over their model
+08:28
+parameters to other people and they also
+08:31
+make great and gradient updates by
+08:34
+default will apply over all of the
+08:36
+variables in your graph the variables
+08:38
+are the things that you want to tune to
+08:39
+minimize the loss and we will see how to
+08:41
+do that soon it is really important to
+08:44
+remember that variables in the graph
+08:46
+like B and W are still operations by
+08:49
+definition if there can be such a thing
+08:52
+as a definition in this
+08:54
+all of your nodes in a graph are
+08:55
+operations so when you evaluate the
+08:58
+operation that is these variables in our
+09:00
+runtime and we will see what runtime
+09:02
+means very shortly you will get the
+09:04
+value of those variables the next value
+09:07
+the next type of node are placeholders
+09:08
+so placeholders are nodes whose value is
+09:11
+fed in at execution time if you have
+09:16
+inputs into your network that depend on
+09:19
+some sort of external data that you only
+09:21
+want you don't want to build your graph
+09:23
+that depends on any real value so these
+09:25
+are placeholders for value that we're
+09:28
+going to add in to our model that we're
+09:31
+going to add into our computation during
+09:33
+training this is going to be our input
+09:35
+so for placeholders we don't give any
+09:37
+initial values we just assign a data
+09:40
+type and we assign a shape of a tensor
+09:43
+so the graph still knows what to compute
+09:45
+even though it doesn't have any stored
+09:47
+values yet the third type of node of
+09:49
+node are mathematical operations this is
+09:52
+going to be your matrix multiplication
+09:54
+your addition and your relu all of these
+09:56
+are nodes in your tensor flow graph and
+09:58
+it's very important that we're actually
+10:00
+calling on tensor flow mathematical
+10:02
+operations as opposed to an umpire
+10:04
+operation okay so let us actually see
+10:09
+how this works in code so we're going to
+10:11
+do three things we're going to create
+10:13
+our weights including initialization
+10:15
+we're going to create a placeholder
+10:16
+variable for our input X and then we're
+10:19
+going to build our flow graphs so how
+10:21
+does this look like in code we're going
+10:22
+to import our tensor flow package we're
+10:24
+going to build a Python variable B that
+10:26
+is a tensorflow variable taking in
+10:28
+initial zeros of size 100 a vector of
+10:31
+100 values our W is going to be
+10:33
+attempted flow variable taking uniformly
+10:35
+distributed values between negative 1
+10:37
+and 1 of shape 784 by 100 we're going to
+10:41
+create a placeholder for our input data
+10:43
+that doesn't take in any initial values
+10:46
+it just takes in a data type 32-bit
+10:48
+floats as well as the shape now we're in
+10:50
+a position to actually build our flow
+10:52
+graph we're going to express H as the
+10:55
+tensor flow relu of the tensor flow
+10:57
+matrix multiplication of X and W and we
+10:59
+add B so you can actually see that the
+11:01
+that the form of that line when we build
+11:03
+our H essentially looks exactly the same
+11:05
+it's how
+11:06
+it would look like a numpy except we're
+11:08
+calling on our tensorflow mathematical
+11:11
+operations and that is absolutely
+11:13
+essential because up to this point we
+11:16
+are not actually manipulating any data
+11:18
+we are only building symbols inside our
+11:21
+graphs no data is actually moving in
+11:23
+through our system yet you cannot print
+11:25
+off H and actually see the value it
+11:28
+expresses first and foremost because X
+11:30
+is just a placeholder it doesn't have
+11:31
+any real data in it yet but even if X
+11:33
+wasn't you cannot print H until we run
+11:36
+it soon we are just building a backbone
+11:38
+ax for our model but you might wonder
+11:41
+now where is the graph if you look at
+11:43
+the site earlier I didn't build a
+11:44
+separate note for this matrix
+11:46
+multiplication node and a different node
+11:48
+for add in a different node for whether
+11:49
+well rather with the H we've only
+11:51
+defined one line but I claim that we
+11:53
+have all of these nodes in our graphs so
+11:55
+if you actually try to analyze what's
+11:57
+happening in the graph what we're going
+11:59
+to do and there's no real they're not
+12:01
+too many reasons for you to do this when
+12:02
+you're actually programming a ten to
+12:04
+flow operation but if I'm going to call
+12:05
+on my default graph and then I call yet
+12:08
+operations on it I see all of the nodes
+12:10
+in my graph and there are a lot of
+12:12
+things going on here you can see in the
+12:14
+top three lines that we have three
+12:15
+separate nodes just to define what is
+12:17
+this concept of zeroes there are no
+12:19
+values initially assigned yet to our B
+12:22
+but it's getting the graph is getting
+12:24
+ready to take in those values we see
+12:26
+that we have all of these other nodes
+12:28
+just to define what the random uniform
+12:30
+distribution is and on the right column
+12:32
+we see we have another node for variable
+12:34
+one that is probably going to be or W
+12:36
+and then at the bottom four lines we
+12:38
+actually see the nodes as they appear in
+12:40
+our figure the place holder the matrix
+12:42
+multiplication the addition and the relu
+12:43
+so in fact the graph that were for the
+12:46
+figure that we're presenting on the
+12:47
+board is simple for what tensorflow
+12:49
+graphs look like there are a lot of
+12:50
+things going behind the scenes that you
+12:52
+don't really need to interface with as a
+12:54
+programmer but it is extremely important
+12:56
+to keep in mind that this is the level
+12:59
+of abstraction that tensorflow is
+13:00
+working with above the Python code this
+13:03
+is what is actually going to be computed
+13:05
+in your graph and it is also interesting
+13:08
+to see that if you look at the last node
+13:10
+relu it is pointing to the same object
+13:12
+in memory as the H variable that we
+13:15
+defined above both of them are
+13:17
+operations referring to the same thing
+13:19
+so in the code
+13:20
+for what this H actually stands for is
+13:22
+the last current node in the graph that
+13:24
+we built so great we've defined Oh
+13:27
+question
+13:35
+you
+13:43
+so the question was about um so the
+13:47
+question is about how we're deciding
+13:48
+what the values are and the types this
+13:52
+is purely our arbitrary choice we're
+13:54
+just showing an example it's not it's
+13:56
+not related to it's just part of our
+13:58
+example okay great so we've defined a
+14:03
+graph and the next question is how do we
+14:05
+actually run it so the way to deploy the
+14:07
+way you run graphs intent to flow is you
+14:09
+deploy it and something called a session
+14:11
+a session is a binding to a particular
+14:14
+execution context like a CPU or a GPU so
+14:18
+we're going to take the graph that we
+14:19
+built and we're going to deploy it onto
+14:21
+a CPU or GPU and you might actually be
+14:25
+interested to know that Google is
+14:27
+developing their own integrated circuit
+14:29
+called a tensor processing unit just to
+14:32
+make tensor computation extremely
+14:34
+quickly it's in fact the orders of
+14:36
+magnitude more quickly more and more
+14:38
+quick than even a GPU and they did use
+14:40
+it in their alphago match against Lisa
+14:42
+Dahl so so the session is any is any
+14:46
+like hardware environment that supports
+14:48
+the execution of all of the operations
+14:50
+in your graphs so that's how you deploy
+14:52
+a graph great so let's see how this is
+14:55
+run in code we're going to build a
+14:57
+session object and we're going to call
+14:59
+run on two arguments fetches and fees
+15:01
+fetches are the list of graph nodes that
+15:05
+return the outputs of the nodes these
+15:07
+are the nodes that we're interested in
+15:08
+actually computing the values of the
+15:11
+feeds is going to be a dictionary
+15:12
+mapping from graph nodes to actual
+15:15
+values that we want to run in our model
+15:17
+so this is where we actually fill in the
+15:19
+placeholders that we talked about
+15:21
+earlier so this is the code that we have
+15:24
+earlier and we're going to add some new
+15:26
+lines we're first going to build a
+15:28
+session object called TF dot session
+15:30
+it's going to take some default
+15:32
+environment most likely a CPU unless you
+15:35
+but you're able to add in as an argument
+15:36
+what device you want to run it on it and
+15:38
+then we're going to call first of all
+15:40
+sessions or on de on initialize all the
+15:43
+variables this is a concept in
+15:44
+tensorflow called lazy evaluation it
+15:46
+means that the evaluation of your graph
+15:49
+only ever happens at runtime and runtime
+15:52
+now we can add an interpretation to
+15:53
+runtime and tensor flow so in so means
+15:56
+this
+15:56
+session once we build a session we're
+15:58
+ready to actually call unlike the tensor
+16:00
+flow runtime so it is only then that we
+16:02
+can actually stick or assign the values
+16:05
+that we initialized our BMW onto those
+16:07
+notes BMW nevermind so after those two
+16:13
+lines were finally in a position to call
+16:15
+run on the node we're actually
+16:16
+interested in the H and we feed in in
+16:19
+our second argument a dictionary for X
+16:21
+it's our placeholder with the values
+16:23
+that we're interested for now just some
+16:25
+random values question
+16:28
+initialize all variables will initialize
+16:30
+all the things that are formerly called
+16:31
+variables in your graph like BMW in this
+16:34
+case
+16:42
+you
+16:50
+so the question was what is the
+16:51
+difference between
+16:52
+variables and placeholders and why we
+16:54
+might want to use which so place 4l
+16:57
+sorry variables in most cases will be
+17:00
+the parameters that we're interested in
+17:01
+you can almost think of them as a direct
+17:03
+correspondence X our data is not a
+17:06
+parameter we're interested in tuning in
+17:08
+the models we are working with
+17:10
+additionally place alike it's important
+17:13
+that our parameters have initializations
+17:15
+in our model to begin with it they have
+17:16
+a state or input doesn't really have a
+17:19
+state as part of our model if we're
+17:20
+going to take our model and export it to
+17:23
+somebody else there's no reason for it
+17:25
+to actually include any real data values
+17:27
+the data is arbitrary it's the model
+17:29
+parameters that are the foundation of
+17:33
+your model they are what makes your
+17:34
+model interesting and and and computing
+17:37
+what it computes great so what have we
+17:41
+covered so far we first built a graph
+17:42
+using variables and placeholders we then
+17:45
+deployed that graph on to a session
+17:47
+which is the execution environment and
+17:49
+next we will see how to train the model
+17:52
+so the first question that we might ask
+17:54
+in terms of optimization is how do we
+17:57
+define the loss so we're going to use
+17:58
+placeholder for labels as data that we
+18:01
+feed in only at run time and then we're
+18:03
+going to build a loss node using our
+18:05
+labels and prediction
+18:07
+so the first sign in code here is we're
+18:10
+going to have this Python variable that
+18:11
+if the prediction at the end of your
+18:13
+neural network it's going to be the top
+18:16
+of some soft max over whatever it is
+18:18
+that your neural network is outputting a
+18:20
+probability vector it could be a
+18:21
+regression the first line is where is
+18:23
+the end of the feed-forward stage of
+18:25
+your neural network it's what your your
+18:28
+network is trying to predict we're then
+18:29
+going to create a variable called label
+18:31
+that is a placeholder for the ground
+18:33
+truth that our model is trying to train
+18:35
+against now we are ready to create our
+18:37
+cross-entropy node which is just like in
+18:41
+our assignment 1 it's going to be the
+18:43
+sum of the labels times the tensorflow
+18:45
+log of the prediction on our column so
+18:48
+so so just as an interesting point all
+18:51
+of the functions so the sum and the log
+18:53
+do need to be tentacle functions with
+18:55
+center flow will automatically convert
+18:56
+addition subtraction and element-wise
+18:59
+multiplication into tensorflow
+19:00
+operations Oh
+19:05
+question yep it's going to sum the row
+19:19
+all together which is what we want to do
+19:21
+since label in in the label each row is
+19:24
+going to be a one hot vector so you want
+19:27
+to multiply that by our prediction and
+19:29
+it's going to multiply it at the point
+19:31
+of the target index and when we sum that
+19:34
+it's going to give us the correct result
+19:36
+everything else will be a zero in that
+19:38
+row so it's squashing it into a column
+19:40
+axis one means since the zero axis is
+19:43
+the Rose axis one is the column so it's
+19:45
+going to collapse the columns yes
+19:54
+the question was are the feeds just for
+19:56
+the placeholders yes that is correct the
+19:59
+feeds are just used as a dictionary to
+20:00
+fill in the values of our placeholders
+20:03
+great all right so we've now defined a
+20:08
+loss and we are ready to compute the
+20:10
+gradients so the way this is done in
+20:12
+intensive flow is we're first going to
+20:14
+create an optimizer object so there's a
+20:17
+general abstract class in tensorflow
+20:19
+called optimizer where each of the
+20:21
+subclasses in that class is going to be
+20:23
+an optimizer for a particular learning
+20:25
+algorithm so the learning algorithm that
+20:27
+we've already used in this class is the
+20:29
+gradient descent algorithm but there are
+20:32
+many other choices that you might want
+20:33
+to experiment with in your final project
+20:35
+and they have different advantages so
+20:38
+that is just the object to create an
+20:40
+optimization node in our graph we're
+20:43
+going to call it on a method of it's
+20:44
+called minimize and it's going to take
+20:46
+in its argument the node that we
+20:48
+actually want to minimize so this adds
+20:52
+an optimization operation to the top of
+20:55
+our computational graph which when we
+20:57
+evaluate that node when we evaluate this
+21:01
+variable I wrote in the top line called
+21:02
+Train step equals the line when we call
+21:05
+session run on train step it is going to
+21:07
+actually apply the gradient onto all of
+21:10
+the variables in our model this is
+21:12
+because the DAAD minimize function
+21:14
+actually does two things in tensorflow
+21:16
+it first computes the gradient of our
+21:18
+argument in this case cross-entropy with
+21:21
+respect to all of the things that we
+21:22
+defined as variables in our graph in
+21:24
+this case the BMW and then it's actually
+21:27
+going to apply the gradient updates to
+21:29
+those variables so i'm for the question
+21:31
+in the back of all of your minds now is
+21:33
+how do we actually compute the gradients
+21:34
+for the way works in tensor flow is that
+21:36
+every graph node has an attached
+21:38
+gradient operation it has a prebuilt a
+21:41
+gradient of the output with respect to
+21:43
+the inputs and so when we wanted to
+21:47
+calculate the gradient of our cross
+21:49
+entropy with respect all the parameters
+21:51
+it is extremely easy to just back
+21:53
+propagate through the graph using the
+21:56
+chain rule so this is where you actually
+21:57
+get to see like the main advantage of
+21:59
+expressing this machine learning
+22:01
+framework as this computational graph
+22:03
+because it is very easy for the
+22:05
+application to step backwards
+22:08
+traverse backwards through your graph
+22:09
+and at each point to multiply the error
+22:11
+signal by the predefined gradient of our
+22:15
+node and all of this happens
+22:18
+automatically and it actually happens
+22:20
+behind the programmers interface
+22:21
+question
+22:31
+the question was is the gradient
+22:34
+computed with respect to the cross
+22:36
+entropy with respect all of our
+22:38
+variables so we're the argument into the
+22:41
+minimize function is going to be the
+22:43
+node that is computing the gradient of
+22:45
+in the numerator with respect to
+22:46
+automatically all of the things we
+22:48
+defined as variables in our graph it
+22:51
+doesn't like you can you can add is
+22:53
+another argument what variables to
+22:54
+actually apply gradients to but if you
+22:57
+don't it's just going to automatically
+22:58
+due to everything defined as a variable
+23:00
+in our graph which also answers the
+23:02
+question earlier about why we wouldn't
+23:03
+want to call X a variable because we're
+23:05
+not actually we don't actually want to
+23:06
+update that so how does it look like in
+23:09
+code we're just going to add the top
+23:10
+line in the previous slide we're going
+23:12
+to create a Python variable called Train
+23:13
+step that takes in a gradient descent
+23:16
+optimizer object with learning rate 0.5
+23:18
+we're going to call minimize on it over
+23:21
+the cross entropy so you can kind of see
+23:22
+that that line encapsulate everything
+23:24
+all of the important information about
+23:27
+doing optimization it knows what
+23:29
+learning out like what gradient steps
+23:32
+algorithm to use the gradient descent
+23:33
+and knows what learning rate and knows
+23:35
+what node to compute the gradients over
+23:37
+and it knows to minimize it of course
+23:40
+ok so let's actually see how to run this
+23:42
+encode the last thing we have to do is
+23:45
+to Oh question let me
+23:55
+the question the question was had a
+23:57
+session know what variables to link it
+23:58
+to I think if this answer is that the
+24:01
+session is going to deploy all of the
+24:02
+nodes in your graph onto the runtime
+24:06
+environment all of the everything in the
+24:08
+graph is already on it so when you call
+24:11
+minimize on this particular node it's
+24:15
+already there inside your session to
+24:17
+like compute if that answers it okay so
+24:22
+the last thing we need to do now that
+24:23
+we've got we have the gradients we have
+24:25
+the gradient update it's just to create
+24:26
+an iterative learning schedule so we're
+24:30
+going to iterate over say 1,000
+24:33
+iterations the 1,000 is arbitrary we're
+24:36
+going to call in our favorite datasets
+24:37
+we're going to take our next batch data
+24:40
+is just any abstract data in this
+24:41
+arbitrary program so we're going to get
+24:43
+a batch for input a batch for our labels
+24:47
+we're then going to call session run on
+24:49
+our training step variable so remember
+24:52
+when we call run on that it already
+24:53
+applies the gradients onto all the
+24:55
+variables in our graph and it's going to
+24:57
+take a feed dictionary for the two
+24:59
+placeholders that we've defined so far
+25:01
+is the X and the label where X and label
+25:04
+are grass notes the keys in our
+25:07
+dictionary are graph nodes and the items
+25:09
+are going to be numpy data and this is
+25:11
+actually a good place to talk about just
+25:13
+how well tensorflow
+25:14
+interfaces with numpy because tensorflow
+25:17
+will automatically convert numpy arrays
+25:19
+when we feed it into a graph into
+25:22
+tensors so we can add in we can insert
+25:25
+it into our free dictionary numpy arrays
+25:27
+which are batch X and batch label and
+25:29
+we're also going to get as an output
+25:30
+from session dot run if I define some
+25:32
+variable like output equal sessions are
+25:34
+on that would also be an umpire array of
+25:36
+what the nodes of what's been of what
+25:39
+the nodes evaluate to though train steps
+25:41
+would return you the gradients I believe
+25:43
+are there any questions up to that point
+25:46
+before we take a little bit of a turn
+25:47
+yes
+25:55
+you
+26:01
+so I actually believe there are some
+26:05
+more there are some ways I create queues
+26:07
+for like for inputting in data and
+26:10
+labels that might be the answer to your
+26:12
+question there's no reason I can testify
+26:17
+to why this might be the best method to
+26:19
+but it certainly is a simple one where
+26:21
+you can just work with numpy data which
+26:23
+is what python programmers are used to
+26:25
+and that is like the the inserts point
+26:28
+into our our placeholders one more
+26:31
+question yes
+26:40
+you
+26:56
+your question was how does the cross
+26:58
+entropy know what to compute so the
+27:03
+cross entropy is going to take in
+27:05
+I haven't defined what prediction is
+27:07
+fully I just wanted to abstract that
+27:08
+part the prediction is going to be
+27:11
+something at the end of your known
+27:13
+network where all of those are symbols
+27:14
+inside your graph something before it is
+27:16
+going to be all these nodes in your
+27:18
+graph oh I think this might be a better
+27:20
+answer to your question when you
+27:21
+evaluate some node in the graph like if
+27:23
+I were to call session gone on
+27:24
+prediction it automatically computes all
+27:27
+of the nodes before it in the graph the
+27:29
+need to be computed to actually know
+27:31
+what the value of prediction is
+27:33
+behind-the-scenes incentive flow is
+27:34
+going to traverse backwards in your
+27:35
+graph and compute all of those
+27:37
+operations and that happens behind you
+27:40
+you don't you don't happens
+27:42
+automatically inside my session so the
+27:46
+last important concept that I want to
+27:47
+talk about before we move over to the
+27:48
+live demo is the concept of variable
+27:52
+sharing so in Lord when you want to
+27:55
+build a large model you also need to
+27:56
+share large sets of variables and you
+27:59
+might want to initialize them all in one
+28:00
+place for example I might want to
+28:02
+instantiate my graphs multiple times or
+28:04
+even more interestingly I want to train
+28:07
+over like a cluster of GPUs we might not
+28:10
+have the benefit to do that in the class
+28:11
+because of the resource limitations we
+28:13
+want to talk about but especially moving
+28:15
+on from this class it's often the case
+28:17
+that you want to train your model on
+28:18
+many different devices at one go so how
+28:20
+does this concept work of is Stan
+28:22
+cheating our model and each of these on
+28:24
+each of these devices but we want to
+28:25
+share the variables so one naive way you
+28:28
+might think of doing this is creating
+28:31
+this variables dictionary at the top of
+28:33
+your code that is a dictionary of some
+28:35
+strings into the variables that they
+28:37
+represent and in this way if I want to
+28:39
+build blocks below it that depends on
+28:42
+these parameters I would just call it I
+28:44
+would just use this dictionary I would
+28:46
+call variables dict and I would take the
+28:48
+key as these values and that might be
+28:50
+how I would want to share my variables
+28:52
+but there are many reasons this is not a
+28:53
+good idea and it's mostly because it
+28:55
+breaks the encapsulation so what we are
+28:59
+the code that builds your graphs in
+29:01
+tensorflow should always have all of the
+29:04
+relevant information about the nodes and
+29:07
+operations that you're using you want to
+29:09
+be able to
+29:09
+in your code documents the names of your
+29:11
+of Europe of your neurons you want to be
+29:15
+able to document the types of your
+29:17
+operations and the shapes of your
+29:18
+variables and you kind of lose this
+29:20
+information if you just have this
+29:22
+massive variables dictionary at the top
+29:24
+of your code so tensorflow the inspired
+29:26
+solution for this it's something called
+29:28
+variable scope a variable scope provides
+29:30
+a simple namespacing scheme to avoid
+29:33
+clashes and the other relevant function
+29:35
+to go along with that if something
+29:36
+called get variable so get variable will
+29:39
+create a variable for you if a variable
+29:42
+with a certain name doesn't exist or it
+29:45
+will access that variable if it finds it
+29:47
+to exist so let us see some examples
+29:49
+about how this works let me open a new
+29:52
+variable scope called foo and I'm going
+29:54
+to call yet variable with the name V so
+29:57
+this is the first time I'm calling yet
+29:58
+variable on V so it's going to create a
+30:00
+new variable and you'll find that the
+30:02
+name of that variable is through slash V
+30:05
+so kind of calling this variable scope
+30:08
+on through it's kind of like accessing a
+30:10
+directory that we're calling foo let me
+30:13
+close that variable scope and reopen it
+30:15
+with another with another argument
+30:17
+called reuse to be true now if I call
+30:20
+get variable with the same name V I'm
+30:22
+actually going to find the same variable
+30:24
+I'm going to access the variable I'm
+30:26
+going to access the same variable that I
+30:27
+created before so you will see that V 1
+30:29
+and V are pointing to the same object if
+30:32
+I close this variable scope again and
+30:34
+reopen it but I said we used to be false
+30:36
+your program will actually crash if I
+30:38
+try to run that line again because
+30:41
+you've set it to not reuse any variables
+30:43
+so it tries to create this new variable
+30:45
+but it has the same name if a variable
+30:47
+we defined earlier the uses of variable
+30:50
+scope will become apparent in the next
+30:52
+assignment and over the class but it is
+30:54
+something useful to keep in the back of
+30:55
+your mind so in summary what if we
+30:57
+looked at we learned how to build a
+30:59
+graph in tensorflow that have some sort
+31:01
+of feed-forward or prediction stage
+31:03
+where you are using your model to
+31:06
+predict some values I then showed you
+31:08
+how to optimize those values in your
+31:10
+neural network habit like how tensorflow
+31:12
+computes the gradients and how to build
+31:14
+this train step operation that applies
+31:17
+gradient updates to your parameters I
+31:19
+then showed you what it means to
+31:20
+initialize a session which deploys your
+31:23
+grasp
+31:23
+to some hardware that creates like the
+31:25
+runtime environment to run your program
+31:27
+and I then showed you how to build some
+31:29
+sort of simple iterating schedule to
+31:32
+continuously run and train our model are
+31:35
+there any questions up to this stage
+31:36
+before we move on in this in this
+31:38
+lecture yes
+31:47
+it doesn't because then feed dick you
+31:51
+can see that in physics it takes in some
+31:56
+node we were not really interested in
+31:59
+physics with what the names of those
+32:00
+variables are so you can whenever you
+32:02
+create a variable or a placeholder
+32:04
+there's always an argument that allows
+32:05
+you to give the name of that node so
+32:08
+when you create the name of that node
+32:09
+not named in my Python variable the name
+32:11
+as a tensorflow
+32:13
+symbol it is that's a great question the
+32:17
+the naming scope changes the name of the
+32:20
+actual symbol of that operation so if I
+32:23
+were to scroll back in the slides and
+32:24
+look at my list of operations the names
+32:26
+of all of those operations will be
+32:28
+appended with foo as we created earlier
+32:30
+maybe one more question before we move
+32:31
+on if there is anything yes
+32:44
+yes if you if you load a graph using the
+32:47
+get variable it will it will call the
+32:50
+same variable across devices this is why
+32:52
+it's extremely important to introduce
+32:53
+this idea of variable scope to show
+32:55
+devices one more question
+33:03
+can we serve variables the
+33:05
+we share variables across sessions I
+33:07
+believe the answer to that question is
+33:10
+correct I might be wrong but I'm not
+33:14
+entirely sure as of this time okay so we
+33:17
+just have a couple of acknowledgments
+33:18
+when we created this presentation we
+33:20
+consulted with a few other people who
+33:21
+have done tensorflow tutorials
+33:22
+most of these slides are inspired by
+33:24
+john garcia in a similar presentation he
+33:27
+gave we also talked with Burroughs and
+33:28
+chip-chip is teaching a class CF 20 si
+33:32
+attentive listen for deep learning
+33:34
+research we're very grateful at all the
+33:36
+people people we talked with it's a
+33:39
+crazy slides and now we will move on to
+33:41
+the research highlight before we move on
+33:44
+to the live demo hi everyone
+33:57
+hey you guys hear me okay hi my name is
+34:02
+Alan and let's take a break from tensor
+34:04
+flow and talk about something also very
+34:06
+interesting I'm going to present a paper
+34:08
+called visual dialogue here's a brief
+34:12
+introduction basically in recent years
+34:14
+there's we are witnessing like rapid
+34:17
+development improvement in AI especially
+34:21
+in natural language processing and
+34:22
+computer vision and the many people
+34:25
+believe that the next generation of
+34:27
+intelligent system will be able to hold
+34:30
+meaningful conversation with human in
+34:33
+natural language about based on the
+34:35
+visual content so for example it should
+34:40
+be able to help blind people to
+34:41
+understand their surroundings by
+34:43
+answering their questions or you can
+34:46
+integrate them together with AI
+34:50
+assistance such as Alexa and to
+34:53
+understand people's question better and
+34:56
+before I move move on to the paper let's
+34:59
+talk about some related work there there
+35:02
+have been a lot of efforts trying to
+35:03
+combine natural language processing and
+35:05
+computer vision and the first one is the
+35:08
+first category is image captioning the
+35:11
+first here I'm going to introduce that
+35:13
+to work the first one is a paper call
+35:16
+show a tendon cell which is a extension
+35:18
+another paper cost show-and-tell with
+35:20
+some attention mechanism and the second
+35:24
+one is a open source code written by
+35:26
+Android capacity in both models the
+35:30
+models are able to give you a
+35:34
+description of the image and for the
+35:38
+second case second case that's a typo
+35:40
+right there it should be a video summary
+35:42
+basically the model is able to summarize
+35:46
+the content of the video so imagine like
+35:49
+if you're watching a via
+35:51
+and you don't want to watch the whole
+35:53
+movie you want to see like what's the
+35:56
+main the main content of the movie you
+35:59
+probably want to this model be pretty
+36:01
+useful and the next category is visual
+36:04
+semantic alignment so instead of giving
+36:07
+a description for each image this model
+36:10
+actually gives description for each
+36:11
+individual component in the image and as
+36:14
+you can see on the right the data
+36:16
+collection process is a it's very
+36:18
+tedious because like you actually need
+36:20
+to draw a lot of bounding boxes and give
+36:22
+it the description to every single one
+36:24
+and the next one is more related to our
+36:27
+paper which is called a visual
+36:29
+question-answering basically given an
+36:32
+image and a question the model answers
+36:36
+the question based on the visual content
+36:38
+and in this case as you can see the
+36:41
+answers are either binary yes-or-no or
+36:43
+very short so like one numbers or circle
+36:46
+the different types of shapes and this
+36:49
+paper visual dialogue actually tries to
+36:53
+solve the issue I just mentioned and it
+36:56
+proposes a new AI task called visual
+36:59
+dialogue which requires an AI agent to
+37:01
+hold meaningful conversation of human
+37:04
+based on the visual visual content and
+37:08
+also draw the novel data collection
+37:10
+protocol and in my opinion this is the
+37:14
+best invention ever because you make
+37:16
+contribution to science make money and
+37:18
+socialize with people all at the same
+37:20
+time and it also introduced introduces a
+37:24
+family of the deep learning model for
+37:26
+visual dialogue and I'm not going to go
+37:30
+into too much too many details today
+37:32
+because we go
+37:32
+covered uh give me one hour later in
+37:35
+this class and this model basically so
+37:38
+given in the CS this model encode the
+37:42
+image using a conversion your network
+37:44
+and encode the question and the chat
+37:47
+history using two recurrent neural
+37:48
+networks and then concatenate three
+37:51
+representations together as a vector it
+37:53
+is then followed by a controller
+37:56
+connected layer and a decoder which
+37:58
+generates the answer based on the
+38:01
+representation and here's some some
+38:05
+analysis of the data set as you can see
+38:08
+like the data set is much better than
+38:10
+the previous work because there are more
+38:13
+unique answers and also the question and
+38:15
+answer is tend to be longer and here are
+38:19
+some results they actually show the
+38:22
+model in the form of a visual chat bar
+38:26
+basically you can chat with the robot
+38:28
+like online in real time and if you guys
+38:31
+are interested please try it and that's
+38:35
+it alright let's get started then so
+38:48
+we're going to start with linear
+38:49
+regression I'm sure all of you if you
+38:52
+have taken to CS 221 or CS 229 then you
+38:54
+have heard and coded up linear
+38:56
+regression before this is just going to
+38:58
+be a start and to get us familiarized
+39:01
+with tensorflow even better so you're
+39:05
+going to start it but what does being a
+39:06
+regression - again it takes your data
+39:09
+and tries to find the best linear fit to
+39:10
+it so imagine the house prices with time
+39:13
+for example our location it's probably a
+39:16
+linear fit and so we generate our data
+39:18
+set artificially using y equals 2x plus
+39:22
+epsilon where epsilon is sampled from a
+39:24
+normal distribution I won't really go
+39:26
+much into how the how we obtain the data
+39:28
+because that we assume is normal Python
+39:31
+processing and not really tensorflow
+39:32
+civilian one and actually start
+39:34
+implementing linear regression and the
+39:36
+function run so in this first function
+39:38
+linear regression we will be actually
+39:40
+implementing the graph itself as
+39:42
+peroxide we'll be implementing and
+39:44
+defining the flow graph
+39:45
+let's get started so first we're going
+39:49
+to create our placeholders because we're
+39:51
+going to see how we can feed in our data
+39:52
+so we have two placeholders here x and y
+39:54
+so let's just start with creating X
+39:57
+first and this is going to be of type
+39:59
+float so if you're going to make float
+40:02
+32 and it's going to be of shape so
+40:05
+we're going to make this slightly more
+40:06
+general and have it off shape none and
+40:09
+what this means that it that you can
+40:12
+dynamically change the number of batches
+40:14
+that you can send to your network or in
+40:17
+this case your minion model and it's
+40:20
+just a row vector here all right and
+40:22
+we're going to name it X we are also
+40:25
+going to start we going to create Y
+40:27
+which is the label and which will also
+40:32
+be of the same type and shape as well
+40:39
+right and we're going to name it y all
+40:44
+right so now that we have defined our
+40:46
+placeholders we are going to start
+40:47
+creating our variables so we start by
+40:49
+first defining our scope so let's say TF
+40:52
+dot variable scope and we're going to
+40:54
+name it just L drag because linear
+40:57
+regression and we're going to call it
+41:00
+scope all right so another of you here
+41:02
+we're going to create our weight matrix
+41:04
+which is doubly so we're going to call
+41:06
+TF dot variable and you're going to
+41:09
+sense it this linear regression will
+41:11
+just be a single integer or not an
+41:13
+integer my pet but just one number and
+41:15
+it's going to be we're going to randomly
+41:17
+initializes with TF numpy random dot
+41:20
+random or we're going to start with the
+41:23
+normal distribution rather let's do that
+41:25
+yeah and we're going to call it doubly
+41:28
+oh now we are going to see if you're
+41:33
+going to you can actually build the
+41:34
+graph now now that we have defined our
+41:35
+variables and placeholders and this is
+41:37
+going to give this we're going to define
+41:39
+wipe red which is this prediction and
+41:41
+it's going to give it it's going to be
+41:42
+given by TF dot multiplied of W and X so
+41:47
+far so clear any questions yes
+41:53
+yeah so as I mentioned earlier none in
+41:56
+this case is so that you can dynamically
+41:58
+change the number of batches that you
+41:59
+can send to your network so imagine like
+42:01
+if I'm doing hyper parameter tuning I
+42:02
+don't want to go and change shape to be
+42:04
+10 or 32 or 256 later on I can just
+42:08
+input search it almost you can imagine
+42:10
+that you're dynamically saying that ok
+42:11
+I'm going to change the number of
+42:13
+patches that I'm going to send to my
+42:15
+network does that answer a question yes
+42:23
+so as we mentioned that it will just go
+42:25
+into the variable scope and then define
+42:26
+the name as it pleases so yeah
+42:30
+all right so that's good so now now that
+42:34
+we have our prediction the next logical
+42:35
+thing is to actually compute the loss so
+42:38
+in this we are going to do by just the
+42:39
+l2 norm and we are going to get so let's
+42:43
+just first get the norm itself and
+42:47
+that's going to be given by square and
+42:49
+we goes to Y pred minus y and since we
+42:55
+want it to be of our particular shape
+42:57
+it's going to be over reduced some
+43:01
+that's release mean rather all right
+43:06
+okay so now with this we have finished
+43:10
+building our graph and so now we will
+43:12
+return x y y pred and we'll return the
+43:16
+loss as well from our linear regression
+43:18
+model now we are going to actually start
+43:22
+computing what's on the graph
+43:25
+and we first start by generating our
+43:28
+data set and I'm going to fill in code
+43:29
+here which define the training procedure
+43:32
+for it alright so let's get started on
+43:35
+that side so first we get what we recall
+43:40
+the model we make a instance of it and
+43:43
+that's just going to be given by this
+43:46
+alright so once we have that we're going
+43:48
+to create our optimizer and this is
+43:51
+going to be given by Barak earlier
+43:53
+mentioned in this clip in the slides
+43:59
+and we're going to define the learning
+44:01
+rate to be zero point one and we are
+44:02
+going to minimize over these laws that
+44:04
+we just got from our model all right any
+44:07
+questions so far we just created our
+44:09
+optimizer okay now we are going to start
+44:12
+a session so the t f dot session s
+44:18
+session we are going to say we are first
+44:22
+going to initialize oh yeah that's one
+44:24
+thing I forgot we are going to first
+44:26
+initialize our variables as someone
+44:29
+earlier asked why would we do that
+44:31
+and it's going to be so this is actually
+44:34
+new function so it's slightly different
+44:35
+from what Barak mentioned and this sort
+44:37
+of explains are tend to flow based
+44:39
+really quickly and since the time Barack
+44:41
+made this light then I made the code it
+44:43
+has already been updated so they're
+44:44
+going to change that a little bit so
+44:46
+this is just initializing the variables
+44:48
+here sure answer all right so we created
+44:53
+a session and now we are going to run
+44:54
+the init function which is this
+44:58
+initialization of variables now we are
+45:00
+going to create a feedback and so what
+45:05
+we are going to feed in is essentially
+45:06
+this ex back and Y batch which we got
+45:08
+from our generate data set function and
+45:12
+Y here would be like that all right now
+45:16
+we're going to actually just loop over
+45:18
+our data set multiple times because it's
+45:20
+a pretty small data set 30 just
+45:24
+arbitrary chosen here we are going to
+45:27
+get our last value and I'll come at it I
+45:30
+will explain this step in a second so
+45:33
+now we are going to call run and what we
+45:35
+want to fetch is the loss and the
+45:39
+optimizer and we are going to feed in
+45:42
+our feed that does anyone have any
+45:45
+questions on this line all right
+45:51
+and we're just going to print our last
+45:52
+year and the synthesis in Arabia just
+46:00
+going to want the mean because we have
+46:02
+almost one hundred and one bit of
+46:04
+examples all right so now that we're
+46:08
+done with that we can actually go and
+46:10
+run our trainer model but we'd also like
+46:13
+to see how it actually ends up
+46:14
+performing so what we're going to do is
+46:16
+we are going to actually see what it
+46:19
+predicts and how we get that is again
+46:21
+calling the session run on wipe red so
+46:25
+we are going to fetch wipe red and our
+46:27
+dictionary a receipt dictionary here
+46:29
+would be just this like that all right
+46:35
+yes
+46:41
+so the optimizer was defined as the
+46:44
+gradient descent optimizer here and so
+46:47
+you can see we are not returning
+46:49
+anything for that so which is why I just
+46:51
+ended up with a blank there it's just
+46:52
+this is just a syntax here so over here
+46:55
+you see I'm returning nothing like that
+46:57
+yeah all right so you can actually go
+46:59
+and start running our code and see how
+47:02
+it performs okay so that's actually
+47:21
+going to run over oops see how that
+47:26
+performs so you see the last decrease
+47:31
+and we can actually go ahead and see how
+47:34
+it turns out okay I guess I don't like
+47:40
+my P max name is so you see we fit a
+47:49
+linear line over the idea all right so
+47:53
+far so good
+47:54
+all right so now we are actually going
+47:56
+to go and implement word to back using
+47:58
+script crap which is slightly going to
+47:59
+be more complex this was just to see how
+48:02
+we create very simple models and tend to
+48:04
+flow all right let's go ahead so now any
+48:16
+questions so far
+48:17
+yes
+48:24
+you
+48:29
+alright so in this this is refine our
+48:32
+understanding of work to back again if
+48:34
+we have the following sentence a
+48:35
+completely unbiased statement here
+48:37
+the first PS - 24 homework was a lot of
+48:39
+fun and if we were supposed to make a
+48:42
+data set out of this sentence here we
+48:44
+would have remember consider a window
+48:46
+size 1 here and we are going to have the
+48:49
+CS 3 21
+48:50
+4 to 24 and fit first and so we're just
+48:53
+basically decomposing a DES sentence
+48:55
+into a dataset
+48:57
+remember that skip grams tries to
+48:58
+predict each context were given this
+49:01
+target word and since the number of
+49:03
+contexts words here is just 2 because
+49:05
+our window size is 1 and so the task now
+49:07
+becomes the predict be from CS 3 24 n
+49:10
+from first a lot and fun from off and so
+49:13
+on and so this is our data set so just
+49:16
+clarifying what were toufic actually
+49:19
+goes alright so let's go and start
+49:21
+implementing that I've already made the
+49:23
+data processing functions here so we
+49:24
+won't have to deal with that we have our
+49:26
+batches and this function load data
+49:28
+already loads the pre-processed training
+49:31
+and validation set training data is a
+49:33
+list of batch inputs and their label
+49:36
+pairs and we have about 30,000 of those
+49:39
+and we're going to see a tray naturalle
+49:40
+here the validation data is just a list
+49:42
+of all validation inputs and the reverse
+49:45
+dictionary is a Python dictionary from
+49:46
+word index to word all right so let's
+49:50
+start and go ahead and implement skip
+49:51
+Graham first all right so we are again
+49:58
+going to start by defining our play
+50:00
+folders and so this is going to be
+50:01
+batched inputs and we're going to define
+50:04
+a placeholder here with in this case
+50:08
+since you just have integers we can
+50:10
+define within 32 and the shape is going
+50:13
+to be batch size and nothing so we have
+50:19
+that and we can avoid naming here
+50:22
+because we are not going to call
+50:23
+multiple variables cobs so it'll be fine
+50:26
+then we go and create our batch labels
+50:28
+which is again here that placeholder 32
+50:34
+this will also be of the same shape as
+50:37
+previous
+50:42
+and finally we will go and create a
+50:47
+constant for our validation set because
+50:48
+that's not going to change anytime soon
+50:56
+and that's going to be defined by a
+50:59
+validator which we previously loaded and
+51:01
+we just we have to define what type it
+51:03
+is and the type for that is in 32 again
+51:06
+just like our training set alright now
+51:10
+that you have different yes
+51:16
+so since I'll be applying transposes
+51:17
+later I just wanted to make sure that
+51:19
+it's one it doesn't really make that bit
+51:21
+of a difference
+51:24
+oh so in this case I'll be calling a
+51:27
+transposon labels and which is why I
+51:28
+just wanted to make sure that its
+51:30
+transpose is fine
+51:39
+you
+51:45
+you wouldn't it's just I want to make it
+51:46
+absolutely clear that it's a it's a it's
+51:48
+a row vector not a column vector yeah
+51:50
+yeah exactly
+51:51
+all right so now we can go and start
+51:55
+creating our scope for so this is where
+52:07
+we'll define our model and first we're
+52:09
+going to go and create an embedding of
+52:11
+as we all did in our assignment and
+52:14
+that's going to be a huge variable and
+52:17
+it's when we initialize randomly a unit
+52:20
+uniform distribution and of this is
+52:23
+going to take size vocabulary size which
+52:26
+you have previously defined at the top
+52:28
+and it's going to take embedding size so
+52:34
+this is going to be a number of words in
+52:36
+your dictionary times the size of your
+52:38
+embeddings size and we are going to
+52:40
+define a since it's a randomly uniform
+52:42
+distribution we're just going to also
+52:45
+give the parameters for that so far so
+52:48
+good all right so we just created our
+52:50
+embeddings now since we want to index in
+52:53
+with our batch we're going to create
+52:54
+batch embeddings and we are going to use
+52:57
+this function which is actually going to
+52:58
+be pretty handy for this our current
+53:01
+assignment and so we do an embedding
+53:05
+lookup with the embeddings and you're
+53:08
+going to do put in the batch inputs here
+53:12
+all right
+53:14
+finally we go and create our weights and
+53:20
+we're going to call T F dot variable
+53:23
+here so we are going to use truncated
+53:26
+normal distribution here this is just
+53:28
+normal distribution where it's cut off
+53:30
+at two standard deviations instead of
+53:31
+going up infinite all right this is also
+53:35
+going to be of the same size as
+53:36
+previously where this is going to be
+53:38
+vocabulary size and embedding size
+53:46
+and this is because it interacts with
+53:48
+our input directly synthesis truncated
+53:52
+normal we need to define what the
+53:53
+standard deviation is and this is going
+53:55
+to be given by 1 over the square root of
+53:59
+the number of the embedding size itself
+54:05
+okay finally we go and create our biases
+54:10
+which are also going to be variables and
+54:12
+this is going to be initialized with
+54:15
+zeros of size vocabulary all right now
+54:24
+we define our last function now that we
+54:26
+have all our variables and let's so in
+54:33
+this case we used a soft max cost cross
+54:36
+entrepreneur assignment or the negative
+54:38
+log likely in this case you'd be using
+54:39
+something similar and this is where
+54:41
+tensorflow really shines it has a lot of
+54:42
+loss functions with that and say we are
+54:44
+going to use this called mega-
+54:46
+constraint a negative concentrate I
+54:48
+forget the exact name but it's very
+54:50
+similar in the sense that the words that
+54:53
+need to company to come up with higher
+54:54
+probability are emphasized and the words
+54:56
+which should not appear with high will
+54:58
+with low probability are not emphasized
+55:07
+you
+55:11
+and so we are going to call T f dot n n
+55:14
+and n is the neutral Network library
+55:15
+intensive law or module and this is
+55:18
+going to take a couple of parameters you
+55:19
+can look up the API yes
+55:24
+our M very very bored vector
+55:25
+representation which is what we are
+55:26
+trying to learn
+55:29
+w is the weight matrix that is a
+55:31
+parameter that you're trying to also
+55:33
+learn but it's it's interacting with the
+55:35
+word representations effectively you can
+55:38
+think of these embeddings as sort of
+55:40
+semantic representations of those words
+55:43
+right yes
+55:47
+right so imagine so our embeddings is
+55:50
+defined as the global vocabulary size so
+55:53
+let's say we have 10,000 words in our
+55:54
+dictionary and each row is now the word
+55:57
+vector that goes with that word index at
+55:59
+that word and since our batch was only a
+56:01
+subset of the vocabulary we need to
+56:03
+index into that age matrix with our
+56:06
+batch which is why we use the embedding
+56:08
+lookup function all right so we are
+56:12
+going to go and just use this API
+56:15
+obviously when we need to look up on the
+56:18
+tenth of all the set itself but what
+56:22
+this would do is now take the weights
+56:25
+and the BI biases and the labels as well
+56:30
+okay I define them as batch Abel's
+56:33
+alright they also take in input which is
+56:41
+the batch input and so we here's very
+56:48
+tensorflow really shines again the num
+56:50
+so in our data set we only have positive
+56:53
+samples or in the sense that we have the
+56:55
+context words and the target word we
+56:57
+also need context words and noisy words
+57:00
+and this is where num sampled would come
+57:02
+in use if we have defined num sample to
+57:04
+be 64 earlier and what it would
+57:06
+essentially do is look up 64 words which
+57:08
+are not in our training set and which
+57:10
+are noise would and this would serve as
+57:12
+sort of negative examples so that our
+57:13
+network month which would actually which
+57:16
+words are actually context version which
+57:17
+are not and finally your num classes is
+57:23
+defined by our vocabulary size again
+57:28
+alright with that we have defined our
+57:30
+loss function and now we have to take
+57:33
+the mean of that because we lost needs
+57:36
+to be the size of the batch itself and
+57:39
+we get that very DS mean this is going
+57:43
+to be slightly nasty
+57:52
+you
+58:05
+so we get with the loss the loss is
+58:08
+given for
+58:09
+particular batch and since we have more
+58:10
+yes exactly it's given for multiple
+58:12
+samples and since we have multiple
+58:14
+samples in a batch we want to take the
+58:15
+average of those exactly okay and so
+58:19
+great now we have completely defined our
+58:21
+last function and now we can go ahead
+58:24
+and actually if you remember from the
+58:26
+assignment we take the norm of these
+58:27
+word vectors so let's go and go ahead
+58:30
+and do that first
+58:31
+that'll be reduce mean this is just API
+58:38
+calling which is very available and
+58:40
+detailed on the tensorflow website
+58:42
+itself so this is where in this I have
+58:53
+added an argument for keep dimensions
+58:55
+and this is where like if you sum over a
+58:57
+dimension you don't want it to disappear
+58:58
+but just leave it as one okay
+59:02
+and now we divide the embeddings from
+59:06
+avid the norm so to get the normalized
+59:09
+embeddings great um and now we return
+59:19
+from we get batch inputs we return back
+59:24
+labels because this would be overfeed we
+59:26
+have normalized embeddings
+59:29
+and we have a and we have loss all right
+59:35
+with this done we come back to this
+59:37
+function later there's a slight part
+59:39
+missing which will get back yes
+59:47
+oh thank you all right
+59:54
+so now we go and define our run function
+59:57
+how are we doing on time okay you have
+59:58
+20 minutes okay we we we actually make a
+60:02
+object of our model and that's the spec
+60:08
+falling and loss from our function which
+60:17
+was just called what escaped them right
+60:21
+there okay and now we initialize the
+60:26
+session and over here again I forgot to
+60:35
+initialize our variables we can call we
+60:53
+did
+60:54
+initialize all our variables with the
+60:55
+default values as bar purely mentioned
+60:58
+again now we are going to go and
+61:00
+actually loop over our data to see if
+61:04
+you can actually go ahead and train our
+61:05
+model and so let's actually do that for
+61:10
+a step and batch data chain data so we
+61:16
+for each iteration in this for loop we
+61:19
+are going to obtain a batch which has
+61:21
+it's an input data as well as the labels
+61:25
+okay so we have input and labels from
+61:30
+our batch great and we can now define
+61:35
+our feedbacks nary accordingly where the
+61:38
+bash inputs so this is a dictionary and
+61:44
+our batch labels would just be labels
+61:49
+any questions so far
+61:52
+okay we go ahead and call our last
+61:55
+function again and we do this by calling
+61:59
+session drawn very stretch the optimizer
+62:02
+again and the loss and we pass in our
+62:07
+feed action area which we already
+62:10
+defined above okay we will get the loss
+62:14
+and since you're trying to get the
+62:15
+average we are going to add it first and
+62:17
+then divide by the number of examples
+62:19
+that we just saw all right so we're just
+62:26
+going to put a couple of print
+62:27
+statements now just to make sure to see
+62:30
+for model actually goes and trains and
+62:34
+[Music]
+63:03
+since the loss will be a zero on the
+63:06
+first step we can adjust this Express
+63:12
+check all right so now we have a ravage
+63:20
+loss and we reset our average loss again
+63:24
+just so that we don't for every
+63:28
+iteration loop okay so we have almost
+63:32
+finished our implementation here however
+63:34
+one thing that's yes
+63:38
+oh I forgot to defend that good cop so
+63:46
+we can define this as the beginning of a
+63:49
+run step promisor and we'll take a run
+64:01
+learning rate of zero and we're going to
+64:03
+minimize the loss thanks for that
+64:09
+okay one thing that we're missing here
+64:11
+is we haven't really dealt with our
+64:14
+validation set
+64:15
+so although we are training on our
+64:16
+training set we would you want to make
+64:18
+sure that it actually generalizes to the
+64:19
+valid a validation set and that's the
+64:21
+last part that's missing and we're just
+64:23
+going to do that but before we do that
+64:27
+there's only one step missing where we
+64:30
+once we have the validation set we still
+64:32
+need to see how similar of our board
+64:34
+vectors are with that and we do that in
+64:36
+our flow graph itself so let's go back
+64:40
+to over give Graham function and over
+64:45
+here we can implement that okay so we
+64:54
+have our Val embeddings against will
+64:56
+index into the embeddings matrix to get
+64:59
+the embedding set correspond to the
+65:01
+validation words and we use the
+65:04
+embedding lookup function here embedding
+65:09
+glue clips with and buildings and we
+65:11
+call them train data set or Valdez
+65:15
+they'll actually use the normalized
+65:17
+embeddings because we want to we are
+65:20
+worried we are concerned about the
+65:21
+cosine similarity and not really
+65:22
+necessarily about the magnitude of that
+65:25
+the similarity okay and these I'll take
+65:34
+a set here okay and the similarity is
+65:37
+essentially just the cosine similarity
+65:39
+so how this works is we take the matrix
+65:42
+multiply the Vallum bearings which we
+65:46
+just obtained and the normalized end
+65:49
+bearings
+65:50
+and we since they won't work you can
+65:55
+just matrix multiply both of them
+65:56
+because of dimension and compatibility
+65:57
+we'd have to transpose P and this is
+66:00
+just another flag alright since we will
+66:06
+also return this from our function again
+66:10
+this is just a part of the graph and we
+66:12
+need to actually execute the graph in
+66:13
+order to obtain values from it and here
+66:17
+we have similarity okay
+66:21
+and let's do since this is a pretty
+66:24
+expensive process
+66:25
+computationally expensive let's do this
+66:27
+only at every 5,000 iterations so the
+66:38
+baby are going to do this is by calling
+66:40
+eval on the similarity matrix what this
+66:43
+does is since we have this node it
+66:45
+actually goes any values this is
+66:46
+equivalent to calling session run on
+66:48
+similarity and fetching that okay so we
+66:51
+go and call and we get similarity and
+66:54
+for every word in our validation set
+67:02
+okay we are going to find the top
+67:07
+keywords that are closest to it and we
+67:10
+can define K to be 8 here and we will
+67:16
+now get the nearest words so let's do
+67:20
+that and we sort it according to their
+67:26
+magnitude and since the first word that
+67:30
+will be closest will be the word itself
+67:32
+we'll want the other eight words and
+67:34
+lots of first eight words and this will
+67:38
+be given by K plus 1 any questions so
+67:43
+far yes
+67:54
+right so you're embedding is a number of
+67:58
+words you have in your vocabulary
+67:59
+times the size of your word embedding
+68:02
+for each word so it's a huge matrix and
+68:05
+since your batch that you're currently
+68:08
+working with is only a subset of that
+68:10
+vocabulary this function embeddings
+68:12
+lookup actually indexes into that matrix
+68:14
+for you and it rate and obtains the word
+68:16
+this is the equivalent to some
+68:18
+complicated Python splicing that you do
+68:20
+with matrices but it's just good
+68:21
+syntactic sugar over it okay all right
+68:27
+almost there okay so we now have our
+68:35
+nearest a keyword we'll just go and have
+68:39
+this function in my yuto's you can check
+68:41
+this on the github that we'll post after
+68:43
+the class is over
+68:44
+and you can play with it as CH and in
+68:51
+the person nearest and the reverse
+68:53
+dictionary just to actually see the
+68:55
+words and not just numbers all right
+69:00
+finally we obtain our final embeddings
+69:07
+which will be our normal is embedding at
+69:10
+the end of the train and we're just
+69:12
+going to call eval on that again which
+69:14
+is equal into calling session run and
+69:17
+passing and fetching this all right we
+69:23
+are done with the coding and we can
+69:24
+actually see and visualize how this
+69:26
+performs okay and i masterfulness
+69:39
+I missed a bracket again
+70:02
+all right so it'll first load up our
+70:04
+data set and then it will iterate over
+70:07
+it and we will use our script game model
+70:10
+oops let's see that all right where is
+70:20
+this book
+70:30
+oh I know why this thing we have to be
+70:34
+there okay perfect all right so as you
+70:43
+can see here we have we have 10,000
+70:46
+badge we have 30,000 batches each with a
+70:49
+bad side of 128 man ok let's see alright
+70:59
+so as we see the loss started off as 259
+71:02
+it ends up at 145 and then decreases I
+71:06
+think it goes somewhere to around 6 here
+71:10
+we can also see as its printing the
+71:13
+nearest words if this is e leaders orbit
+71:15
+this gets better with time and with more
+71:18
+training data we only use around 30,000
+71:20
+examples so it is there's a lot of
+71:24
+potential to actually get better and in
+71:26
+the interest of time I've only limited
+71:27
+it to around 30 epochs yes
+71:38
+you
+72:00
+so tensorflow comes with a tensor bode
+72:04
+which I then show in the interest of
+72:06
+time it's essentially you can go up up
+72:08
+to your localhost and then see the
+72:11
+entire graph and how its organized and
+72:13
+so that will actually be a huge
+72:14
+debugging help and you can use that for
+72:17
+your final project
+72:25
+hence are bowed okay all right well
+72:28
+thank you for your time
+72:31
+[Applause]

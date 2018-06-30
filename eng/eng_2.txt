@@ -1,0 +1,2134 @@
+00:00
+[MUSIC]
+00:06
+Stanford University.
+00:11
+>> Okay, so let's get going.
+00:14
+Welcome back to the second class of CS224N /Ling 284,
+00:18
+Natural Language Processing with Deep Learning.
+00:22
+So this class is gonna be almost the complete opposite of the last class.
+00:28
+So in the last class,
+00:29
+it was a very high level picture of sort of trying from the very top down.
+00:35
+Sort of say a little bit about what is natural language processing,
+00:39
+what is deep learning, why it's exciting, why both of them are exciting and
+00:43
+how I'd like to put them together?
+00:46
+So for today's class we're gonna go completely to the opposite extreme.
+00:50
+We're gonna go right down to the bottom of words,
+00:54
+and we're gonna have vectors, and we're gonna do baby math.
+00:58
+Now for some of you this will seem like tedious repetitive baby math.
+01:04
+But I think that there are probably quite a few of you for
+01:08
+which having some math review is just going to be useful.
+01:12
+And this is really the sort of foundation on which everything else builds.
+01:17
+And so if you don't have sort of straight the fundamentals right at the beginning of
+01:21
+how you can use neural networks on the sort of very simplest kind of structures,
+01:26
+it's sort of really all over from there.
+01:28
+So what I'd like to do today is sort of really go slowly and
+01:32
+carefully through the foundations of how you can start to do things with neural
+01:38
+networks in this very simple case of learning representations for words.
+01:43
+And hope that's kind of a good foundation that we can build on forwards.
+01:47
+And indeed that's what we're gonna keep on doing, building forward.
+01:51
+So next week Richard is gonna keep on doing a lot of math from the ground up to
+01:56
+try, and really help get straight some of the foundations of Deep Learning.
+02:01
+Okay, so this is basically the plan.
+02:05
+So tiny bit word meaning and
+02:11
+no, [LAUGH].
+02:14
+>> [LAUGH] >> Tiny bit on word meaning then start to
+02:19
+introduce this model of learning word vectors called Word2vec.
+02:25
+And this was a model that was introduced by Thomas Mikolov and
+02:29
+colleagues at Google in 2013.
+02:31
+And so there are many other ways that you could think about
+02:35
+having representations of words.
+02:37
+And next week, Richard's gonna talk about some of those other mechanisms.
+02:41
+But today, I wanna sort of avoid having a lot of background and
+02:45
+comparative commentary.
+02:46
+So I'm just gonna present this one way of doing it.
+02:50
+And you'd also pretty study the good way of doing it, so
+02:52
+it's not a bad one to know.
+02:55
+Okay, so then after that, we're gonna have the first or
+02:58
+was it gonna be one of the features of this class.
+03:01
+We decided that all the evidence says that students can't concentrate for 75 minutes.
+03:07
+So we decided we'd sort of mix it up a little, and hopefully,
+03:11
+also give people an opportunity to sort of get more of a sense of what some of
+03:16
+the exciting new work that's coming out every month in Deep Learning is.
+03:22
+And so what we're gonna do is have one TA each time, do a little research highlight.
+03:27
+Which will just be sort of a like a verbal blog post of telling
+03:30
+you a little bit about some recent paper and why it's interesting, exciting.
+03:35
+We're gonna start that today with Danqi.
+03:38
+Then after that,
+03:39
+I wanna go sort of carefully through the word to vec objective function gradients.
+03:44
+Refresher little on optimization, mention the assignment,
+03:47
+tell you all about Word2vec that's basically the plan, okay?
+03:51
+So we kinda wonder sort of have word vectors as I
+03:55
+mentioned last time as a model of word meaning.
+03:59
+That's a pretty controversial idea actually.
+04:02
+And I just wanna give kind of a few words of context before we dive into that and
+04:07
+do it anyway.
+04:08
+Okay, so if you look up meaning in a dictionary cuz
+04:12
+a dictionary is a storehouse of word meanings after all.
+04:17
+What the Webster's dictionary says is meaning is the idea that is represented by
+04:21
+a word, phrase, etc.
+04:24
+The idea that a person wants to express by using words, signs, etc, etc.
+04:30
+In some sense, this is fairly close
+04:34
+to what is the commonest linguistic way of thinking of meaning.
+04:38
+So standardly in linguistics, you have a linguistic sign like a word,
+04:45
+and then it has things that it signifies in the world.
+04:50
+So if I have a word like glasses then it's got a signification which includes
+04:55
+these and there are lots of other pairs of glasses I can see in front of me, right?
+05:01
+And those things that it signifies,
+05:05
+the denotation of the term glasses.
+05:09
+That hasn't proven to be a notion of meaning that's been very easy for people
+05:15
+to make much use of in computational systems for dealing with language.
+05:21
+So in practice, if you look at what computational systems have done for
+05:25
+meanings of words over the last several decades.
+05:29
+By far the most common thing that's happened is, people have tried
+05:33
+to deal with the meaning of words by making use of taxonomic resources.
+05:38
+And so if they're English, the most famous taxonomic resource is WordNet.
+05:42
+And it's famous, maybe not like Websters is famous.
+05:46
+But it's famous among computational linguists.
+05:48
+Because it's free to download a copy and
+05:51
+that's much more useful than having a copy of Webster's on your shelf.
+05:55
+And it provides a lot of taxonomy information about words.
+06:01
+So this little bit of Python code.
+06:03
+This is showing you getting a hold of word net using the nltk which is one of
+06:07
+the main Python packages for nlp.
+06:10
+And so then I'm asking it for the word panda,
+06:13
+not the Python package Panda, the word panda.
+06:17
+Then I'm saying,
+06:18
+well tell me about the hypernym the kind of things that it's the kind of.
+06:23
+And so for Panda it's sort of heading up through carnivores, placentals,
+06:28
+mammals up into sort of abstract types like objects.
+06:31
+Or on the right hand side, I'm sort of asking for
+06:34
+the word good, will tell me about synonyms of good.
+06:38
+And part of what your finding there is, well WordNet is saying,
+06:42
+well the word good has different senses.
+06:45
+So for each sense, let me tell you some synonyms for each sense.
+06:49
+So one sense, the second one is sort of the kind of good person sense.
+06:54
+And they're suggesting synonyms like honorable and respectable.
+06:58
+But there are other ones here where this pair is good to eat and
+07:04
+that's sort of meaning is ripe.
+07:08
+Okay, so you get this sort of sense of meaning.
+07:12
+That's been, that's been a great resource, but
+07:16
+it's also been a resource that people have found in practice.
+07:20
+It's hard to get nearly as much value out of it as you'd like to get out of it.
+07:26
+And why is that?
+07:27
+I mean there are a whole bunch of reasons.
+07:30
+I mean one reason is that at this level of this sort of taxonomic relationships,
+07:35
+you lose an enormous amount of nuance.
+07:38
+So one of those synonym sets for good was adept, expert, good, practiced,
+07:43
+proficient, skillful.
+07:44
+But I mean, it seems like those mean really different things, right?
+07:49
+It seems like saying I'm an expert at deep learning.
+07:53
+Means something slightly different to I'm good at deep learning.
+07:59
+So there's a lot of nuance there.
+08:01
+There's a lot of incompleteness in WordNet so for a lot of the ways that people,
+08:06
+Use words more flexibly.
+08:10
+So if I say I'm a deep-learning ninja, or
+08:14
+something like that, that that's not in WordNet at all.
+08:18
+What kind of things you put into these synonym sets ends up very subjective,
+08:23
+right?
+08:23
+Which sense distinctions you make and which things you do and
+08:27
+don't say are the same, it's all very unclear.
+08:29
+It requires, even to the extent that it's made,
+08:32
+it's required many person years of human labor.
+08:37
+And at the end of the day, it's sort of, it's kind
+08:43
+of hard to get anything accurate out of it in the way of sort of word similarities.
+08:47
+Like I kind of feel that proficient is more similar to expert than good, maybe.
+08:53
+But you can't get any of this kind of stuff out of WordNet.
+08:58
+Okay, so therefore, that's sort of something of a problem.
+09:03
+And it's part of this general problem of discrete,
+09:08
+or categorical, representations that I started on last time.
+09:13
+So, the fundamental thing to note is that for
+09:16
+sorta just about all NLP, apart from both modern deep learning and
+09:21
+a little bit of neural net work NLP that got done in the 1980s,
+09:25
+that it's all used atomic symbols like hotel, conference, walk.
+09:31
+And if we think of that from our kind of jaundiced neural net direction,
+09:36
+using atomic symbols is kind of like using
+09:40
+big vectors that are zero everywhere apart from a one and one position.
+09:45
+So what we have, is we have a lot of words in the language that are equivalent to our
+09:49
+symbols and we're putting a one in the position, in the vector,
+09:53
+that represents the particular symbol, perhaps hotel.
+09:55
+And these vectors are going to be really, really long.
+09:59
+I mean, how long depends on how you look at it.
+10:01
+So sometimes a speech recognizer might have a 20,000 word vocabulary.
+10:05
+So it'd be that long.
+10:07
+But, if we're kinda building a machine translation system,
+10:10
+we might use a 500,000 word vocabulary, so that's very long.
+10:16
+And Google released sort of a 1-terabyte corpus of web crawl.
+10:21
+That's a resource that's been widely used for a lot of NLP.
+10:24
+And while the size of the vocabulary in that is 13 million words, so
+10:27
+that's really, really long.
+10:29
+So, it's a very, very big vector.
+10:33
+And so, why are these vectors problematic?
+10:37
+I'm sorry, I'm not remembering my slides, so I should say my slides first.
+10:43
+Okay, so this is referred to in neural net land as one-hot in coding
+10:47
+because there's just this one on zero in the vector.
+10:51
+And so, that's the example of a localist representation.
+10:57
+So why is this problematic?
+10:59
+And the reason why it's problematic is it doesn't give any
+11:04
+inherent notion of relationships between words.
+11:07
+So, very commonly what we want to know is when meanings and
+11:12
+words and phrases are similar to each other.
+11:15
+So, for example, in a web search application, if the user searches for
+11:19
+Dell notebook battery size,
+11:21
+we'd like to match a document that says Dell laptop battery capacity.
+11:26
+So we sort of want to know that notebooks and laptops are similar,
+11:29
+and size and capacity are similar, so this will be equivalent.
+11:33
+We want to know that hotels and motels are similar in meaning.
+11:37
+And the problem is that if we're using one-hot vector encodings,
+11:42
+they have no natural notion of similarity.
+11:45
+So if we take these two vectors and say,
+11:48
+what is the dot product between those vectors, it's zero.
+11:51
+They have no inherent notion of similarity.
+11:56
+And, something I just wanna stress a little, since this is important,
+12:00
+is note this problem of symbolic encoding applies not only to traditional
+12:05
+rule base logical approaches to natural language processing, but
+12:10
+it also applies to basically all of the work that was done in probabilistic
+12:15
+statistical conventional machine learning base natural language processing.
+12:20
+Although those Latin models normally had real numbers, they had probabilities of
+12:25
+something occurring in the context of something else, that nevertheless,
+12:29
+they were built over symbolic representations.
+12:32
+So that you weren't having any kind of capturing relationships between words and
+12:37
+the models, each word was a nation to itself.
+12:42
+Okay, so that's bad, and we have to do something about it.
+12:46
+Now, as I've said, there's more than one thing that you could do about it.
+12:53
+And so, one answer is to say, okay gee,
+12:56
+we need to have a similarity relationship between words.
+12:59
+Let's go over here and
+13:00
+start building completely separately a similarity relationship between words.
+13:05
+And, of course, you could do that.
+13:06
+But I'm not gonna talk about that here.
+13:09
+What instead I'm going to talk about and suggest is that
+13:14
+what we could do is we could explore this direct approach,
+13:19
+where the representation of a word encodes its meaning
+13:25
+in such a way that you can just directly read off
+13:29
+from these representations, the similarity between words.
+13:34
+So what we're gonna do is have these vectors and
+13:36
+do something like a dot product.
+13:38
+And that will be giving us a sense of the similarity between words.
+13:44
+Okay, so how do we go about doing that?
+13:46
+And so the way we gonna go about doing that is by making use of this
+13:53
+very simple, but extremely profound and widely used,
+13:57
+NLP idea called distributional similarity.
+14:00
+So this has been a really powerful notion.
+14:03
+So the notion of distributional similarity is that you can get a lot of value for
+14:09
+representing the meaning of a word by looking at the context in
+14:14
+which it appears and doing something with those contexts.
+14:19
+So, if I want to know what the word banking means,
+14:22
+what I'm gonna do is find thousands of instances of the word banking in text and
+14:28
+I'm gonna look at the environment in which each one appeared.
+14:31
+And I'm gonna see debt problems, governments,
+14:35
+regulation, Europe, saying unified and
+14:39
+I'm gonna start counting up all of these things that appear and by some means,
+14:43
+I'll use those words in the context to represent the meaning of banking.
+14:49
+The most famous slogan that you will read everywhere if you look
+14:55
+into distributional similarity is this one by JR Firth, who was a British linguist,
+15:01
+who said, you shall know a word by the company it keeps.
+15:06
+But this is also really exactly the same notion that Wittgenstein proposed in
+15:11
+his later writings where he suggested a use theory of meaning.
+15:17
+Where, somewhat controversially, this not the main stream in semantics,
+15:21
+he suggested that the right way to think about the meaning of words is
+15:26
+understanding their uses in text.
+15:29
+So, essentially, if you could predict which textual context
+15:33
+the word would appear in, then you understand the meaning of the word.
+15:38
+Okay, so that's what we're going to do.
+15:41
+So what we want to do is say for each word we're going to come up for
+15:46
+it a vector and that dense vector is gonna be chosen so that
+15:52
+it'll be good at predicting other words that appear in the context of this word.
+15:58
+Well how do we do that?
+15:59
+Well, each of those other words will also have a word that are attached to them and
+16:03
+then we'll be looking at sort of similarity measures like dot
+16:07
+product between those two vectors.
+16:08
+And we're gonna change them as well to make it so
+16:11
+that good at being able to be predicted.
+16:14
+So it all kind off gets a little bit recursive or circular, but
+16:17
+we're gonna come up with this clever algorithm to do that, so
+16:21
+that words will be able to predict their context words and vice-versa.
+16:25
+And so I'm gonna go on and say a little bit more about that.
+16:30
+But let me just underline one bit
+16:34
+of terminology that was appearing before in the slide.
+16:39
+So we saw two keywords.
+16:42
+One was distributional, which was here.
+16:47
+And then we've had distributed representations
+16:51
+where we have these dense vectors to represent the meaning of the words.
+16:55
+Now people tend to confuse those two words.
+16:59
+And there's sort of two reasons they confuse them.
+17:02
+One is because they both start with distribute and so they're kind of similar.
+17:08
+And the second reason people confuse them is because they very strongly co-occur,.
+17:16
+So that distributed representations and meaning have almost always,
+17:22
+up until now, been built by using distributional similarity.
+17:26
+But I did just want people to gather that these are different notions, right?
+17:31
+So the idea of distributional similarity is a theory about semantics of word
+17:37
+meaning that you can describe the meaning of words by as a use theory of meaning,
+17:42
+understanding the context in which they appear.
+17:45
+So distributional contrasts with, way back here when I said but
+17:50
+didn't really explain, denotational, right?
+17:53
+The denotational idea of word meaning is the meaning
+17:57
+of glasses is the set of pairs of glasses that are around the place.
+18:02
+That's different from distributional meaning.
+18:05
+And distributed then contrasts with our one-hot word vector.
+18:10
+So the one-hot word vectors are localist representation where you're storing in
+18:15
+one place.
+18:16
+You're saying here is the symbol glasses.
+18:19
+It's stored right here whereas in distributed representations
+18:23
+we're smearing the meaning of something over a large vector space.
+18:27
+Okay, so that's part one.
+18:32
+And we're now gonna sorta be heading into part two, which is what is Word2vec?
+18:38
+Okay, and so I'll go almost straight into this.
+18:42
+But this is sort of the recipe in general for what we're doing for
+18:47
+learning neural word embeddings.
+18:49
+So we're gonna define a model that aims to predict between
+18:55
+a center word and words that appear in it's context.
+19:00
+Kind of like we are here, the distributional wording.
+19:03
+And we'll sort of have some, perhaps probability measure or
+19:06
+predicts the probability of the context given the words.
+19:10
+And then once we have that we can have a loss function as to whether
+19:14
+we do that prediction well.
+19:17
+So ideally we'd be able to perfectly predict the words around the word so
+19:21
+the minus t means the words that aren't word index t so the words around t.
+19:27
+If we could predict those perfectly from t we'd have probability one so
+19:31
+we'd have no loss but normally we can't do that.
+19:34
+And if we give them probability a quarter then we'll have sort of three quarters
+19:37
+loss or something, right?
+19:38
+So we'll have a loss function and
+19:40
+we'll sort of do that in many positions in a large corpus.
+19:44
+And so our goal will be to change the representations of words so
+19:49
+as to minimize our loss.
+19:51
+And at this point sort of a miracle occurs.
+19:55
+It's sort of surprising, but true that you can do no more
+20:01
+than set up this kind of prediction objective.
+20:05
+Make it the job of every words word vectors to be such that they're
+20:10
+good at predicting their words that appear in their context or vice versa.
+20:15
+You just have that very simple goal and you say nothing else about how this is
+20:20
+gonna be achieved, but you just pray and depend on the magic of deep learning.
+20:26
+And this miracle happens and
+20:28
+outcome these word vectors that are just amazingly powerful
+20:33
+at representing the meaning of words and are useful for all sorts of things.
+20:38
+And so that's where we want to get into more detail and say how that happens.
+20:43
+Okay.
+20:48
+So that representation was meant to be meaning all words
+20:54
+apart from the wt, yes, what is this w minus t mean?
+20:59
+I'm actually not gonna use that notation again in this lecture.
+21:01
+But the w minus t, minus is sometimes used to mean everything except t.
+21:06
+So wt is my focus word, and w minus t is in all the words in the context.
+21:14
+Okay, so this idea that you can learn low dimensional vector
+21:19
+representations is an idea that has a history in neural networks.
+21:23
+It was certainly present in the 1980s,
+21:26
+parallel distributed processing era including work by
+21:30
+Rumelhart on learning representations by back-propagating errors.
+21:34
+It really was demonstrated for word representations in this pioneering
+21:42
+early paper by Yoshua Bengio in 2003 and neural probabilistic language model.
+21:47
+I mean, at the time, sort of not so many people actually paid attention to this
+21:52
+paper, this was sort of before the deep learning boom started.
+21:58
+But really this was the paper where the sort of showed
+22:03
+how much value you could get from having distributed representations of words and
+22:08
+be able to predict other words in context.
+22:11
+But then as things started to take off that idea was sort of built on and
+22:17
+revived.
+22:18
+So in 2008, Collobert and Weston started in the sort of modern direction by saying,
+22:23
+well, if we just want good word representations, we don't even have to
+22:27
+necessarily make a probabilistic language model that can predict,
+22:31
+we just need to have a way of learning our word representations.
+22:35
+And that's something that's then being continued in the model that I'm gonna look
+22:40
+at now, the word2vec model.
+22:42
+That the emphasis of the word2vec model was how can we build a very simple,
+22:47
+scalable, fast to train model that we can run over billions
+22:53
+of words of text that will produce exceedingly good word representations.
+23:00
+Okay, word2vec, here we come.
+23:03
+The basic thing word2vec is trying to do is use theory of meaning,
+23:08
+predict between every word and its context words.
+23:12
+Now word2vec is a piece of software, I mean,
+23:15
+actually inside word2vec it's kind of a sort of a family of things.
+23:19
+So there are two algorithms inside it for producing word vectors and
+23:24
+there are two moderately efficient training methods.
+23:28
+So for this class what I'm going to do is tell you about
+23:32
+one of the algorithms which is a skip-gram method and
+23:36
+about neither of the moderately efficient training algorithms.
+23:40
+Instead I'm gonna tell you about the hopelessly inefficient training
+23:43
+algorithm but is sort of the conceptual basis of how this is meant to work and
+23:48
+that the moderately efficient ones, which I'll mention at the end.
+23:52
+And then what you'll have to do to actually make this a scalable process
+23:55
+that you can run fast.
+23:57
+And then, today is also the day when we're handing out assignment
+24:02
+one and Major part of what you guys get to do in assignment
+24:07
+one is to implement one of the efficient training algorithms, and
+24:11
+to work through the method one of those efficient training algorithms.
+24:16
+So this is the picture of the skip-gram model.
+24:19
+So the idea of the skip-gram model is for
+24:24
+each estimation step, you're taking one word as the center word.
+24:30
+So that's here, is my word banking and then what you're going to do
+24:36
+is you're going to try and predict words in its context out to some window size.
+24:42
+And so, the model is going to define a probability distribution that
+24:46
+is the probability of a word appearing in the context given this center word.
+24:52
+And we're going to choose vector representations of words so
+24:57
+we can try and maximize that probability distribution.
+25:01
+And the thing that we'll come back to.
+25:04
+But it's important to realize is there's only one probability distribution,
+25:09
+this model.
+25:10
+It's not that there's a probability distribution for
+25:12
+the word one to the left and the word one to the right, and things like that.
+25:16
+We just have one probability distribution of a context word,
+25:20
+which we'll refer to as the output, because it's what we,
+25:24
+produces the output, occurring in the context close to the center word.
+25:29
+Is that clear?
+25:32
+Yeah, okay.
+25:37
+So that's what we kinda wanna do so we're gonna have a radius m and
+25:42
+then we're going to predict the surrounding words from sort of
+25:47
+positions m before our center word to m after our center word.
+25:52
+And we're gonna do that a whole bunch of times in a whole bunch of places.
+25:56
+And we want to choose word
+26:00
+vectors such as that we're maximizing the probability of that prediction.
+26:05
+So what our loss function or objective function is is really this J prime here.
+26:14
+So the J prime is saying we're going to, so we're going to take a big
+26:18
+long amount of text, we take the whole of Wikipedia or something like that so
+26:23
+we got big long sequence of words, so there are words in the context and
+26:28
+real running text, and we're going to go through each position in the text.
+26:33
+And then, for each position in the text, we're going to have a window
+26:37
+of size 2m around it, m words before and m words after it.
+26:41
+And we're going to have a probability distribution that will give a probability
+26:47
+to a word appearing in the context of the center word.
+26:52
+And what we'd like to do is set the parameters of our model so
+26:57
+that these probabilities of the words that actually
+27:00
+do appear in the context of the center word are as high as possible.
+27:05
+So the parameters in this model of these theta here that I show here and here.
+27:10
+After this slide, I kinda drop the theta over here.
+27:13
+But you can just assumed that there is this theta.
+27:17
+What is this theta?
+27:17
+What is theta is?
+27:20
+It's going to be the vector representation of the words.
+27:24
+The only parameters in this model of the vector representations of each word.
+27:29
+There are no other parameters whatsoever in this model as you'll see pretty
+27:34
+quickly.
+27:34
+So conceptually this is our objective function.
+27:39
+We wanna maximize the probability of this predictions.
+27:45
+In practice, we just slightly tweak that.
+27:47
+Firstly, almost unbearably when we're working with probabilities and
+27:52
+we want to do maximization, we actually turn things into log probabilities cuz
+27:57
+then all that products turn into sums and
+27:59
+our math gets a lot easier to work with and so that's what I've done down here.
+28:09
+Good points.
+28:10
+And the question is, hey, wait a minute you're cheating, windows size,
+28:14
+isn't that a parameter of the model?
+28:16
+And you are right, this is the parameter of the model.
+28:18
+So I guess I was a bit loose there.
+28:22
+Actually, it turns out that there are several hyper parameters of the model, so
+28:26
+I did cheat.
+28:26
+It turns out that there are a few hyper parameters of the model.
+28:31
+One is Windows sized and it turns out that we'll come across a couple of
+28:35
+other fudge factors later in the lecture.
+28:37
+And all of those things are hyper parameters that you could adjust.
+28:42
+But let's just ignore those for the moment,
+28:43
+let's just assume those are constant.
+28:46
+And given those things aren't being adjusted,
+28:49
+the only parameters in the model, the factor representations of the words.
+28:54
+What I'm meaning is that there's sort of no other probability
+28:59
+distribution with its own parameters.
+29:02
+That's a good point.
+29:03
+I buy that one.
+29:05
+So we've gone to the log probability and the sums now and,
+29:11
+and then rather than having the probability of the whole corpus,
+29:18
+we can sort of take the average over each positions so I've got 1 on T here.
+29:26
+And that's just sort of a making it per word as sort of a kinda normalization.
+29:32
+So that doesn't affect what's the maximum.
+29:35
+And then, finally, the machine learning people
+29:39
+really love to minimize things rather than maximizing things.
+29:43
+And so, you can always swap between maximizing and minimizing,
+29:46
+when you're in plus minus land, by putting a minus sign in front of things.
+29:51
+And so, at this point, we get the negative log likelihood,
+29:55
+the negative log probability according to our model.
+29:59
+And so, that's what we will be formally
+30:03
+minimizing as our objective function.
+30:08
+So if there were objective function, cost function, loss function, all the same,
+30:12
+this negative log likelihood criterion really that means that we're using this
+30:17
+our cross-entropy loss which is gonna come back to this next week so
+30:21
+I won't really go through it now.
+30:23
+But the trick is since we have a one hot target,
+30:26
+which is just predict the word that actually occurred.
+30:30
+Under that criteria the only thing that's left in cross
+30:34
+entropy loss is the negative probability of the true class.
+30:39
+Well, how are we gonna actually do this?
+30:43
+How can we make use of these word vectors to
+30:47
+minimize that negative log likelihood?
+30:52
+Well, the way we're gonna do it is we're gonna come
+30:55
+with the probably distribution of context word,
+31:00
+given the center word, which is constructed out of our word vectors.
+31:06
+And so, this is what our probability distribution is gonna look like.
+31:09
+So just to make sure we're clear on the terminology I'm gonna use forward
+31:14
+from here.
+31:15
+So c and o are indices in the space of the vocabulary, the word types.
+31:22
+So up here, the t and the t plus j, where in my text there are positions in my text.
+31:29
+Those are sort of words, 763 in words 766 in my text.
+31:34
+But here o and c in my vocabulary words I have word types and
+31:39
+so I have my p for words 73 and 47 in my vocabulary words.
+31:45
+And so, each word type they're going to have a vector associated with them so
+31:53
+u o is the vector associated with context word in index o and
+31:59
+vc is the vector that's associated with the center word.
+32:04
+And so, how we find this probability distribution is we're going to use this,
+32:10
+what's called a Softmax form, where we're taking dot products between
+32:16
+the the two word vectors and then we're putting them into a Softmax form.
+32:22
+So just to go through that kind of maximally slowly, right?
+32:25
+So we've got two word vectors and we're gonna dot product them,
+32:30
+which means that we so take the corresponding terms and
+32:33
+multiply them together and sort of sum them all up.
+32:37
+So may adopt product is sort of like a loose measure of similarity so
+32:42
+the contents of the vectors are more similar to each other
+32:46
+the number will get bigger.
+32:48
+So that's kind of a similarity measure through the dot product.
+32:52
+And then once we've worked out dot products between words
+32:56
+we're then putting it in this Softmax form.
+33:00
+So this Softmax form is a standard way to
+33:03
+turn numbers into a probability distribution.
+33:07
+So when we calculate dot products, they're just numbers, real numbers.
+33:12
+They could be minus 17 or 32.
+33:14
+So we can't directly turn those into a probability distribution so
+33:19
+an easy thing that we can do is exponentiate them.
+33:23
+Because if you exponentiate things that puts them into positive land so
+33:27
+it's all gonna be positive.
+33:29
+And that's a good basis for having a probability distribution.
+33:34
+And if you have a bunch of numbers that come from anywhere that are positive and
+33:39
+you want to turn them into a probability distribution that's proportional to
+33:43
+the size of those numbers, there's a really easy way to do that.
+33:47
+Which is you sum all the numbers together and you divide through by the sum and
+33:52
+that then instantly gives you a probability distribution.
+33:55
+So that's then denominated that is normalizing to give a probability and so
+34:00
+when you put those together, that then gives us this form that we're using
+34:05
+as our Softmax form which is now giving us a probability estimate.
+34:10
+So that's giving us this probability estimate
+34:13
+here built solely in terms of the word vector representations.
+34:18
+Is that good?
+34:19
+Yeah.
+34:24
+That is an extremely good question and I was hoping to delay saying that for
+34:29
+just a minute but you've asked and so I will say it.
+34:33
+Yes, you might think that one word should only have one vector representation.
+34:41
+And if you really wanted to you could do that, but it turns out you can make
+34:47
+the math considerably easier by saying now actually each word has two
+34:53
+vector representation that has one vector representation when it synthesis the word.
+34:57
+And it has another vector representation when it's a context word.
+35:02
+So that's formally what we have here.
+35:04
+So the v is the center word vectors, and the u are the context word vectors.
+35:10
+And it turns out not only does that make the math a lot easier,
+35:13
+because the two representations are separated
+35:16
+when you do optimization rather than tied to each other.
+35:19
+It's actually in practice empirically works a little better as well,
+35:24
+so if your life is easier and better, who would not choose that?
+35:28
+So yes, we have two vectors for each word.
+35:32
+Any other questions?
+35:52
+Yeah, so the question is, well wait a minute,
+35:55
+you just said this was a way to make everything positive, but
+35:59
+actually you also simultaneously screwed with the scale of things a lot.
+36:03
+And that's true, right?
+36:05
+The reason why this is called a Softmax function is because it's kind of
+36:09
+close to a max function, because when you exponentiate things,
+36:14
+the big things get way bigger and so they really dominate.
+36:18
+And so this really sort of blows out in the direction of a max function,
+36:23
+but not fully.
+36:24
+It's still a sort of a soft thing.
+36:27
+So you might think that that's a bad thing to do.
+36:30
+Doing things like this is the most standard underlying a lot of math,
+36:34
+including all those super common logistic regressions,
+36:37
+you see another class's way of doing things.
+36:40
+So it's a good way to know,
+36:41
+but people have certainly worked on a whole bunch of other ways.
+36:44
+And there are reasons that you might think they're interesting, but
+36:46
+I won't do them now.
+36:48
+Yes?
+37:00
+Yeah, so the question was, when I'm dealing with the context words,
+37:04
+am I paying attention to where they are or just their identity?
+37:08
+Yeah, where they are has nothing to do with it in this model.
+37:11
+It's just, what is the identity of the word somewhere in the window?
+37:15
+So there's just one probability distribution and
+37:19
+one representation of the context word.
+37:21
+Now you know, it's not that that's necessarily a good idea.
+37:25
+There are other models which absolutely pay attention to position and distance.
+37:30
+And for some purposes, especially more syntactic
+37:34
+purposes rather than semantic purposes, that actually helps a lot.
+37:38
+But if you're sort of more interested in just sort of word meaning,
+37:43
+it turns out that not paying attention
+37:45
+to position actually tends to help you rather than hurting you.
+37:50
+Yeah.
+38:05
+Yeah, so the question is how, wait a minute, is there a unique solution here?
+38:10
+Could there be different rotations that would be equally good?
+38:15
+And the answer is yes, there can be.
+38:19
+I think we should put off discussing this cuz actually there's a lot to
+38:24
+say about optimization in neural networks, and there's a lot of exciting new work.
+38:29
+And the one sentence headline is it's all good news, people spent
+38:34
+years saying that minimal work ought to be a big problem and it turns out it's not.
+38:39
+It all works.
+38:40
+But I think we better off talking about that in any more detail.
+38:45
+Okay, so
+38:50
+yeah this is my picture of what the skip gram model ends up looking like.
+38:56
+It's a bit confusing and hard to read, but
+38:59
+also I've got it thrown from left to right.
+39:01
+Right, so we have the center word that's a one hot vector.
+39:06
+We then have a matrix of the representations of center words.
+39:13
+So if we kind of do a multiplication of this matrix by that vector.
+39:22
+We just sort of actually select out the column of the matrix
+39:26
+which is then the representation of the center word.
+39:31
+Then what we do is we have a second matrix
+39:35
+which stores the representations of the context words.
+39:39
+And so for each position in the context,
+39:42
+I show three here because that was confusing enough.
+39:46
+We're going to multiply the vector by this matrix
+39:51
+which is the context word representations.
+39:55
+And so we will be picking out sort of the dot
+40:00
+products of the center word with each context word.
+40:04
+And it's the same matrix for each position, right?
+40:07
+We only have one context word matrix.
+40:10
+And then these dot products,
+40:12
+we're gonna soft max then turn into a probability distribution.
+40:17
+And so our model, as a generative model, is predicting the probability of
+40:22
+each word appearing in the context given that a certain word is the center word.
+40:29
+And so if we are actually using it generatively, it would say,
+40:32
+well, the word you should be using is this one here.
+40:35
+But if there is sort of actual ground truth as to what was the context word,
+40:41
+we can sort of say, well, the actual ground truth was this word appeared.
+40:46
+And you gave a probability estimate of 0.1 to that word.
+40:50
+And so that's the basis, so if you didn't do a great job at prediction,
+40:54
+then there's going to be some loss, okay?
+40:57
+But that's the picture of our model.
+40:59
+Okay, and so what we wanna do is now learn
+41:04
+parameters, these word vectors, in such a way that we
+41:09
+do as good a job at prediction as we possibly can.
+41:16
+And so standardly when we do these things, what we do
+41:21
+is we take all the parameters in our model and put them into a big vector theta.
+41:26
+And then we're gonna say we're gonna do optimization to change those parameters so
+41:31
+as to maximize objective function of our model.
+41:35
+So what our parameters are is that for
+41:38
+each word, we're going to have a little d dimensional vector,
+41:43
+when it's a center word and when it's a context word.
+41:47
+And so we've got a vocabulary of some size.
+41:50
+So we're gonna have a vector for aardvark as a context word,
+41:54
+a vector for art as a context word.
+41:57
+We're going to have a vector of aardvark as a center word,
+42:00
+a vector of art as a center word.
+42:02
+So our vector in total is gonna be of length 2dV.
+42:06
+There's gonna be a big long vector that has everything that was in what was shown
+42:10
+in those matrices before.
+42:12
+And that's what we then gonna be saying about optimizing.
+42:15
+And so after the break, I'm going to be so
+42:19
+going through concretely how we do that optimization.
+42:23
+But before the break,
+42:25
+we have the intermission with our special guest, Danqi Chen.
+42:30
+>> Hi, everyone.
+42:32
+I'm Danqi Chen, and I'm the head TA of this class.
+42:36
+So today I will start our first research highlight session,
+42:39
+and I will introduce you a paper from Princeton.
+42:42
+The title is A Simple but Tough-to-beat Baseline for Sentence Embeddings.
+42:46
+So today we are learning the word vector representations, so
+42:50
+we hope these vectors can encode the word meanings.
+42:53
+But our central question in natural language processing, and also this class,
+42:58
+is that how we could have the vector representations that encode the meaning of
+43:02
+sentences like, natural language processing is fun.
+43:08
+So with these sentence representations, we can compute
+43:12
+the sentence similarity using the inner product of the two vectors.
+43:18
+So, for example, Mexico wishes to guarantee citizen's safety, and,
+43:22
+Mexico wishes to avoid more violence.
+43:25
+So we can use the vector representation to predict these two
+43:29
+sentences are pretty similar.
+43:32
+We can also use this sentence representation to use as
+43:35
+features to do some sentence classification task.
+43:39
+For example, sentiment analysis.
+43:41
+So given a sentence like, natural language processing is fun,
+43:45
+we can put our classifier on top of the vector representations and
+43:49
+predict if sentiment is positive.
+43:51
+Hopefully this is right, so.
+43:54
+So there are a wide range of measures that compose word vector
+43:58
+representations into sentence vector representations.
+44:02
+So the most simple way is to use the bag-of-words.
+44:06
+So the bag-of-words is just like the vector representation of
+44:09
+the natural language processing.
+44:11
+It's a average of the three single word vector representations,
+44:15
+the natural, language, and processing.
+44:18
+Later in this quarter, we'll learn a bunch of complex models, such as recurrent
+44:24
+neural nets, the recursing neural nets, and the convolutional neural nets.
+44:29
+But today, for this paper from Princeton, I want to introduce
+44:34
+that this paper introduces a very simple unsupervised method.
+44:39
+That is essentially just a weighted bag-of-words sentence
+44:43
+representation plus remove some special direction.
+44:47
+I will explain this.
+44:50
+So they have two steps.
+44:52
+So the first step is that just like how we compute the average of the vector
+44:57
+representations, they also do this, but each word has a separate weight.
+45:03
+Now here, a is a constant.
+45:05
+And the p(w), it means the frequency of this word.
+45:09
+So this basically means that
+45:12
+the average representation down weight the frequent words.
+45:15
+That's the very simple Step 1.
+45:19
+So for the Step 2, after we compute all of these sentence vector
+45:23
+representations, we compute the first principal components and
+45:28
+also subtract the projections onto this first principle component.
+45:35
+You might be familiar with this if you have ever taken CS 229 and
+45:40
+also learned PCA.
+45:42
+So that's it.
+45:43
+That's their approach.
+45:46
+So in this paper, they also give a probabilistic
+45:50
+interpretation about why they want to do this.
+45:55
+So basically, the idea is that given the sentence representation, the probability
+46:00
+of the limiting or single word, they're related to the frequency of the word.
+46:05
+And also related to how close the word is related to this sentence representation.
+46:12
+And also there's a C0 term that means common discourse vector.
+46:17
+That's usually related to some syntax.
+46:21
+So, finally, the results.
+46:24
+So first, they take context parents on the sentence similarity and
+46:29
+they show that this simple approach is much better than the average
+46:34
+of word vectors, all the TFIDF rating, and
+46:37
+also all the performance of other sophisticated models.
+46:43
+And also for some supervised tasks like sentence classification,
+46:47
+they're also doing pretty well, like the entailment and sentiment task.
+46:52
+So that's it, thanks.
+46:54
+>> Thank you.
+46:55
+[LAUGH] >> [APPLAUSE]
+47:00
+>> Okay, Okay,
+47:08
+so, and we'll go back from there.
+47:17
+All right, so now we're wanting to sort of actually work through our model.
+47:23
+So this is what we had, right?
+47:26
+We had our objective function where we wanna minimize negative log likelihood.
+47:33
+And this is the form of the probability distribution up there, where we have these
+47:38
+sort of word vectors with both center word vectors and context word vectors.
+47:44
+And the idea is we want to change our parameters, these vectors, so
+47:50
+as to minimize the negative log likelihood item, maximize the probability we predict.
+47:56
+So if that's what we want to do,
+48:00
+how can we work out how to change our parameters?
+48:11
+Gradient, yes, we're gonna use the gradient.
+48:13
+So, what we're gonna have to do at this point is to start to do
+48:18
+some calculus to see how we can change the numbers.
+48:24
+So precisely, what we'll going to want to do is to say, well,
+48:29
+we have this term for working out log probabilities.
+48:36
+So, we have the log of the probability of the word t plus j word t.
+48:44
+Well, what is the form of that?
+48:46
+Well, we've got it right here.
+48:47
+So, we have the log of v maybe I can save a line.
+48:54
+We've got this log of this.
+49:00
+And then, what we're gonna want to do is that we're going to want to change this so
+49:06
+that we have, I'm sorry, minimized in this objective.
+49:11
+So, let's suppose we sort of look at these center vectors.
+49:15
+So, what we're gonna want to do is start working out the partial derivatives
+49:21
+of this with respect to the center vector which is then, going to give us,
+49:26
+how we can go about working out, in which way to change this vector
+49:34
+to minimize our objective function.
+49:38
+Okay, so, we want to deal with this.
+49:41
+So, what's the first thing we can do with that to make it simpler?
+49:47
+Subtraction, yeah.
+49:49
+So, this is a log of a division so, we can turn that into a log of a subtraction,
+49:55
+and then, we can do the partial derivatives separately.
+50:00
+So, we have the derivative
+50:05
+with Vc of the log of the exp of
+50:11
+u0^T vc and then, we've got
+50:16
+minus the log of the sum of w
+50:21
+equals 1 to V of exp of u w^T vc.
+50:27
+And at that point, we can separate it into two pieces, right,
+50:32
+cuz when there's addition or subtraction we can do them separately.
+50:37
+So, we can do this piece 1 and we can do the,
+50:42
+work out the partial derivatives of this piece 2.
+50:47
+So, piece 1 looks kind of easy so, let's start here.
+50:52
+So, what's the first thing I should do to make this simpler?
+50:57
+Easy question.
+51:01
+Cancel some things out, log and x inverses of each other so, they can just go away.
+51:08
+So, for 1, we can say that this is going to be
+51:13
+the partial derivative with respect to Vc of u0^T vc.
+51:18
+Okay, that's looking kind of simpler so,
+51:25
+what is the partial derivative
+51:30
+of this with respect to vc?
+51:35
+u0, so, this just comes out as u0.
+51:40
+Okay, and so, I mean, effectively, this is the kind of level of calculus that you're
+51:47
+gonna have to be able to do to be okay on assignment one that's coming out today.
+51:52
+So, it's nothing that life threatening, hopefully, you've seen this before.
+51:58
+But nevertheless, we are here using calculus with vectors, right?
+52:04
+So, vc here is not just a single number, it's a whole vector.
+52:09
+So, that's sort of the Math 51, CME 100 kind of content.
+52:16
+Now, if you want to, you can pull it all apart.
+52:21
+And you can work out the partial derivative
+52:26
+with respect to Vc, some index, k.
+52:30
+And then,
+52:33
+you could have this as
+52:38
+the sum of l = 1 to d of
+52:44
+(u0)l (Vc)l.
+52:49
+And what will happen then is if you're working out of with respect to only one
+52:55
+index, then, all of these terms will go away apart from the one where k equals l.
+53:01
+And you'll sort of end up with that being the (uo)k term.
+53:09
+And I mean, if things get confusing and complicated, I think it can actually,
+53:14
+and your brain is small like mine, it can actually be useful to sort of go down to
+53:19
+the level of working it out with real numbers and actually have all the indices
+53:24
+there and you can absolutely do that and it comes out the same.
+53:28
+But a lot of the time it's sort of convenient if we can just
+53:32
+stay at this vector level and work out vector derivatives, okay.
+53:37
+So, now, this was the easy part and
+53:41
+we've got it right there and we'll come back to that, okay.
+53:44
+So then, the trickier part is we then, go on to number 2.
+53:52
+So now, if we just ignore the minus
+53:58
+sign for a little bit, so,
+54:02
+we'll subtract it afterwards,
+54:07
+we've then got the partial derivatives
+54:14
+with respect to vc of the log of the sum
+54:19
+from w = 1 to v of the exp of uw^T vc, okay.
+54:26
+Well, how can we make progress with this half?
+54:39
+Yeah, so that's right, before you're going to do that?
+54:44
+The chain rule, okay, so, our key tool that we need to know how to use and
+54:49
+we'll just use everywhere is the chain rule, right?
+54:55
+So, neural net people talk all the time about backpropagation,
+55:00
+it turns out that backpropagation is nothing more than the chain rule
+55:07
+with some efficient storage of partial quantities so
+55:12
+that you don't keep on calculating the same quantity over and over again.
+55:16
+So, it's sort of like chain rule with memorization,
+55:20
+that is the backpropagation algorithm.
+55:22
+So, now, key tool is the chain rule so, what is the chain rule?
+55:30
+So, within saying, okay, well,
+55:34
+what overall are we going to have is some function where we're taking
+55:38
+f(g(u)) of something.
+55:45
+And so, we have this inside part z and so,
+55:49
+what we're going to be doing is that we're going to be taking the derivative
+55:54
+of the outside part then, with the value of the inside.
+56:01
+And then, we're gonna be taking the derivative of the inside part So for
+56:06
+this here, so the outside part, here's our F.
+56:11
+And then here's our inside part Z.
+56:14
+So the outside part is F, which is a log function.
+56:19
+And so the derivative of a log function is the one on X function.
+56:23
+So that we're then gonna be having
+56:29
+that this is 1 over the sum of w
+56:34
+equals 1 to V of the exp of uw^T vc.
+56:39
+And then we're going to be multiplying it by, what do we get over there.
+56:54
+So we get the partial derivative with respect to
+57:06
+With respect to vc,
+57:10
+of This inside part.
+57:17
+The sum of, and it's a little trickier.
+57:23
+We really need to be careful of indices so
+57:25
+we're gonna get in the bad mess if we have W here, and we reuse W here.
+57:32
+We really need to change it into something else.
+57:34
+So we're gonna have X equals 1 to V.
+57:37
+And then we've got the exp of UX,
+57:45
+transpose VC.
+57:49
+So that's made a little bit of progress.
+57:52
+We want to make a bit more progress here.
+57:56
+So what's the next thing we're gonna do.
+58:04
+Distribute the derivative.
+58:06
+This is just adding some stuff.
+58:09
+We can do the same trick of we can do each part of the derivative separately.
+58:15
+So X equals 1 to big V of the partial derivative
+58:20
+with respect to VC of the exp of ux^T vc.
+58:24
+Okay, now we wanna keep going What can we do next.
+58:33
+The chain rule again.
+58:36
+This is also the form of here's our F and here's our
+58:40
+inner values V which is in turn sort of a function.
+58:45
+Yeah, so we can apply the chain rule a second time and
+58:50
+so we need the derivative of X.
+58:55
+What's the derivative of X.
+58:57
+X, so this part here is gonna be staying.
+59:02
+The sum of X equals 1 to V of the partial derivative.
+59:06
+Hold on no.
+59:08
+Not that one, moving that inside.
+59:10
+So it's still exp at its value of UX T VC.
+59:18
+And then we're having the partial
+59:24
+derivative with respect to VC of UXT VC.
+59:30
+And then we've got a bit more progress to make.
+59:33
+So we now need to work out what this is.
+59:36
+So what's that.
+59:40
+Right, so that's the same as sort of back over here.
+59:43
+At this point this is just going to be, that' s coming out as UX.
+59:49
+And here we still have the sum
+59:54
+of X equals 1 to V of the X of UX T VC.
+60:01
+So at this point we kind of wanna put this together with that.
+60:08
+Cuz we're still, I stopped writing that.
+60:11
+But we have this one over
+60:15
+the sum of W equals 1 to V of
+60:20
+the exp of UW, transpose VC.
+60:26
+Can we put those things together in a way that makes it prettier.
+60:50
+So I can move this inside this sum.
+60:54
+Cuz this is just the sort of number that's a multiplier that's distributed through.
+61:00
+And in particular when I do that, I can start to sort of
+61:05
+notice this interesting thing that I'm going to be
+61:10
+reconstructing a form that looks very like this form.
+61:15
+Sorry, leaving this part up aside.
+61:17
+It looks very like the Softmax form that I started off with.
+61:23
+And so I can then be saying that
+61:28
+this is the sum from X equals 1
+61:33
+to V of the exp of UX transpose VC
+61:39
+over the sum of W equals 1 to V.
+61:44
+So this is where it's important that I have X and W with different variables
+61:50
+of the X of U W transpose VC times U of X.
+61:59
+And so well, at that point, that's kind of interesting cuz,
+62:03
+this is kind of exactly the form that I started of with,
+62:09
+for my softmax probability distribution.
+62:13
+So what we're doing is we.
+62:19
+What we're doing is that that part is then
+62:26
+being the sum over X equals one to
+62:32
+V of the probability of [INAUDIBLE].
+62:38
+It was wait.
+62:39
+The probability of O given
+62:44
+the probability of X given C times UX.
+62:50
+So that's what we're getting from the denominator.
+62:54
+And then we still had the numerator.
+62:56
+The numerator was U zero.
+63:00
+What we have here is our final form is U0 minus that.
+63:07
+And if you look at this a bit it's sort of a form that you
+63:12
+always get from these softmax style formulations.
+63:17
+So this is what we observed.
+63:19
+There was the actual output context word appeared.
+63:25
+And this has the form of an expectation.
+63:28
+So what we're doing is right here.
+63:31
+We're calculating expectation though we're working out
+63:35
+the probability of every possible word appearing in the context, and
+63:39
+based on that probability we get taking that much of that UX.
+63:44
+So this is in some, this is the expectation vector.
+63:49
+It's the average over all the possible context vectors,
+63:52
+weighted by their likelihood of occurrence.
+63:56
+That's the form of our derivative.
+63:59
+What we're going to want to be doing is changing the parameters in our model.
+64:05
+In such a way that these become equal cause that's when we're
+64:10
+then finding the maximum and minimum for us to minimize.
+64:15
+[INAUDIBLE] Okay and so that gives us the derivatives in that model.
+64:21
+Does that make sense?
+64:25
+Yeah, that's gonna be question.
+64:27
+Anyway, so
+64:28
+precisely doing things like this is what will expect you to do for assignment one.
+64:34
+And I'll take the question, but let me just mention one point.
+64:37
+So in this case, I've only done this for the VC,
+64:41
+the center vectors.
+64:46
+We do this to every parameter of the model.
+64:49
+In this model, our only other parameters are the context vectors.
+64:53
+We're also gonna do it for those.
+64:55
+It's very similar cuz if you look at the form of the equation,
+64:59
+there's a certain symmetry between the two.
+65:01
+But we're gonna do it for that as well but I'm not gonna do it here.
+65:05
+That's left to you guys.
+65:07
+Question.
+65:09
+Yeah. >> [INAUDIBLE]
+65:24
+>> From here to here.
+65:25
+Okay.
+65:26
+So.
+65:28
+So, right, so this is a sum right?
+65:32
+And this is just the number at the end of the day.
+65:36
+So I can divide every term in this sum through by that number.
+65:41
+So that's what I'm doing.
+65:43
+So now I've got my sum with every term in that divided through by this number.
+65:48
+And then I say, wait a minute, the form of this piece here
+65:54
+is precisely my softmax probably distribution,
+65:58
+where this is the probability of x given C.
+66:02
+And so then I'm just rewriting it as probability of x given c.
+66:06
+Where that is meaning, I kind of did double duty here.
+66:10
+But that's sort of meaning that you're using this probability of x given c
+66:14
+using this probability form.
+66:16
+>> [INAUDIBLE]
+66:26
+>> Yeah,
+66:27
+the probability that x occurs as a context word of center word c.
+66:32
+>> [INAUDIBLE] >> Well,
+66:36
+we've just assumed some fixed window size M.
+66:39
+So maybe our window size is five and so we're considering sort of ten words,
+66:44
+five to the left, five to the right.
+66:48
+So that's a hypergrameter, and that stuff's nowhere.
+66:52
+We're not dealing with that, we just assume that God's fixed that for us.
+66:59
+The problem, so it's done at each position.
+67:02
+So for any position, and all of them are treated equivalently,
+67:09
+for any position, the probability that word
+67:14
+x is the word that occurs within this window at
+67:19
+any position given the center word was of C.
+67:26
+Yeah?
+67:27
+>> [INAUDIBLE]
+67:40
+>> All right, so the question is,
+67:43
+why do we choose the dot product as our basis for
+67:46
+coming up with this probability measure?
+67:50
+And you know I think the answer is there's no necessary reason,
+67:58
+that there are clearly other things
+68:02
+that you could have done and might do.
+68:07
+On the other hand, I kind of think in terms of
+68:13
+Vector Algebra it's sort of the most obvious and simple thing to do.
+68:20
+Because it's sort of a measure of the relatedness and similarity.
+68:28
+I mean I sort of said loosely it was a measure of similarity between vectors.
+68:32
+Someone could have called me on that because If you say, well wait a minute.
+68:37
+If you don't control for the scale of the vectors,
+68:41
+you can make that number as big as you want, and that is true.
+68:44
+So really the common measure of similarity between vectors is the cosine measure.
+68:50
+Where what you do is in the numerator.
+68:53
+You take a dot product and then you divide through by the length of the vectors.
+68:58
+So you've got scale and variance and
+68:59
+you can't just cheat by making the vectors bigger.
+69:02
+And so, that's a bigger, better measure of similarity.
+69:08
+But to do that you have to do a whole lot more math and
+69:12
+it's not actually necessary here because since you're sort of
+69:15
+predicting every word against every other word.
+69:18
+If you sort of made one vector very big to try and
+69:22
+make some probability of word k being large.
+69:26
+Well the consequence would be it would make the probability of every other word
+69:30
+be large as well.
+69:31
+So you kind of can't cheat by lengthening the vectors.
+69:34
+And therefore you can get away with just using the dot product as a kind of
+69:38
+a similarity measure.
+69:39
+Does that sort of satisfy?
+69:56
+So yes.
+69:58
+I mean, it's not necessary, right?
+70:01
+And if we were going to argue, you could sort of argue with me and
+70:04
+say no look, this is crazy, because by construction,
+70:08
+this means the most likely word to appear in the context of a word is itself.
+70:15
+That doesn't seem like a good result,
+70:17
+[LAUGH] because presumably different words occur.
+70:21
+And you could then go from there and say well no let's do something more complex.
+70:28
+Why don't we put a matrix to mediate between the two vectors to express what
+70:32
+appears in the context of each other, it turns out you don't need to.
+70:39
+Now one thing of course is since we have different representations for
+70:44
+the context and center word vectors, it's not necessarily true that the same word
+70:49
+would be highest because there're two different representations.
+70:53
+But in practice they often have a lot of similarity between themselves not
+70:57
+really that that's the reason.
+71:00
+It's more that it's sort of works out pretty well.
+71:04
+Because although it is true that you're not likely to
+71:07
+get exactly the same word in the context,
+71:10
+you're actually very likely to get words that are pretty similar in meaning.
+71:13
+And are strongly associated and when those words appear as the center word,
+71:18
+you're likely to get your first word as a context word.
+71:22
+And so at a sort of a macro level, you are actually
+71:25
+getting this effect that the same words are appearing on both sides.
+71:30
+More questions, yeah, there are two of them.
+71:32
+I don't know.
+71:32
+Do I do the behind person first and then the in front person?
+71:34
+[LAUGH]
+71:52
+So I haven't yet done gradient descent.
+71:54
+And maybe I should do that in a minute and I will see try then.
+71:58
+Okay? >> [INAUDIBLE]
+72:00
+>> Yeah
+72:11
+>> So that truth is well,
+72:12
+we've just clicked to the huge amount text.
+72:15
+So if our word at any position, we know what are the five words to the left and
+72:20
+the five words to the right and that's the truth.
+72:23
+And so we're actually giving some probability estimate to every
+72:26
+word appearing in that context and
+72:28
+we can say, well, actually the word that appeared there was household.
+72:32
+What probability did you give to that and there's some answer.
+72:36
+And so, that's our truth.
+72:38
+Time is running out, so maybe I'd sort of just better say a little bit more
+72:43
+before we finish which is sort of starting to this optimization.
+72:48
+So this is giving us our derivatives, we then want to use our
+72:53
+derivatives to be able to work out our word vectors.
+72:57
+And I mean, I'm gonna spend a super short amount time on this,
+73:03
+the hope is through 221, 229 or similar class.
+73:08
+You've seen a little bit of optimization and you've seen some gradient descent.
+73:15
+And so, this is just a very quick review.
+73:18
+So the idea is once we have gradient set at point x that if what we
+73:22
+do is we subtract off a little fraction of the gradient,
+73:27
+that will move us downhill towards the minimum.
+73:31
+And so if we then calculate the gradient there again and subtract off
+73:36
+a little fraction of it, we'll sort of start walking down towards the minimum.
+73:42
+And so, that's the algorithm of gradient descent.
+73:46
+So once we have an objective function and we have the derivatives of the objective
+73:51
+function with respect to all of the parameters, our gradient descent
+73:56
+algorithm would be to say, you've got some current parameter values.
+74:02
+We've worked out the gradient at that position.
+74:05
+We subtract off a little fraction of that and
+74:09
+that will give us new parameter values which we will expect
+74:14
+to be give us a lower objective value, and we'll walk towards the minimum.
+74:21
+And in general, that is true and that will work.
+74:28
+So then, to write that up as Python code,
+74:31
+it's really sort of super simple that you just go in this while true loop.
+74:36
+You have to have some stopping condition actually where you evaluating the gradient
+74:41
+of given your objective function, your corpus and your current parameters, so
+74:45
+you have the theta grad and then you're sort of subtracting a little fraction of
+74:50
+the theta grad after the current parameters and then you just repeat over.
+74:55
+And so the picture is, so the red lines that are sort of the contour lines of
+75:00
+the value of the objective function.
+75:03
+And so what you do is when you calculate the gradient, it's giving you
+75:07
+the direction of the steepest descent and you walk a little bit each time in
+75:12
+that direction and you will hopefully walk smoothly towards the minimum.
+75:18
+Now the reason that might not work is if you actually take a first step and
+75:22
+you go from here to over there, you've greatly overshot the minimum.
+75:26
+So, it's important that alpha be small enough that you're still walking calmly
+75:31
+down towards the minimum and then all work.
+75:35
+And so, gradient descent is the most basic tool to minimize functions.
+75:40
+So it's the conceptually first thing to know, but then the sort of last minute.
+75:46
+What I wanted to explain is actually,
+75:49
+we might have 40 billion tokens in our corpus to go through.
+75:54
+And if you have to work out the gradient of your objective function
+75:59
+relative to a 40 billion word corpus, that's gonna take forever,
+76:04
+so you'll wait for an hour before you make your first gradient update.
+76:09
+And so, you're not gonna be able train your model in a realistic amount of time.
+76:13
+So for basically, all neural nets doing naive batch
+76:17
+gradient descent hopeless algorithm, you can't use that.
+76:22
+It's not practical to use.
+76:24
+So instead, what we do Is used stochastic gradient descent.
+76:28
+So, the stochastic gradient descent or SGD is our key tool.
+76:34
+And so what that's meaning is, so we just take one position in the text.
+76:40
+So we have one center word and the words around it and we say, well,
+76:45
+let's adjust it at that one position work out the gradient with
+76:49
+respect to all of our parameters.
+76:52
+And using that estimate of the gradient in that position,
+76:57
+we'll work a little bit in that direction.
+77:00
+If you think about it for doing something like word vector learning,
+77:05
+this estimate of the gradient is incredibly, incredibly noisy, because
+77:09
+we've done it at one position which just happens to have a few words around it.
+77:14
+So the vast majority of the parameters of our model, we didn't see at all.
+77:18
+So, it's a kind of incredibly noisy estimate of the gradient.
+77:22
+walking a little bit in that direction isn't even guaranteed to have make you
+77:26
+walk downhill, because it's such a noisy estimate.
+77:29
+But in practice, this works like a gem.
+77:33
+And in fact, it works better.
+77:36
+Again, it's a win, win.
+77:37
+It's not only that doing things this way is orders of magnitude
+77:42
+faster than batch gradient descent,
+77:44
+because you can do an update after you look at every center word position.
+77:50
+It turns out that neural network algorithms love noise.
+77:55
+So the fact that this gradient descent, the estimate of the gradient is noisy,
+78:00
+actually helps SGD to work better as an optimization algorithm and
+78:05
+neural network learning.
+78:07
+And so, this is what we're always gonna use in practice.
+78:09
+I have to stop there for today even though the fire alarm didn't go off.
+78:14
+Thanks a lot.

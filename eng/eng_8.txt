@@ -1,0 +1,2320 @@
+00:00
+[MUSIC]
+00:04
+Stanford University.
+00:07
+>> All right, hello everybody.
+00:10
+Welcome to Lecture seven or maybe it's eight.
+00:14
+Definitely today is the beginning of
+00:18
+where we talk about models that really matter in practice.
+00:23
+We'll talk today about the simplest recurrent neural network model
+00:27
+one can think of.
+00:29
+But in general,
+00:29
+this model family is what most people now use in real production settings.
+00:34
+So it's really exciting.
+00:36
+We only have a little bit of math in between and
+00:39
+a lot of it is quite applied and should be quite fun.
+00:43
+Just one organizational item before we get started.
+00:47
+I'll have an extra office hour today right after class.
+00:50
+I'll be again on Queuestatus 68 or so.
+00:53
+Last week we had to end at 8:30.
+00:56
+And there's still a lot of people who had a question, so
+00:59
+I'll be here after class for probably another two hours or so.
+01:03
+Try to get through everybody's questions.
+01:05
+Are there any questions around projects?
+01:10
+>> [LAUGH] >> And organizational stuff?
+01:18
+All right, then let's take a look at the overview for today.
+01:21
+So to really appreciate the power of recurrent neural networks it makes sense
+01:26
+to get a little bit of background on traditional language models.
+01:29
+Which will have huge RAM requirements and won't be quite feasible in
+01:33
+their best kinds of settings where they obtain the highest accuracies.
+01:38
+And then we'll motivate recurrent neural networks with language modeling.
+01:41
+It's a very important kind of fundamental task
+01:44
+in NLP that tries to predict the next word.
+01:46
+Something that sounds quite simple but is really powerful.
+01:49
+And then we'll dive a little bit into the problems that you can actually quite
+01:53
+easily understand once you have figured out
+01:58
+how to take gradients and you actually understand what backpropagation does.
+02:03
+And then we can go and see how to extend these models and
+02:07
+apply them to real sequence tasks that people really run in practice.
+02:11
+All right, so let's dive right in.
+02:14
+Language models.
+02:15
+So basically,
+02:16
+we want to just compute the probability of an entire sequence of words.
+02:20
+And you might say, well why is that useful?
+02:22
+Why should we be able to compute how likely a sequence is?
+02:25
+And actually comes up for a lot of different kinds of problems.
+02:28
+So one, for instance, in machine translation,
+02:31
+you might have a bunch of potential translations that a system gives you.
+02:36
+And then you might wanna understand which order of words is the best.
+02:40
+So "the cat is small" should get a higher probability than "small the is cat".
+02:46
+But based on another language that you translate from,
+02:49
+it might not be as obvious.
+02:52
+And the other language might have a reversed word order and whatnot.
+02:56
+Another one is when you do speech recognition, for instance.
+02:58
+It also comes up in the machine translation a little bit,
+03:00
+where you might have,
+03:02
+well this particular example is clearly more a machine translation example.
+03:05
+But comes up also in speech recognition where you might wanna
+03:10
+understand which word might be the better choice given the rest of the sequence.
+03:14
+So "walking home after school" sounds a lot more natural than "walking
+03:18
+house after school".
+03:20
+But home and house have the same translation or
+03:25
+same word in German which is haus, H A U S.
+03:28
+And you want to know which one is the better one for that translation.
+03:32
+So comes up in a lot of different kinds of areas.
+03:36
+Now basically it's hard to compute the perfect probabilities for
+03:42
+all potential sequences 'cause there are a lot of them.
+03:45
+And so what we usually end up doing is we basically condition on just a window,
+03:50
+we try to predict the next word based on the just the previous n words
+03:56
+before the one that we're trying to predict.
+03:58
+So this is, of course, an incorrect assumption.
+04:01
+The next word that I will utter will depend on many words in the past.
+04:06
+But it's something that had to be done
+04:10
+to use traditional count based machine learning models.
+04:13
+So basically we'll approximate this overall sequence probability here
+04:19
+with just a simpler version.
+04:22
+In the perfect sense this would basically be the product here of each word,
+04:28
+given all preceding words from the first one all
+04:31
+the way to the one just before the i_th one.
+04:34
+But in practice, this probability with traditional machine learning models
+04:39
+we couldn't really compute so
+04:40
+we actually approximate that with some number of n words just before each word.
+04:46
+So this is a simple Markov assumption just assuming the next action or
+04:50
+next word that is uttered just depends on n previous words.
+04:55
+And now if we wanted to use traditional methods that are just basically
+05:00
+based on the counts of words and not using our fancy word vectors and so on.
+05:04
+Then the way we would compute and estimate these probabilities is essentially just by
+05:09
+counting how often does, if you want to get the probability for the second word,
+05:13
+given the first word.
+05:15
+We would just basically count up how often do these two words co-occur in this order,
+05:21
+divided by how often the first word appears in the whole corpus.
+05:25
+Let's say we have a very large corpus and we just collect all these counts.
+05:30
+And now if we wanted to condition not just on the first and the previous word but
+05:35
+on the two previous words, then we'd have to compute all these counts.
+05:39
+And now you can kind of sense that well,
+05:42
+if we want to ideally condition on as many n-grams as possible before but
+05:47
+we have a large vocabulary of say 100,000 words, then we'll have a lot of counts.
+05:54
+Essentially 100,000 cubed,
+05:56
+many numbers we would have to store to estimate all these probabilities.
+06:03
+Does that make sense?
+06:04
+Are there any questions for these traditional methods?
+06:13
+All right, now, the problem with that is that the performance
+06:17
+usually improves as we have more and more of these counts.
+06:22
+But, also, you now increase your RAM requirements.
+06:26
+And so, one of the best models of this traditional
+06:31
+type actually required 140 gigs of RAM for just computing all these counts
+06:38
+when they wanted to compute them for 126 billion token corpus.
+06:44
+So it's very, very inefficient in terms of RAM.
+06:49
+And you would never be able to put a model that basically
+06:54
+stores all these different n-gram counts.
+06:57
+You could never store it in a phone or any small machine.
+07:02
+And now, of course, once computer scientists struggle with a problem like
+07:06
+that, they'll find ways to deal with it, and so,
+07:09
+there are a lot of different ways you can back off.
+07:11
+You say, well, if I don't find the 4-gram, or I didn't store it,
+07:16
+because it was not frequent enough, then maybe I'll try the 3-gram.
+07:20
+And if I can't find that or I don't have many counts for that, then I can back off
+07:24
+and estimate my probabilities with fewer and fewer words in the context size.
+07:29
+But in general you want to have at least tri or
+07:32
+4-grams that you store and the RAM requirements for those are very large.
+07:38
+So that is actually something that you'll observe in a lot of
+07:41
+comparisons between deep learning models and
+07:43
+traditional NLP models that are based on just counting words for specific classes.
+07:49
+The more powerful your models are,
+07:51
+sometimes the RAM requirements can get very large very quickly, and
+07:55
+there are a lot of different ways people tried to combat these issues.
+07:59
+Now our way will be to use recurrent neural networks.
+08:04
+Where basically, they're similar to the normal neural networks that we've seen
+08:08
+already, but they will actually tie the weights between different time steps.
+08:13
+And as you go over it, you keep using,
+08:15
+re-using essentially the same linear plus non-linearity layer.
+08:22
+And that will at least in theory, allow us to actually condition
+08:26
+what we're trying to predict on all the previous words.
+08:30
+And now here the RAM requirements will only scale with the number of words not
+08:34
+with the length of the sequence that we might want to condition on.
+08:39
+So now how's this really defined?
+08:42
+Again, they're you'll see different kinds of visualizations and
+08:44
+I'm introducing you to a couple.
+08:46
+I like sort of this unfolded one where we have here a abstract hidden time step t
+08:52
+and we basically, it's conditioned on H_t-1, and then here you compute H_t+1.
+08:59
+But in general, the equations here are quite intuitive.
+09:03
+We assume we have a list of word vectors.
+09:05
+For now, let's assume the word vectors are fixed.
+09:09
+Later on we can actually loosen that assumption and get rid of it.
+09:15
+And now, at each time step to compute the hidden state.
+09:18
+At that time step will essentially just have these two matrices,
+09:24
+these two linear layers, matrix vector products and we sum them up.
+09:28
+And that's essentially similar to saying we concatenate h_t-1 and
+09:33
+the word vector at time step t, and we also concatenate these two matrices.
+09:39
+And then we apply an element-wise non-linearity.
+09:41
+So this is essentially just a standard single layer neural network.
+09:48
+And then on top of that we can use this as a feature vector, or
+09:53
+as our input to our standard softmax classification layer.
+09:57
+To get an output probability for instance over all the words.
+10:03
+So now the way we would write this out in this formulation is
+10:07
+basically the probability that the next word is of this specific,
+10:12
+at this specific index j conditioned on all the previous words
+10:16
+is essentially the j_th element of this large output vector.
+10:21
+Yes?
+10:25
+What is s?
+10:25
+So here you can have different ways to define your matrices.
+10:32
+Some people just use u, v, and w or something like that.
+10:35
+But here we basically use the superscript just identify which matrix we have.
+10:39
+And these are all different matrices, so W_(hh), the reason we call it hh is it's
+10:44
+the W that computes the hidden layer h given the input h t- 1.
+10:51
+And then you have an h_x here, which essentially maps x
+10:56
+into the same vector space that we have.
+11:01
+Our hidden states in and then s is just our softmax w.
+11:05
+The weights of the softmax classifier.
+11:09
+And so let's look at the dimensions here.
+11:12
+It's again very important.
+11:13
+You have another question?
+11:18
+So why do we concatenate and not add is the question.
+11:22
+So they're the same.
+11:24
+So when you write W_(h) using
+11:29
+same notation plus W_(hx) times x
+11:35
+then this is actually the same thing.
+11:42
+And so this will now basically be a vector, and we are feed in linearity but
+11:48
+it doesn't really change things, so let's just look at this inside part here.
+11:53
+Now if we concatenated h and x together we're now have,
+11:58
+and let's say, x here has a certain dimensionality which we'll call d.
+12:06
+So x is in R_d and our h will define to be in for
+12:11
+having the dimensionality R_(Dh).
+12:18
+Now, what would the dimensionality be if we concatenated these two matrices?
+12:24
+So we have here the output has to be, again a Dh matrix.
+12:30
+And now this vector here is a,
+12:32
+what dimensionality does this factor have when we concatenate the two?
+12:41
+That's right.
+12:42
+So this is a d plus Dh times one and
+12:48
+here we have Dh times our matrix.
+12:52
+It has to be the same dimensionality, so
+12:56
+d plus Dh and that's why we could essentially
+13:00
+concatenate here W_h in this way, and W_hx here.
+13:06
+And now we could basically multiply these.
+13:08
+And if you, again if this is confusing, you can write out all the indices.
+13:12
+And you realize that these two are exactly the same.
+13:18
+Does that make sense?
+13:23
+Right, so as you sum up all the values here, It'll essentially just get
+13:28
+summed up also, it doesn't matter if you do it in one go or not.
+13:32
+Just a single layer and that worked where you compact in two inputs but
+13:35
+it's in many cases for recurrent neutral networks is written this way.
+13:51
+All right.
+13:52
+So now, here are two other ways you'll often see these visualized.
+13:56
+This is kind of a not unrolled version of a hidden, of a recurrent neural network.
+14:04
+And sometimes you'll also see sort of this self loop here.
+14:08
+I actually find these kinds of unrolled versions the most intuitive.
+14:18
+All right.
+14:18
+Now when you start and you.
+14:21
+Yup?
+14:25
+Good question.
+14:26
+So what is x[t]?
+14:29
+It's essentially the word vector for
+14:33
+the word that appears at the t_th time step.
+14:40
+As opposed to x_t and intuitively here x_t you could define it in any way.
+14:47
+It's really just like as you go through the lectures you'll actually observe
+14:51
+different versions but intuitively here x_t is just a vector at xt but
+14:57
+here xt is already an input, and what it means in practice is you
+15:02
+actually have to now go at that t time step, find the word identity and pull
+15:07
+that word vector from your glove or word to vec vectors, and get that in there.
+15:13
+So x_t we used in previous lectures as the t_th element for
+15:19
+instance in the whole embedding matrix, all our word vectors.
+15:24
+So this is just to make it very explicit that we look up the identity of the word
+15:27
+at the tth time step and then get the word vector for that identity,
+15:30
+like the vector in all our word vectors.
+15:38
+Yep.
+15:49
+So I'm showing here a single layer neural network at each time step, and
+15:53
+then the question is whether that is standard or just for simplicity?
+15:57
+It is actually the simplest and still somewhat useful.
+16:02
+Variant of a recurrent neural network, though we'll see a lot of extensions even
+16:06
+in this class, and then in the lecture next week we'll go to even better versions
+16:11
+of these kinds of recurrent neural networks.
+16:12
+But this is actually a somewhat practical neural network,
+16:15
+though we can improve it in many ways.
+16:21
+Now, you might be curious when you just start your sequence, and
+16:25
+this is age 0 here and there isn't any previous words.
+16:29
+What you would do and the simplest thing is you just initialize the vector for
+16:33
+the first hidden layer at the first or the 0 time step as just a vector of all 0s.
+16:42
+Right and this is the X[t] definition you had just describe through the column
+16:46
+vector of L which is our embedding matrix at index [t] which the time step t.
+16:51
+All right so it's very important to keep track properly of all our dimensionality.
+16:57
+Here, W(S) to Softmax actually goes over the size of our vocabulary,
+17:03
+V times the hidden state.
+17:06
+So the output here is the same as the vector of the length
+17:10
+of the number of words that we might wanna to be able to predict.
+17:19
+All right, any questions for
+17:20
+the feed forward definition of a recurrent neural network?
+17:28
+All right, so how do we train this?
+17:31
+Well fortunately,
+17:31
+we can use all the same machinery we've already introduced and carefully derived.
+17:37
+So basically here we have probability distribution over the vocabulary and
+17:40
+we're going to use the same exact cross entropy loss function that we had before,
+17:46
+but now the classes are essentially just the next word.
+17:50
+So this actually sometimes creates a little confusion on
+17:53
+the nomenclature that we have 'cause now technically this is
+17:56
+unsupervised in the sense that you just give it raw text.
+18:00
+But this is the same kind of objective function we use when we have supervised
+18:05
+training where we have a specific class that we're trying to predict.
+18:09
+So the class at each time step is just a word index of the next word.
+18:17
+And you're already familiar with that,
+18:19
+here we're just summing over the entire vocabulary for each of the elements of Y.
+18:26
+And now, in theory, you could just.
+18:29
+To evaluate how well you can predict the next word over many different words in
+18:33
+longer sequences, you could in theory just take this negative of the average log
+18:38
+probability is over this entire dataset.
+18:42
+But for maybe historical reasons, and also reasons like information theory and so
+18:47
+on that we don't need to get into, what's more common is actually to use perplexity.
+18:52
+So that's just 2 to the power of this value and,
+18:56
+hence, we want to basically be less perplexed.
+18:59
+So the lower our perplexity is, the less the model is perplexed or
+19:03
+confused about what the next word is.
+19:06
+And we essentially, ideally we'll assign a higher probability to the word that
+19:10
+actually appears in the longer sequence at each time step.
+19:20
+Yes?
+19:24
+Any reason why 2 to the J?
+19:28
+Yes, but it's sort of a rat hole we can go down, maybe after class.
+19:32
+Information theory bits and so on, it's not necessary.
+19:36
+All right.
+19:37
+>> [LAUGH] >> All right, so
+19:41
+now you would think, well this is pretty simple, we have a single set of W
+19:46
+matrices, and training should be relatively straightforward.
+19:53
+Sadly, and this is really the main drawback of this and a reason of why we
+19:56
+introduce all these other more powerful recurrent neural network models,
+20:00
+training these kinds of models is actually incredibly hard.
+20:06
+And we can now analyze,
+20:07
+using the tools of back propagation and chain rule and all of that.
+20:12
+Now we can analyze and understand why that is.
+20:16
+So basically we're multiplying here, the same matrix at each time step, right?
+20:20
+So you can kind of think of this matrix multiplication
+20:24
+as amplifying certain patterns over and over again at every single time step.
+20:29
+And so, in a perfect world,
+20:32
+we would want the inputs from many time steps ago to actually be able to still
+20:36
+modify what we're trying to predict at a later, much later, time step.
+20:41
+And so, one thing I would like to encourage you to do is
+20:44
+to try to take the derivatives with respect to these Ws,
+20:49
+if you just had a two or three word sequence.
+20:51
+It's a great exercise, great preparation for the midterm.
+20:55
+And it'll give you some interesting insights.
+20:58
+Now, as we multiply the same matrix at each time step during foreprop,
+21:04
+we have to do the same thing during back propagation We have, remember,
+21:09
+our deltas, our air signals and sort of the global elements of the gradients.
+21:14
+They will essentially at each time step flow through this network backwards.
+21:18
+So when we take our cross-entropy loss here, we take derivatives,
+21:22
+we back propagate we compute our deltas.
+21:24
+Now the first time step here that just happened close to that output would make
+21:29
+a very good update and will probably also make a good update
+21:32
+to the word vector here if we wanted to update those.
+21:36
+We'll talk about that later.
+21:36
+But then as you go backwards in time what actually will happen
+21:41
+is your signal might get either too weak, or too strong.
+21:47
+And that is essentially called the vanishing gradient problem.
+21:52
+As you go backwards through time, and you try to send the air signal at time step t,
+21:56
+many time steps into the past, you'll have the vanishing gradient problem.
+22:01
+So, what does that mean and how does it happen?
+22:04
+Let's define here a simpler, but similar recurrent neural network that
+22:09
+will allow us to give you an intuition and simplify the math downstream.
+22:13
+So here we essentially just say, all right, instead of our original definition
+22:18
+where we had some kind of f some kind of non-linearity,
+22:22
+here we use the sigma function, you could use other one.
+22:24
+First introduce the rectified linear units and so on instead of applying it here,
+22:28
+we'll apply it in the definition just right in here.
+22:35
+So it's the same thing.
+22:37
+And then let's assume, for now, we don't have the softmax.
+22:40
+We just have here, a standard, a bunch of un-normalized scores.
+22:44
+Which really doesn't matter for the math, but it'll simplify the math.
+22:47
+Now if you want to compute the total error with respect to an entire sequence,
+22:53
+with respect to your W then you basically have to sum
+22:57
+up all the errors at all the time steps.
+23:00
+At each time step,
+23:01
+we have an error of how incorrect we were about predicting the next word.
+23:07
+And that's basically the sum here and
+23:10
+now we're going to look at the element at the t timestamp of that sum.
+23:15
+So let's just look at a single time step, a single error at a single time step.
+23:20
+And now even computing that will require us to have a very large
+23:25
+chain rule application, because essentially this error at
+23:30
+time step t will depend on all the previous time steps too.
+23:34
+So you have here the delta or dE_t over dy_t,
+23:41
+so the t, the hidden state.
+23:46
+Sorry, the soft max output or here these unnormalized square output Yt.
+23:51
+But then you have to multiply that with the partial derivative of yt with
+23:55
+respect to the hidden state.
+23:57
+So that's just That's just this guy right here, or this guy for ht.
+24:01
+But now, that one depends on, of course, the previous one, right?
+24:07
+This one here, but it also depends on that one, and that one, and
+24:10
+the one before that, and so on.
+24:11
+And so that's why you have to sum over all the time step from the first one,
+24:15
+all the way to the current one, where you're trying to predict the next word.
+24:20
+And now, each of these was also computed with a W, so
+24:24
+you have to multiply partial of that, as well.
+24:30
+Now, let's dig into this a little bit more.
+24:33
+And you don't have to worry too much if this is a little fast.
+24:37
+You won't have to really go through all of this, but
+24:39
+it's very similar to a lot of the math that we've done before.
+24:43
+So you can kind of feel comfortable for the most part going over it at this speed.
+24:48
+So now, remember here, our definition of h_t.
+24:52
+We basically have all these partials of all the h_t's with respect to
+24:56
+the previous time steps, the h's of the previous time steps.
+25:01
+Now, to compute each of these, we'll have to use the chain rule again.
+25:06
+And now, what this means is essentially
+25:09
+a partial derivative of a vector with respect to another vector.
+25:12
+Something that if we're clever with our backprop definitions before,
+25:16
+we never actually have to do in practice, right?
+25:18
+'cause this is a very large matrix, and
+25:20
+we're combining the computation with the flow graph, and our delta messages before
+25:25
+such that we don't actually have to compute explicitly, these Jacobians.
+25:30
+But for the analysis of the math here,
+25:33
+we'll basically look at all the derivatives.
+25:36
+So just because we haven't defined it, what's the partial for each of
+25:41
+these is essentially called the Jacobian, where you have all the partial derivatives
+25:46
+with respect to each element of the top here ht with respect to the bottom.
+25:54
+And so in general, if you have a vector valued function output and
+25:58
+a vector valued input, and you take the partials here, you get this large
+26:03
+matrix of all the partial derivatives with respect to all outputs.
+26:16
+Any questions?
+26:20
+All right, so basically here, a lot of chain rule.
+26:23
+And now, we got this beast which is essentially a matrix.
+26:27
+And we multiply, for each partial here,
+26:30
+we actually have to multiply all of these, right?
+26:32
+So this is a large product of a lot of these Jacobians.
+26:37
+Now, we can try to simplify this, and just say, all right.
+26:41
+Let's say, there is an upper bound.
+26:43
+And we also, the derivative of h with respect to h_j.
+26:47
+Actually, with this simple definition of each h actually can be computed this way.
+26:54
+And now, we can essentially upper bound the norm
+27:00
+of this matrix with the multiplication of basically
+27:05
+these equation right here, where we have W_t.
+27:10
+And if you remember our backprop equations,
+27:14
+you'll see some common terms here, but
+27:17
+we'll actually write this out as not just an element wise product.
+27:22
+But we can write the same thing as a diagonal where we have instead of
+27:26
+the element wise.
+27:28
+Elements we basically just put them into the diagonal of a larger matrix, and
+27:31
+with zero path, everything that is off diagonal.
+27:34
+Now, we multiply these two norms here.
+27:36
+And now, we just define beta, W and beta h, as essentially the upper bounds.
+27:41
+Some number, single scalar for
+27:44
+each as like how large they could maximally be, right?
+27:48
+We have W, we could compute easily any kind of norm for our W, right?
+27:53
+It's just a matrix, computed matrix norm, we get a single number out.
+27:57
+And now, basically, when we write this all, we put all this together,
+28:02
+then we see that an upper bound for this Jacobians is essentially for
+28:06
+each one of these elements as this product.
+28:08
+And if we define each of the elements here, in terms of their upper bounds beta,
+28:14
+then we basically have this product beta here taken to the t- k power.
+28:19
+And so as the sequence gets longer and longer, and t gets larger and
+28:24
+larger, it really depends on the value of beta to have this either blow up or
+28:30
+get very, very small, right?
+28:32
+If now the norms of this matrix, for instance,
+28:35
+that norm, and then you have control over that norm, right?
+28:40
+You initialize your wait matrix W with
+28:42
+some small random values initially before you start training.
+28:48
+If you initialize this to a matrix that has a norm that is larger than one,
+28:52
+then at each back propagation step and the longer the time sequence goes.
+28:56
+You basically will get a gradient that is going to explode,
+29:00
+cuz you take some value that's larger than one to a large power here.
+29:05
+Say, you have 100 or something, and your norm is just two,
+29:09
+then you have two to the 100th as an upper bound for that gradient and vice-versa.
+29:14
+If you initialize your matrix W in the beginning to a bunch of small
+29:19
+random values such that the norm of your W is actually smaller than one,
+29:24
+then the final gradient that will be sent from ht to hk could become a very,
+29:30
+very small number, right, half to the power of 100th.
+29:34
+Basically, none of the errors will arrive.
+29:37
+None of the error signal, we got small and smaller as you go further and
+29:41
+further backwards in time.
+29:42
+Yeah.
+29:56
+So if the gradient here is exploding, does that mean a word that is further away has
+30:00
+a bigger impact on a word that's closer?
+30:03
+And the answer is when it's exploding like that,
+30:06
+you'll get to not a number in no time.
+30:08
+And that doesn't even become a practical issue because the numbers will
+30:13
+literally become not a number, cuz it's too large a value to compute.
+30:18
+And we'll have to think of ways to come back.
+30:21
+It turns out the exploding gradient problem has some really great hacks that
+30:25
+make them easier to deal with than the vanishing gradient problem.
+30:29
+And we'll get to those in a second.
+30:37
+All right, so now, you might say this could be a problem.
+30:41
+Now, why is the vanishing gradient problem, an actual common practice?
+30:46
+And again, it basically prevents us from allowing a word that
+30:50
+appears very much in the past to have any influence on what
+30:54
+we're trying to break in terms of the next word.
+31:00
+And so here a couple of examples from just language modeling where that is a real
+31:04
+problem.
+31:05
+So let's say, for instance, you have Jane walked into the room.
+31:08
+John walked in too.
+31:09
+It was late in the day.
+31:10
+Jane said hi to.
+31:13
+Now, you can put an almost probability mass of one,
+31:18
+that the next word in this blank is John, right?
+31:23
+But if now, each of these words have the word vector,
+31:25
+you type it in to the hidden state, you compute this.
+31:28
+And now, you want the model to pick up the pattern that if somebody met somebody
+31:32
+else, and your all this complex stuff.
+31:34
+And then they said hi too, and the next thing is the name.
+31:38
+You wanna put a very high probability on it, but you can't get your model to
+31:42
+actually send that error signal way back over here, to now modify the hidden
+31:47
+state in a way that would allow you to give John a high probability.
+31:51
+And really, this is a large problem in any kind of time sequence that you have.
+31:56
+And many people might intuitively say well,
+31:59
+language is mostly a Sequence problem, right?
+32:02
+You have words that appear from left to right or
+32:05
+in some temporal order as we speak.
+32:09
+And so this is a huge problem.
+32:10
+And now we'll have a little bit of code that we can look into.
+32:13
+But before that we'll have the awesome Shayne give
+32:17
+us a little bit of an intercession, intermission.
+32:27
+>> Hi, so let's take a short break from recurrent neural networks to
+32:30
+talk about transition-based dependency parsing,
+32:33
+which is exactly what you guys saw this time last week in lecture.
+32:38
+So just as a recap, a transition-based dependency parser is a method of
+32:43
+taking a sentence and turning it into dependence parse tree.
+32:47
+And you do this by looking at the state of the sentence and
+32:51
+then predicting a transition.
+32:54
+And you do this over and
+32:55
+over again in a greedy fashion until you have a full transition sequence
+33:00
+which itself encodes, the dependency parse tree for that sentence.
+33:05
+So I wanna show you how to get from the model that you'll be implementing in
+33:09
+your assignment two question two,
+33:12
+which you're hopefully working on right now, to SyntaxNet.
+33:16
+So what is SyntaxNet?
+33:18
+SyntaxNet is a model that
+33:24
+Google came out with and they claim it's the world's most accurate parser.
+33:29
+And it's new, fast performant TensorFlow framework for
+33:32
+syntactic parsing is available for over 40 languages.
+33:35
+The one in English is called the Parse McParseface.
+33:38
+>> [LAUGH] >> So my slide seemed to have been jumbled
+33:43
+a little bit here, but hopefully you can read through it.
+33:47
+So basically the baseline we're gonna begin with is the Chen and
+33:51
+Manning model which came out in 2014.
+33:53
+And Chen and Manning are respectively your head TA and instructor.
+33:59
+And the models that produce SyntaxNet in just two stages of improvements,
+34:04
+those directly modified Chen and
+34:07
+Manning's model, which is exactly what you guys will be doing in assignment two.
+34:11
+And so we're going to focus today on the main bulk of these changes,
+34:14
+modifications which were introduced in 2015 by Weiss et al.
+34:19
+So without further ado, I'm gonna look at their three main contributions.
+34:24
+So the first one is they leverage unlabeled data using something called
+34:28
+Tri-Training.
+34:29
+The second is that they tuned their neural network and
+34:32
+made some slight modifications.
+34:34
+And the last and probably most important is that they added a final layer on top
+34:38
+of the model involving a structured perceptron with beam search.
+34:43
+So each of these seeks to solve a problem.
+34:46
+So the first one is tri-training.
+34:49
+So as you know, in most supervised models,
+34:50
+they perform better the more data that they have.
+34:53
+And this is especially the case for dependency parsing,
+34:55
+where as you can imagine there are an infinite number of possible sentences with
+35:00
+a ton of complexity and you're never gonna see all of them,
+35:02
+and you're gonna see even some of them very, very rarely.
+35:05
+So the more data you have, the better.
+35:07
+So what they did is they took a ton of unlabeled data and
+35:10
+two highly performing dependency parsers that were very different from each other.
+35:15
+And when they agreed, independently agreed on a dependency parse tree for
+35:19
+a given sentence, then that would be added to the labeled data set.
+35:22
+And so now you have ten million new tokens of data
+35:27
+that you can use in addition to what you already have.
+35:30
+And this by itself improved a highly performing network's
+35:34
+performance by 1% using the unlabeled attachment score.
+35:38
+So the problem here was not having enough data for the task and
+35:41
+they improved it using this.
+35:43
+The second augmentation they made was by taking the existing model,
+35:48
+which is the one you guys are implementing,
+35:50
+which has an input layer consisting of the word vectors.
+35:53
+The vectors for the part of speech tags and the arc labels with one hidden layer
+35:58
+and one soft max layer predicting which transition and they changed it to this.
+36:04
+Now this is actually pretty much the same thing, except for three small changes.
+36:11
+The first is that they added,
+36:12
+there are two hidden layers instead of one hidden layer.
+36:15
+The second is that they used a RELU nonlinearity function
+36:18
+instead of the cube nonlinearity function.
+36:20
+And the third and most important is that they added a perceptron layer
+36:23
+on top of the soft max layer.
+36:25
+And notice that the arrows, that it takes in
+36:31
+as input the outputs from all the previous layers in the network.
+36:37
+So this perceptron layer wants to solve one particular problem,
+36:41
+and this problem is that greedy algorithms aren't able to really look ahead.
+36:45
+They make short term decisions and
+36:47
+as a result they can't really recover from one incorrect decision.
+36:51
+So what they said is, let's allow the network then to look ahead and
+36:56
+so we're going to have a tree which we can search over and
+36:59
+this tree is the tree of all the possible partial transition sequences.
+37:04
+So each edge is a possible transition form the state that you're at.
+37:08
+As you can imagine,
+37:09
+even with three transitions your tree is gonna blossom very, very quickly and
+37:13
+you can't look that far ahead and explore all of the possible branches.
+37:16
+So what you have to do is prune some branches.
+37:19
+And for that they use beam search.
+37:21
+Now beam search is only gonna keep track of the top
+37:25
+K partial transition sequences up to a depth of M.
+37:28
+Now how do you decide which K?
+37:29
+You're going to use a score computed using the perceptron weights.
+37:34
+You guys probably have a decent idea at this point of how perceptron works.
+37:38
+The exact function they used is shown here, and I'm gonna
+37:43
+leave up the annotations so you can take a look at it later if you're interested.
+37:47
+But basically those are the three things that they did solve,
+37:52
+the problems with the previous Chen & Manning model.
+37:55
+So in summary, Chen & Manning had an unlabeled attachment score of 92%,
+38:00
+already phenomenal performance.
+38:03
+And with those three changes, they boosted it to 94%,
+38:05
+and then there's only 0.6% left to get you to SyntaxNet,
+38:10
+which is Google's 2016 state of the art model.
+38:15
+And if you're curious what the did to get that 0.6%, take a look at Andrew All's
+38:19
+paper Which uses global normalization instead of local normalization.
+38:24
+So the main takeaway, and it's pretty straight forward but
+38:28
+I can't stress it enough, is when you're trying to improve upon an existing model,
+38:32
+you need to identify the specific flaws that are in this model.
+38:35
+In this case the greedy algorithm and solved those problems specifically.
+38:41
+In this case they did that using semi-supervised method
+38:45
+using unlabeled data.
+38:47
+They tune the model better and
+38:48
+they use the structured perception with beam search.
+38:52
+Thank you very much.
+38:53
+>> [APPLAUSE] >> Kind of awesome.
+39:00
+You can now look at these kinds of pictures and
+39:03
+you totally know what's going on.
+39:05
+And in like state of the art stuff that the largest companies in
+39:10
+the world publishes.
+39:12
+Exciting times.
+39:13
+All right, so
+39:15
+we'll gonna through a little bit of like a practical Python notebook sort
+39:21
+of implementation that shows you a simple version of the vanishing gradient problem.
+39:25
+Where we don't even have a full recurrent real network we just have a simple two
+39:29
+layer neural network and even in those kinds of networks you will see
+39:32
+that the error that you start at the top and the norm of the gradients
+39:35
+as you go down through your network, the norm is already getting smaller.
+39:40
+And if you remember these were the two equations where I said if you get
+39:43
+to the end of those two equations you know all the things that you need to know, and
+39:47
+you'll actually see these three equations in the code as well.
+39:51
+So let's jump into this.
+39:55
+I don't see it.
+39:56
+Let me get out of the presentation
+40:04
+All right, better, all right.
+40:07
+Now, zoom in.
+40:10
+So here, we're going to define a super simple problem.
+40:15
+This is a code that we started, and 231N (with Andrej), and
+40:19
+we just modified it to make it even simpler.
+40:23
+So let's say our data set, to keep it also very simple,
+40:27
+is just this kind of classification data set.
+40:30
+Where we have basically three classes, the blue, yellow, and red.
+40:34
+And they're basically in the spiral clusterform.
+40:39
+We're going to define our simple nonlinearities.
+40:42
+You can kind of see it as a solution almost to parts of the problem set,
+40:47
+which is why we're only showing it now.
+40:49
+And we'll put this on the website too, so no worries.
+40:53
+You can visit later.
+40:54
+But basically, you could define here f, our different nonlinearities,
+40:58
+element-wise, and the gradients for them.
+41:04
+So this is f and f prime if f is a sigmoid function.
+41:07
+We'll also look at the relu, the other nonlinearity that's very popular.
+41:12
+And here, we just have the maximum between 0 and x, and very simple function.
+41:18
+Now, this is a relatively straight forward definition and
+41:22
+implementation of this simple three layer neural network.
+41:26
+Has this input, here our nonlinearity, our data x, just these points in two
+41:31
+dimensional space, the class, it's one of those three classes.
+41:35
+We'll have this model here, we have our step size for
+41:39
+SDG, and our regularization value.
+41:43
+Now, these are all our parameters, w1, w2 and w3 for
+41:47
+all the outputs, and variables of the hidden states.
+42:00
+Two sets is bigger, all right.
+42:01
+>> [LAUGH] >> All right, now, if our nonlinearity
+42:08
+is the relu, then we have here relu, and we just input x, multiply it.
+42:12
+And in this case, your x can be the entirety of the dataset,
+42:15
+cuz the dataset's so small, each mini-batch, we can essentially do a batch.
+42:19
+Again, if you have realistic datasets, you wouldn't wanna do full batch training,
+42:23
+but we can get away with it here.
+42:24
+It's a very tiny dataset.
+42:26
+We multiply w1 times x plus our bias terms, and
+42:31
+then we have our element-wise rectified linear units or relu.
+42:35
+Then we've computed in layer two, same idea.
+42:38
+But now, it's input instead of x is the previous hidden layer.
+42:42
+And then we compute our scores this way.
+42:47
+And then here, we'll normalize our scores with the softmax.
+42:50
+Just exponentiate our scores, some of them.
+42:54
+So very similar to the equations that we walk through.
+42:57
+And now, it's just basically an if statement.
+43:00
+Either we have used relu as our activations, or
+43:05
+we use a sigmoid, but the math inside is the same.
+43:10
+All right, now, we're going to compute our loss.
+43:13
+Our good friend, the simple average cross entropy loss plus the regularization.
+43:19
+So here, we have negative log of the probabilities,
+43:22
+we summed them up overall the elements.
+43:25
+And then here, we have our regularization as the L2, standard L2 regularization.
+43:29
+And we just basically sum up the squares of all the elements in all our parameters,
+43:35
+and I guess it does cut off a little bit.
+43:38
+Let me zoom in.
+43:40
+All three have the same of amount of regularization, and
+43:44
+we add that to our final loss.
+43:47
+And now, every 1,000 iterations, we'll just print our loss and
+43:50
+see what's happening.
+43:51
+And this is something you always want to do too.
+43:53
+You always wanna visualize, see what's going on.
+43:55
+And hopefully, a lot of this now looks very familiar.
+43:58
+Maybe if implemented it not quite as efficiently, as efficiently in problem set
+44:03
+one, but maybe you have, and then it's very, very straightforward.
+44:06
+Now, that was the forward propagation, we can compute our error.
+44:10
+Now, we're going to go backwards, and
+44:13
+we're computing our delta messages first from the scores.
+44:17
+Then we have here, back propagation.
+44:19
+And now, we have the hidden layer activations,
+44:24
+transposed times delta messages to compute w.
+44:29
+Again, remember, we have always for each w here, we have this outer product.
+44:35
+And that's the outer product we see right here.
+44:38
+And now, the softmax was the same regardless of whether we used a value or
+44:44
+a sigmoid.
+44:45
+Let's walk through the sigmoid here.
+44:46
+We now, basically, have our delta scores, and have here the product.
+44:52
+So this is exactly computing delta for the next layer.
+44:56
+And that's exactly this equation here, and just Python code.
+45:01
+And then again, we'll have our updates dw, which is,
+45:03
+again, this outer product right there.
+45:06
+So it's a very nice sort of equations code,
+45:10
+almost a nice one to one mapping between the two.
+45:14
+All right, now,
+45:16
+we're going to go through the network from the top down to the first layer.
+45:23
+Again, here, our outer product.
+45:25
+And now, we add the derivatives for our regularization.
+45:29
+In this case, it's very simple,
+45:31
+just matrices themselves times the regularization.
+45:35
+And we combine all our gradients in this data structure.
+45:40
+And then we update all our parameters with our step_size and SGD.
+45:52
+All right, then we can evaluate how well we do on the training set, so
+45:57
+that we can basically print out the training accuracy as we train us.
+46:03
+All right, now, we're going to initialize all the dimensionality.
+46:08
+So we have there just our two dimensional inputs, three classes.
+46:12
+We compute our hidden sizes of the hidden vectors.
+46:16
+Let's say, they're 50, it's pretty large.
+46:19
+And now, we can run this.
+46:22
+All right, we'll train it with both sigmoids and rectify linear units.
+46:25
+And now, once we wanna analyze what's going on,
+46:30
+we can essentially now plot some of the magnitudes of the gradients.
+46:38
+So those are essentially the updates as we do back propagation through the snap work.
+46:43
+And what we'll see here is the some of the gradients for
+46:49
+the first and the second layer when we use sigmoid non-linearities.
+46:56
+And basically here, the main takeaway messages that blue is the first layer,
+47:01
+and green is the second layer.
+47:03
+So the second layer is closer to the softmax,
+47:06
+closer to what we're trying to predict.
+47:08
+And hence, it's gradient is usually had larger in magnitude
+47:12
+than the one that arrives at the first layer.
+47:16
+And now, imagine you do this 100 times.
+47:19
+And you have intuitively your vanishing gradient problem in recurrent neural
+47:23
+networks.
+47:24
+They'll essentially be zero.
+47:25
+They're already almost half in size
+47:29
+over the iterations when you just had two layers.
+47:34
+And the problem is a little less strong when you use rectified linear units.
+47:38
+But even there, you're going to have some decrease as you continue to train.
+47:46
+All right, any questions around this code snippet and
+47:52
+vanishing creating problems?
+48:00
+No, sure.
+48:02
+[LAUGH] That's a good question.
+48:11
+The question is why are the gradings flatlining.
+48:14
+And it's essentially because the dataset is so
+48:15
+simple that you actually just perfectly fitted your training data.
+48:19
+And then there's not much else to do you're basically in a local optimum and
+48:24
+then not much else is happening.
+48:26
+So yeah, so these are the outputs where if you visualize the decision boundaries,
+48:31
+here at the relue and the relue you see a little bit more sort of edges,
+48:35
+because you have sort of linear parts of your decision boundary and
+48:39
+the sigmoid is a little smoother, little rounder.
+48:48
+All right, so now you can implement a very quick versions to get an intuition for
+48:52
+the vanishing gradient problem.
+48:55
+Now the exploding gradient problem is, in theory, just as bad.
+49:00
+But in practice, it turns out we can actually have a hack,
+49:05
+that was first introduced by Thomas Mikolov, and it's very
+49:09
+unmathematical in some ways 'cause say, all you have is a large gradient of 100.
+49:13
+Let's just cap it to five.
+49:17
+That's it, you just define the threshold and
+49:18
+you say whenever the value is larger than a certain value, just cut it.
+49:23
+Totally not the right mathematical direction anymore.
+49:27
+But turns out to work very well in practice, yep.
+49:31
+So vanishing creating problems, how would you cap it?
+49:34
+It's like it gets smaller and smaller, and you just multiply it?
+49:39
+But then it's like, it might overshoot.
+49:41
+It might go in the completely wrong direction.
+49:43
+And you don't want to have the hundredth word unless it really matters.
+49:49
+You can't just make all the hundred words or
+49:53
+thousand words of the past all matter the same amount.
+49:56
+Right? Intuitively.
+49:57
+That doesn't make that much sense either.
+49:59
+So this gradient clipping solution is actually really powerful.
+50:06
+And then a couple years after it was introduced, Yoshua Bengio and
+50:11
+one of his students Actually gained a little bit of intuition and
+50:16
+it's something I encourage you always to do too.
+50:18
+Not just in the equations, where you can write out recurrent neural network,
+50:21
+where everything's one dimensional, and the math comes out easy and
+50:24
+you gain intuition about it.
+50:26
+But you can also, and this is what they did here, implement a very simple
+50:30
+recurrent neural network which just had a single hidden unit.
+50:33
+Not very useful for anything in practice but now, with the single unit W.
+50:37
+And you know, at still the bias term,
+50:40
+they can actually visualize exactly what the air surface looks like.
+50:45
+So and oftentimes we call the air surface or the energy landscape or so
+50:50
+that the landscape of our objective function.
+50:53
+This error surface and basically.
+50:56
+You can see here the size of the z axis here is the error
+51:02
+that you have when you trained us on a very simple problem.
+51:05
+I forgot what the problem here was but
+51:07
+it's something very simple like keep around this unit and
+51:10
+remember the value and then just return that value 50 times later.
+51:14
+Something simple like that.
+51:16
+And what they essentially observe is that in this air surface or
+51:20
+air landscape you have these high curvature walls.
+51:23
+And so as you do an update each
+51:25
+little line here you can interpret as what happens at an sg update step.
+51:29
+You update your parameters.
+51:31
+And you say, in order to minimize my objective function right now,
+51:35
+I'm going to change the value of my one hidden unit and
+51:38
+my bias term just like by this amount to go over here, go over here.
+51:42
+And all of a sudden you hit these large curvature walls.
+51:44
+And then your gradient basically blows up, and it moves you somewhere way different.
+51:50
+And so intuitively what happens here is,
+51:53
+if you rescale to the thick size with the special method, then essentially
+51:59
+you're not going to jump to some crazy, faraway place, but you're just going to
+52:03
+stay in this general area that seemed useful before you hit that curvature wall.
+52:08
+Yeah?
+52:30
+So the question is, intuitively, why wouldn't such a trick work for
+52:33
+the vanishing grading problem but it does work for the exploding grading problem.
+52:42
+Why does the reason for
+52:44
+the vanishing does not apply to the exploding grading problem.
+52:47
+So intuitively, this is exactly the issue here.
+52:51
+So the exploding, as you move way too far away,
+52:55
+you basically jump out of the area where you, in this case here for
+53:00
+instance, we're getting closer and closer to a local optimum, but
+53:03
+the local optimum was very close to high curvature wall.
+53:06
+And without the gradient problem, without the clipping trick,
+53:09
+you would go way far away.
+53:12
+Right, now, on the vanishing grading problem, it get's smaller and smaller.
+53:16
+So in general clipping doesn't make sense, but
+53:19
+let's say, so that's the obvious answer.
+53:21
+You can't, something gets smaller and smaller, it doesn't help to have a maximum
+53:25
+and then make it, you know cut it to that maximum 'cause that's not the problem.
+53:28
+It goes in the opposite direction.
+53:30
+And so.
+53:32
+That's kind of most obvious intuitive answers.
+53:34
+Now, you could say.
+53:35
+Why couldn't you, if it gets below a certain threshold, blow it up?
+53:39
+But then that would mean that.
+53:41
+Let's say you had.
+53:43
+You wanted to predict the word.
+53:44
+And now you're 50 time steps away.
+53:46
+And really, the 51st doesn't actually impact
+53:50
+the word you're trying to predict at time step T, right?
+53:52
+So you're 50 times to 54 and it doesn't really modify that word.
+53:55
+And now you're artificially going to blow up and make it more important.
+54:00
+So that's less intuitive than saying,
+54:02
+I don't wanna jump into some completely different part of my error surface.
+54:11
+The wall just comes from this is what the error surface looks like for
+54:15
+a very very simple recurrent node network with a very simple kind of problem that
+54:18
+it tries to solve.
+54:20
+And you can actually use most of the networks that you have,
+54:24
+you can try to make them have just two parameters and
+54:27
+then you can visualize something like this too.
+54:29
+In fact it's very intuitive sometimes to do that.
+54:31
+When you try different optimizers, we'll get to those in a later lecture
+54:36
+like Adam or SGD or achieve momentum, we'll talk about those soon.
+54:39
+You can actually always try to visualise that in some simple kind of landscape.
+54:44
+This just happens to be the landscape that this particular recurrent neural network
+54:48
+problem has with one-hidden unit and just a bias term.
+55:06
+So the question is, how could we know for
+55:09
+sure that this happens with non-linear actions and multiple weight.
+55:13
+So you also have some non-linearity here in this.
+55:17
+So that intuitively wouldn't prevent us from transferring that knowledge.
+55:22
+Now, in general, it's very hard.
+55:24
+We can't really visualize a very high dimensional spaces.
+55:28
+There is actually now an interesting new idea that was introduced,
+55:35
+I think by Ian Goodfellow where you can actually try to,
+55:39
+let's say you have your parameter space, inside your parameter space,
+55:44
+you have some kind of cross function.
+55:45
+So you say my w matrices are at this value and so on, and I have some error when
+55:51
+all my values are here, and then I start to optimize and I end up somewhere here.
+55:54
+Now the problem is, we can't visualize it because it's usually in
+55:57
+realistic settings, you have the 100 million.
+56:00
+Workflow.
+56:01
+At least a million or so parameters, sometimes 100 million.
+56:05
+And so, something crazy might be going on as you optimize between this.
+56:09
+And so, because we can't visualize it and
+56:12
+we can't even sub-sample it because it's such a high-dimensional space.
+56:15
+What they do is they actually draw a line between the point
+56:18
+from where they started with their random initialization before optimization.
+56:23
+And end the line all the way to the point
+56:27
+where you actually finished the optimization.
+56:30
+And then you can evaluate along this line at a certain intervals,
+56:35
+you can evaluate how big your area is.
+56:39
+And if that area changes between two such intervals a lot,
+56:43
+then that means we have very high curvature in that area.
+56:47
+So that's one trick of how you might use this idea and
+56:52
+gain some intuition of the curvature of the space.
+56:55
+But yeah, only in two dimensions can we get such nice intuitive visualizations.
+57:00
+Yeah.
+57:05
+So the question is why don't we just have less dependence?
+57:09
+And the question of course, it's a legit question, but
+57:13
+ideally we'll let the model figure this out.
+57:15
+Ideally we're better at optimizing the model, and
+57:17
+the model has in theory these long range dependencies.
+57:20
+In practice, they rarely ever do.
+57:23
+In fact when you implement these, and you can start playing around with this and
+57:26
+this is something I encourage you all to do too.
+57:28
+As you implement your models you can try to make it a little bit more interactive.
+57:33
+Have some IPython Notebook, give it a sequence and
+57:35
+look at the probability of the next word.
+57:38
+And then give it a different sequence where you change words like ten time
+57:41
+steps away, and look again at the probabilities.
+57:44
+And what you'll often observe is that after seven words or so, the words before
+57:48
+actually don't matter, especially not for these simple recurrent neural networks.
+57:53
+But because this is a big problem,
+57:55
+there are actually a lot of different kinds of solutions.
+57:58
+And so the biggest and best one is one we'll introduce next week.
+58:03
+But a simpler one is to use rectified linear units and
+58:07
+to also initialize both of your w's to ones from hidden to hidden and
+58:12
+the ones from the input to the hidden state with the identity matrix.
+58:16
+And this is a trick that I introduced a couple years ago and
+58:19
+then it was sort of combined with rectified linear units.
+58:23
+And applied to recurrent neural networks by Quoc Le.
+58:27
+And so the main idea here is if you move around in your space.
+58:32
+Let's say you have your h, and
+58:35
+usually we have here our whh times h, plus whx plus x.
+58:40
+And let's assume for now that h and x have the same dimensionality.
+58:46
+So then all these are essentially square matrices.
+58:52
+And we have here our different vectors.
+58:56
+Now, in the standard initialization, what you would do is you'd
+59:01
+just have a bunch of small random values and all the different elements of w.
+59:06
+And what that means is as you start optimizing,
+59:09
+whatever x is you have some random projection into the hidden space.
+59:14
+Instead, the idea here is we actually have identity initialization.
+59:18
+Maybe you can scale it, so instead you have a half times the identity,
+59:23
+and what does that do?
+59:24
+Intuitively when you combine the hidden state and the word vector?
+59:37
+That's exactly right.
+59:38
+If this is an identity initialized matrix.
+59:41
+So it's just, 1, 1, 1, 1, 1, 1 on the diagonal.
+59:43
+And you multiply all of these by one half.
+59:46
+Same as just having a half, a half, a half, and so on.
+59:49
+And you multiply this with this vector and you do the same thing here.
+59:52
+What essentially that means is that you have a half, times that vector,
+59:56
+plus half times that other vector.
+59:59
+And intuitively that means in the beginning, if you don't know anything.
+60:02
+Let's not do a crazy random projection into the middle of nowhere in our
+60:05
+parameter space, but just average.
+60:07
+And say, well as I move through the space my hidden state is just a moving
+60:12
+average of the word vectors.
+60:13
+And then I start making some updates.
+60:16
+And it turns out when you look here and
+60:19
+you apply this to the very tight problem of MNIST.
+60:22
+Which we don't really have to go into, but its a bunch of small digits.
+60:25
+And they're trying to basically predict
+60:27
+what digit it is by going over all the pixels in a sequence.
+60:32
+Instead of using
+60:33
+other kinds of neural networks like convolutional neural networks.
+60:35
+And basically we look at the test accuracy.
+60:38
+These are very long time sequences.
+60:41
+And the test accuracy for these is much, much higher.
+60:44
+When you use this identity initialization instead of random initialization,
+60:49
+and also using rectified linear units.
+60:52
+Now more importantly for real language modeling,
+60:57
+we can compare recurrent neural networks in this simple form.
+61:01
+So we had the question before like, do these actually matter or
+61:05
+did I just kind of describe single layer recurrent neural networks for
+61:11
+the class to describe the concept.
+61:13
+And here we actually have these simple recurrent neural networks, and
+61:17
+we basically compare.
+61:19
+This one is called Kneser-Ney with 5 grams, so a lot of counts, and some clever
+61:24
+back off and smoothing techniques which we won't need to get into for the class.
+61:29
+And we compare these on two different corpora and
+61:33
+we basically look at the perplexity.
+61:36
+So these are all perplexity numbers, and we look at the neural network or
+61:40
+the neural network that's combined with Kneser-Ney,
+61:44
+assuming probability estimates.
+61:46
+And of course when you combine the two then you don't really get the advantage of
+61:49
+having less RAM.
+61:50
+So ideally this by itself would do best, but
+61:53
+in general combining the two used to still work better.
+61:58
+These are results from five years ago, and they failed most very quickly.
+62:02
+I think the best results now are pure neural network language models.
+62:07
+But basically we can see that compared to Kneser-Ney,
+62:12
+even back then, the neural network actually works very well.
+62:17
+And has much lower perplexity than just the Kneser-Ney or just account based.
+62:28
+Now one problem that you'll observe in a lot of cases,
+62:32
+is that the softmax is really, really large.
+62:36
+So your word vectors are one set of parameters, but
+62:40
+your softmax is another set of parameters.
+62:43
+And if your hidden state is 1000, and
+62:45
+let's say you have 100,000 different words.
+62:49
+Then that's 100,000 times 1000 dimensional matrix that you'd have to multiply with
+62:54
+the hidden state at every single time step.
+62:57
+So that's not very efficient, and so
+62:59
+one way to improve this is with a class-based word prediction.
+63:05
+Where we first try to predict some class that we can come up, and
+63:09
+there are different kinds of things we can do.
+63:11
+In many cases you can sort, just the words by how frequent they are.
+63:16
+And say the thousand most frequent words are in the first class,
+63:18
+the next thousand most frequent words in the second class and so on.
+63:20
+And so you first basically classify, try to predict the class based on the history.
+63:28
+And then you predict the word inside that class, based on that class.
+63:32
+And so this one is only a thousand dimensional, and so
+63:34
+you can basically do this.
+63:36
+And now the more classes the better the perplexity, but
+63:39
+also the slower the speed the less you gain from this.
+63:43
+And especially at training time which is what we see here,
+63:48
+this makes a huge difference.
+63:49
+So if you have just very few classes, you can actually reduce
+63:54
+the number here of seconds that each eproc takes.
+63:59
+By almost 10x compared to having more classes or
+64:03
+even more than 10x if you have the full softmax.
+64:09
+And even the test time, is faster cuz now you only essentially evaluate the word
+64:13
+probabilities for the classes that have a very high probability here.
+64:21
+All right, one last trick and this is maybe obvious to some but
+64:27
+it wasn't obvious to others even in the past when people published on this.
+64:34
+But you essentially only need to do a single backward's pass
+64:37
+through the sequence.
+64:38
+Once you accumulate all the deltas from each error at each time set.
+64:45
+So looking at this figure, really quick again.
+64:51
+Here, essentially you have one forward pass where you
+64:54
+compute all the hidden states and all your errors, and
+64:58
+then you only have a single backwards pass, and as you go
+65:01
+backwards in time you keep accumulating all the deltas of each time step.
+65:06
+And so originally people said, for this time step I'm gonna go all the way back,
+65:11
+and then I go to the next time step, and then I go all the way back, and
+65:14
+then the next step, and all the way back, which is really inefficient.
+65:16
+And is essentially same as combining
+65:20
+all the deltas in one clean back propagation step.
+65:24
+And again, it's kind of is intuitive.
+65:27
+An intuitive sort of implementation trick but
+65:29
+people gave that the term back propagation through time.
+65:38
+All right, now that we have these simple recurrent neural networks,
+65:43
+we can use them for a lot of fun applications.
+65:45
+In fact, the name entity recognition that we're gonna use in example with
+65:48
+the Window.
+65:50
+In the Window model, you could only condition the probability of this being
+65:56
+a location, a person, or an organization based on the words in that Window.
+66:00
+The recurrent neural network you can in theory take and
+66:03
+condition these probabilities on a lot larger context sizes.
+66:08
+And so you can do Named Entity Recognition (NER),
+66:11
+you can do entity level sentiment in context, so for instance you can say.
+66:15
+I liked the acting, but the plot was a little thin.
+66:18
+And you can say I want to now for acting say positive, and
+66:22
+predict the positive class for that word.
+66:25
+Predict the null class, and all sentiment for all the other words,
+66:29
+and then plot should get negative class label.
+66:33
+Or you can classify opinionated expressions, and this is what researchers
+66:39
+at Cornell where they essentially used RNNs for
+66:44
+opinion mining and essentially wanted to classify whether each word in
+66:49
+a relatively smaller purpose here is either the direct subjective expression or
+66:55
+the expressive subjective expression, so either direct or expressive.
+67:00
+So basically this is direct subjective expressions,
+67:05
+explicitly mention some private state or speech event, whereas the ESEs just
+67:11
+indicate the sentiment or emotion without explicitly stating or conveying them.
+67:16
+So here's an example,
+67:17
+like the committee as usual has refused to make any statements.
+67:22
+And so you want to classify as usual as an ESE, and
+67:25
+basically give each of these words here a certain label.
+67:29
+And this is something you'll actually observe a lot in sequence tagging paths.
+67:33
+Again, all the same models the recurrent neural network.
+67:37
+You have the soft max at every time step.
+67:39
+But now the soft max actually has a set of classes
+67:43
+that indicate whether a certain expression begins or ends.
+67:48
+And so here you would basically have this BIO notation
+67:52
+scheme where you have the beginning or the end, or a null token.
+67:57
+It's not any of the expressions that I care about.
+68:00
+So here you would say for instance, as usual is an overall ESE expression, so
+68:05
+it begins here, and it's in the middle right here.
+68:09
+And then these are neither ESEs or DSEs.
+68:12
+All right, now they started with the standard recurrent neural network, and
+68:18
+I want you to at some point be able to glance over these equations,
+68:23
+and just say I've seen this before.
+68:26
+It doesn't have to be W superscript HH, and so on.
+68:29
+But whenever you see, the summation order of course, doesn't matter either.
+68:35
+But here, they use W, V, and U, but then they defined,
+68:39
+instead of writing out softmax, they write g here.
+68:43
+But once you look at these equations, I hope that eventually you're just like
+68:46
+it's just a recurrent neural network, right?
+68:48
+You have here, are your hidden to hidden matrix.
+68:51
+You have your input to hidden matrix, and here you have your softmax waits you.
+68:57
+So same idea, but these are the actual equations from this real paper that you
+69:02
+can now kind of read and immediately sort of have the intuition of what happens.
+69:08
+All right, you need directional recurrent neural network where we,
+69:13
+if we try to make the prediction here, of whether this is an ESE or
+69:17
+whatever name entity recognition, any kind of sequence labelling task,
+69:21
+what's the problem with this kind of model?
+69:25
+What do you think as we go from left to right only?
+69:28
+What do you think could be a problem for making the most accurate predictions?
+69:40
+That's right.
+69:41
+Words that come after the current word can't be
+69:45
+helping us to make accurate predictions at that time step, right?
+69:48
+Cuz we only went from left to right.
+69:50
+And so one of the most common extensions of recurrent neural networks
+69:55
+is actually to do bidirectional recurrent neural networks
+69:58
+where instead of just going from left to right, we also go from right to left.
+70:03
+And it's essentially the exact same model.
+70:05
+In fact, you could implement it by changing your input and just reversing all
+70:08
+the words of your input, and then it's exactly the same thing.
+70:12
+And now, here's the reason why they don't have superscripts with WHH,
+70:15
+cuz now they have these arrows that indicate
+70:19
+whether you're going from left to right, or from right to left.
+70:23
+And now, they basically have this concatenation here, and
+70:27
+in order to make a prediction at a certain time step t they essentially concatenate
+70:33
+the hidden states from both the left direction and the right direction.
+70:37
+And those are now the feature vectors.
+70:39
+And this vector ht coming from the left, has all the context ordinal,
+70:44
+again seven plus words, depending on how well you train your RNN.
+70:49
+From all the words on the left,
+70:50
+ht from the right has all the contacts from the words on the right, and
+70:54
+that is now your feature vector to make an accurate prediction at a certain time set.
+71:00
+Any questions around bidirectional recurrent neural networks?
+71:03
+You'll see these a lot in all the recent papers you'll be learning,
+71:08
+in various modifications.
+71:09
+Yeah.
+71:14
+Have people tried Convolutional Neural Networks?
+71:17
+They have, and we have a special lecture also we will talk a little bit about
+71:20
+Convolutional Neural Networks.
+71:31
+So you don't necessarily have a cycle, right?
+71:33
+You just go, basically as you implement this, you go once all the way for
+71:37
+your the left, and
+71:38
+you don't have any interactions with the step that goes from the right.
+71:41
+You can compute your feet forward HTs here for
+71:46
+that direction, are only coming from the left.
+71:49
+And the HT from the other direction, you can compete,
+71:51
+in fact you could paralyze this if you want to be super efficient and.
+71:55
+Have one core, implement the left direction, and
+71:57
+one core implement the right direction.
+71:58
+So in that sense it doesn't make the vanishing create any problem worse.
+72:04
+But, of course, just like any recurring neural network,
+72:07
+it does have the vanishing creating problem, and
+72:10
+the exploding creating problems and it has to be clever about flipping it and so,
+72:14
+yeah We call them standard
+72:19
+feedforward neural networks or Window based feedforward neural networks.
+72:25
+And now we have recurrent neural networks.
+72:27
+And this is really one of the most powerful family and
+72:30
+we'll see lots of extensions.
+72:31
+In fact, if there's no other question we can go even deeper.
+72:34
+It is after all deep learning.
+72:37
+And so, now you'll observe [LAUGH] we definitely had to skip that superscript.
+72:42
+And we have different, Characters here for
+72:47
+each of our matrices, because, instead of just going from left to right,
+72:52
+you can also have a deep neural network at each time step.
+72:57
+And so now, to compute the ith layer at a given time step, you
+73:02
+essentially again, have only the things coming from the left that modify it but,
+73:07
+you just don't take in the vector from the left, you also take the vector from below.
+73:13
+So, in the simplest definition that is just your x, your input vector right?
+73:20
+But as you go deeper you now also have the previous hidden layers input.
+73:36
+Instead of why are the,
+73:50
+So the question is,
+73:51
+why do we feed the hidden layer into another hidden layer instead of the y?
+73:57
+In fact, you can actually have so called short circuit connections,
+74:00
+too, where each of these h's can go directly to the y as well.
+74:05
+And so here in this figure you see that only the top ones go into the y.
+74:09
+But you can actually have short circuit connections where y here has as input
+74:14
+not just ht from the top layer, noted here as capital L, but
+74:19
+the concatenation of all the h's.
+74:21
+It's just another way to make this monster even more monstrous.
+74:28
+And in fact there a lot of modifications, in fact, Shayne has a paper,
+74:32
+an ArXiv right now on a search based odyssey type thing where you have so
+74:36
+many different kinds of knobs that you can tune for even more sophisticated recurrent
+74:41
+neural networks of the type that we'll introduce next week that, it gets a little
+74:46
+unwieldy and it turns out a lot of the things don't matter that much, but
+74:51
+each can kind of give you a little bit of a boost in many cases.
+74:55
+So if you have three layers, you have four layers,
+74:56
+what's the dimensionality of all the layers and
+74:59
+the various different kinds of connections and short circuit connections.
+75:02
+We'll introduce some of these, but in general this like a pretty decent model
+75:07
+and will eventually extract away from how we compute that hidden state, and
+75:12
+that will be a more complex kind of cell type that we'll introduce next Tuesday.
+75:19
+Do we have one more question?
+75:23
+So now how do we evaluate this?
+75:25
+It's very important to evaluate your problems correctly,
+75:30
+and we actually talked about this before.
+75:34
+When you have a very imbalanced data set, where some of the classes appear
+75:39
+very frequently and others are not very frequent, you don't wanna use accuracy.
+75:42
+In fact, in these kinds of sentences, you often observe, this is an extreme one
+75:47
+where you have a lot of ESEs and DSEs but in many cases, just content.
+75:53
+Standard sort of non-sentiment context and
+75:59
+words, and so a lot of these are actually O, have no label.
+76:03
+And so it's very important to use F1 and
+76:06
+we basically had this question also after class, but it's important for all of you
+76:10
+to know because the F1 metric is really one of the most commonly used metrics.
+76:15
+And it's essentially just the harmonic mean of precision and recall.
+76:18
+Precision is just the true positives divided by
+76:21
+true positives plus false positives and
+76:24
+recall is just true positives divided by true positives plus false negatives.
+76:28
+And then you have here the harmonic mean of these two numbers.
+76:33
+So intuitively, you can be very accurate by always saying something or
+76:38
+have a very high recall for a certain class but
+76:41
+if you always miss another class That would hurt you a lot.
+76:45
+And now here's an evaluation that you should also be familiar
+76:50
+with where basically this is something I would like to see in a lot of your
+76:55
+project reports too as you analyze the various hyper parameters that you have.
+76:59
+And so one thing they found here is they have two different data set sizes that
+77:03
+they train on, in many cases if you train with more data,
+77:12
+you basically do better but then also it's not always the case that more layers.
+77:17
+So this is the depth that we had here, the number l for all these different layers.
+77:22
+It's not always the case that more layers are better.
+77:25
+In fact here, the highest performance they get is with three layers,
+77:29
+instead of four or five.
+77:31
+All right, so let's recap.
+77:32
+Recurring neural networks,
+77:34
+best deep learning model family that you'll learn about in this class.
+77:39
+Training them can be very hard.
+77:41
+Fortunately, you understand back propagation now.
+77:44
+You can gain an intuition of why that might be the case.
+77:48
+We'll in the next lecture extend them some much more powerful models
+77:52
+the Gated Recurring Units or LSTMs, and those are the models you'll see
+77:56
+all over the place in all the state of the art models these days.
+78:00
+All right.
+78:01
+Thank you.

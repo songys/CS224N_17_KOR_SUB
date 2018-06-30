@@ -1,0 +1,2460 @@
+00:00
+[SOUND] Stanford University.
+00:07
+>> We'll get back started again with CS224N,
+00:10
+Natural Language Processing with Deep Learning.
+00:14
+So, you're in for a respite, or a change of pace today.
+00:20
+So for today's lecture, what we're principally going to look at is syntax,
+00:26
+grammar and dependency parsing.
+00:28
+So my hope today is to teach you in one lecture enough about
+00:33
+dependency grammars and parsing that you'll all be able to do
+00:38
+the main part of Assignment 2 successfully.
+00:42
+So quite a bit of the early part of the lecture is giving a bit of background
+00:46
+about syntax and dependency grammar.
+00:49
+And then it's time to talk about a particular kind of dependency grammar,
+00:53
+transition-based, also dependency parsing, transition-based dependency parsing.
+00:58
+And then it's probably only in the last kind of 15 minutes or so
+01:03
+of the lecture that we'll then get back into specifically neural network content.
+01:09
+Talking about a dependency parser that Danqi and I wrote a couple of years ago.
+01:14
+Okay, so for general reminders,
+01:16
+I hope you're all really aware that Assignment 1 is due today.
+01:21
+And I guess by this stage you've either made good progress or you haven't.
+01:26
+But to give my, Good housekeeping reminders,
+01:32
+I mean it seems like every year there are people that sort of blow lots of
+01:36
+late days on the first assignment for no really good reason.
+01:39
+And that isn't such a clever strategy [LAUGH].
+01:43
+So hopefully [LAUGH] you are well along with the assignment, and
+01:47
+can aim to hand it in before it gets to the weekend.
+01:52
+Okay, then secondly today is also the day that the new assignment comes out.
+01:59
+So maybe you won't look at it till the start of next week but
+02:02
+we've got it up ready to go.
+02:04
+And so that'll involve a couple of new things and in some respects probably for
+02:10
+much of it you might not want to start it until after next Tuesday's lecture.
+02:15
+So two big things will be different for that assignment.
+02:19
+Big thing number one is we're gonna do assignment number two using TensorFlow.
+02:25
+And that's the reason why, quite apart from exhaustion from assignment one,
+02:29
+why you probably you don't wanna start it on the weekend is because on Tuesday,
+02:33
+Tuesday's lecture's gonna be an introduction to TensorFlow.
+02:36
+So you'll really be more qualified then to start it after that.
+02:40
+And then the other big different thing in assignment two is we get into
+02:45
+some sort of more substantive natural language processing content.
+02:50
+In particular, you guys are going to build neural dependency parsers, and the hope
+02:55
+is that you can learn about everything that you need to know to do that today.
+03:00
+Or perhaps looking at some of the readings on the website,
+03:03
+if you don't get quite everything straight from me.
+03:06
+Couple more comments on things.
+03:08
+Okay, so for final projects.
+03:13
+We're going to sort of post, hopefully tomorrow or on the weekend,
+03:17
+a kind of an outline of what's in assignment four, so you can have sort of
+03:21
+a more informed meaningful choice between whether you want to do assignment four, or
+03:26
+come up with a final project.
+03:27
+The area of assignment four, if you do it,
+03:31
+is going to be question answering over the SQuAD dataset.
+03:35
+But we've got kind of a page and a half description to explain what that means, so
+03:39
+you can look out for that.
+03:40
+But if you are interested in doing a final project, again,
+03:44
+we'll encourage people to come and meet with one of the final project mentors or
+03:50
+find some other well qualified person around here to be a final project mentor.
+03:55
+So what we're wanting is that sort of, everybody has met with
+04:00
+their final project mentor before putting in an abstract.
+04:03
+And that means it'd be really great for
+04:06
+people to get started doing that as soon as possible.
+04:09
+I know some of you have already talked to various of us.
+04:12
+For me personally, I've got final project office hours tomorrow
+04:18
+from 1 to 3 pm so I hope some people will come by for those.
+04:22
+And again, sort of as Richard mentioned,
+04:25
+not everybody can possible have Richard or me as the final project mentor.
+04:30
+And besides, there's some really big advantages of having some of the PhD
+04:34
+student TAs as final project mentors.
+04:36
+Cuz really, for things like spending time hacking on TensorFlow,
+04:41
+they get to do it much more than I do.
+04:43
+And so, Danqi, Kevin, Ignacio,
+04:45
+Arun that they've had tons of experience doing NLP research using deep learning.
+04:51
+And so that they'd also be great mentors, and look them up for
+04:55
+their final project advice.
+04:58
+The final thing I just want to touch on is we clearly had a lot of problems,
+05:03
+I realize, at keeping up and coping with people in office hours,
+05:08
+and queue status has just regularly got out of control.
+05:13
+I'm sorry that that's been kind of difficult.
+05:16
+I mean honestly we are trying to work and work out ways that we can do this better,
+05:21
+and we're thinking of sort of unveiling a few changes for doing things for
+05:26
+the second assignment.
+05:28
+If any of you peoples have any better advice as to how things could be
+05:33
+organized so that they could work better feel free to send a message
+05:38
+on Piazza with suggestions of ways of doing it.
+05:41
+I guess yesterday I ran down Percy Liang and said, Percy,
+05:46
+Percy, how do you do it for CS221?
+05:49
+Do you have some big secrets to do this better?
+05:52
+But unfortunately I seem to come away with no big secrets cuz he sort of said:
+05:57
+"we use queue status and we use the Huang basement", what else are you meant to do?
+06:02
+So I'm still looking for that divine insight [LAUGH] that
+06:05
+will tell me how to get this problem better under control.
+06:09
+So if you've got any good ideas, feel free to share.
+06:12
+But we'll try to get this as much better under
+06:17
+control as we can for the following weeks.
+06:22
+Okay, any questions, or should I just go into the meat of things?
+06:29
+Okay.
+06:32
+All right, so what we're going to want to do today is work
+06:37
+out how to put structures over sentences in some human language.
+06:43
+All the examples I'm going to show is for English, but in principle,
+06:47
+the same techniques you can apply for any language, where these structures
+06:53
+are going to sort of reveal how the sentence is made up.
+06:58
+So that the idea is that sentences and parts of sentences have some kind
+07:04
+of structure and there are sort of regular ways that people put sentences together.
+07:09
+So, we can sort of start off with very simple things that aren't yet sentences
+07:14
+like "the cat" and "a dog", and they seem to kind of have a bit of structure.
+07:19
+We have an article, or what linguists often call a determiner,
+07:23
+that's followed by a noun.
+07:25
+And then, well, for those kind of phrases,
+07:28
+which get called noun phrases that describe things,
+07:31
+you can kind of make them bigger and there are sort of rules for how you can do that.
+07:37
+So you can put adjectives in between the article and the noun.
+07:42
+You can say the large dog or a barking dog or a cuddly dog, and things like that.
+07:48
+And, well, you can put things like what I call prepositional phrases after the noun
+07:53
+so you can get things like "a large dog in a crate" or something like that.
+07:59
+And so, traditionally what linguists and natural language processors have
+08:04
+wanted to do is describe the structure of human languages.
+08:09
+And they're effectively two key tools that people have used to do this and
+08:15
+one of these key tools and
+08:18
+I think in general the only one you have seen a fraction of is
+08:23
+to use what in computer science terms what is most commonly referred to as context
+08:28
+free grammars which are often referred to by linguists as phrase structure grammars.
+08:33
+And is then referred to as the notion of constituency and so
+08:37
+for that what we are doing is writing these context free grammar rules and
+08:42
+the least if you are Standford undergrad or something like that.
+08:45
+I know that way back in 103,
+08:46
+you spent a whole lecture learning about context-free grammars, and their rules.
+08:52
+So I could start writing some rules that might start off saying a noun phrase,
+08:56
+and go to a determiner or a noun.
+08:58
+Then I realized that noun phrases would get a bit more complicated.
+09:02
+And so I came up with this new rule that says- Noun phrase goes to terminal
+09:05
+optional adject of noun and then optional prepositional phrase wherefore
+09:10
+prepositional phrase that's a preposition followed by another noun phrase.
+09:14
+Because, I can say a crate, or, a large crate.
+09:18
+Or, a large crate by the door.
+09:20
+And then, well I can go along even further, and I could say,
+09:25
+you know a large barking dog by the door in a crate.
+09:31
+So then I noticed, wow I can put in multiple adjectives there and
+09:35
+I can stick on multiple prepositional phrases, so I'm using that star,
+09:40
+the kinda clingy star that you also see,
+09:41
+See in regular expressions to say that you can have zero or any number of these.
+09:46
+And then I can start making a bigger thing like, talk to the cuddly dog.
+09:52
+Or, look for the cuddly dog.
+09:54
+And, well, now I've got a verb followed by a prepositional phrase.
+09:59
+And so, I can sort of build up a constituency grammar.
+10:03
+So that's one way of organizing the structure of sentences and,
+10:10
+you know, in 20th dragging into 21st century
+10:16
+America, this has been the dominant way of doing it.
+10:21
+I mean it's what you see mainly in your Intro CS class when you get taught
+10:27
+about regular languages and context free languages and context sensitive languages.
+10:33
+You're working up the Chomsky hierarchy where Noam Chomsky
+10:39
+did not actually invent the Chomsky hierarchy to torture
+10:44
+CS under grads With formal content to fill the SCS 103 class.
+10:50
+The original purpose of the Chomsky hierarchy was actually to understand
+10:54
+the complexity of human languages and to make arguments about their complexity.
+11:02
+If you look more broadly, and sorry, it's also dominated,
+11:07
+sorta linguistics in America in the last 50 years through the work of Noam Chomsky.
+11:12
+But if you look more broadly than that, this isn't actually the dominate form
+11:17
+of syntactic description that is being used for
+11:19
+understanding of the structure of sentences.
+11:22
+So what else can you do?
+11:23
+So there is this other alternative view of linguistic structure which is referred to
+11:27
+as Dependency structure and what your doing with dependency structure.
+11:31
+Is that you're describing the structure of a sentence by taking each word and
+11:37
+saying what it's a dependent on.
+11:39
+So, if it's a word that kind of modifies or
+11:43
+is an argument of another word that you're saying, it's a dependent of that word.
+11:48
+So, barking dog, barking is a dependent of dog, because it's of a modifier of it.
+11:54
+Large barking dog, large is a modifier of dog as well, so it's a dependent of it.
+11:59
+And dog by the door, so the by the door is somehow a dependent of dog.
+12:05
+And we're putting a dependency between words,
+12:07
+and we normally indicate those dependencies with arrows.
+12:11
+And so we can draw dependency structures over sentences that say
+12:16
+how they're represented as well.
+12:19
+And when right in the first class, I gave examples of ambiguous sentences.
+12:24
+A lot of those ambiguous sentences, we can think about in terms of dependencies.
+12:29
+So do you remember this one, scientists study whales from space.
+12:35
+Well that was an ambiguous headline.
+12:38
+And well, why is it an ambiguous headline?
+12:40
+Well it's ambiguous because there's sort of two possibilities.
+12:44
+So in either case there's the main verb study.
+12:49
+And it's the scientist that's studying, that's an argument of study, the subject.
+12:53
+And it's the whales that are being studied, so that's an argument of study.
+12:57
+That's the object.
+12:58
+But the big difference is then, what are you doing with the from space.
+13:04
+You saying that it's modifying study, or are you saying it's modifying whales?
+13:10
+And like, if you sort of just quickly read the headline
+13:13
+It sounds like it's the bottom one, right?
+13:15
+It's whales from space.
+13:18
+And that sounds really exciting.
+13:20
+But [LAUGH] what the article was meant to be about was, really, that they were being
+13:24
+able to use satellites to track the movements of whales.
+13:27
+And so it's the first one where the, from space, is modifying.
+13:31
+How they're being studied.
+13:33
+And so thinking about ambiguities of sentences can then be thought about,
+13:39
+many of them, in terms of these dependency structures as to what's modifying what.
+13:43
+And this is just a really common thing
+13:47
+in natural language because these kind of questions of what modifies what,
+13:52
+really dominate a lot of questions of interpretation.
+13:56
+So, here's the kind of sentence
+13:58
+you find when you're reading the Wall Street Journal every morning.
+14:02
+The board approved its acquisition by Royal Trustco Limited of Toronto for
+14:08
+$27 a share at its Monthly meeting.
+14:10
+And as I've hopefully indicated by the square brackets, if you look at
+14:15
+the structure of this sentence, it sort of starts off as subject, verb, object.
+14:20
+The board approved its acquisition,
+14:21
+and then everything after that is a whole sequence of prepositional phrases.
+14:26
+By Royal Trustco Ltd, of Toronto, for $27 a share, at its monthly meeting.
+14:33
+And well, so then there's the question of, what's everyone modifying?
+14:39
+So the acquisition is by Royal Trustco Ltd, so that's,
+14:45
+by Royal Trustco Ltd is modifying the thing that immediately precedes that.
+14:50
+And of Toronto is modifying the company, Royal Trustco Limited,
+14:56
+so that's modifying the thing that comes immediately preceeding it.
+15:00
+So you might think this is easy,
+15:02
+everything just modifies the thing that's coming immediately before it.
+15:06
+But that, then stops being true.
+15:08
+So, what's for $27 a share modifying?
+15:14
+Yeah so that's modifying the acquisition so
+15:16
+then we're jumping back a few candidates and
+15:19
+saying is modifying acquisition and then actually at it's monthly meeting.
+15:24
+That wasn't the Toronto the Royal Trustco Ltd or the acquisition that that
+15:30
+was when the approval was happening so that jumps all the way back up to the top.
+15:35
+So in general the situation is that if you've got some stuff like a verb and
+15:40
+a noun phrase, then you start getting these prepositional phrases.
+15:45
+Well, the prepositional phrase can be modifying,
+15:49
+either this noun phrase or the verb.
+15:51
+But then when you get to the second prepositional phrase.
+15:55
+Well, there was another noun phrase inside this prepositional phrase.
+15:58
+So, now there's.
+15:59
+Three choices.
+16:00
+It can be modifying this noun phrase, that noun phrase or the verb phrase.
+16:04
+And then we get to another one.
+16:06
+So it's now got four choices.
+16:08
+And you don't get sort of a completely free choice,
+16:14
+cuz you do get a nesting constraint.
+16:16
+So once I've had for $27 a share referring back to the acquisition,
+16:22
+the next prepositional phrase has to, in general,
+16:25
+refer to either the acquisition or approved.
+16:28
+I say in general because there are exceptions to that.
+16:31
+And I'll actually talk about that later.
+16:33
+But most of the time in English, it's true.
+16:35
+You have to sort of refer to the same one or further back, so
+16:38
+you get a nesting relationship.
+16:40
+But I mean, even if you obey that nesting relationship, the result is that you
+16:45
+get an exponential number of ambiguities in a sentence based
+16:51
+on in the number of prepositional phrases you stick on the end of the sentence.
+16:55
+And so the series of the exponential series you get of these Catalan numbers.
+17:01
+And so Catalan numbers actually show up
+17:03
+in a lot of places in theoretical computer science.
+17:07
+Because any kind of structure that is somehow sort of similar,
+17:12
+if you're putting these constraints in, you get Catalan series.
+17:15
+So, are any of you doing CS228?
+17:20
+Yeah, so
+17:21
+another place the Catalan series turns up is that when you've got a vector graph and
+17:26
+you're triangulating it, the number of ways that you can triangulate your vector
+17:32
+graph is also giving you Catalan numbers.
+17:37
+Okay, so human languages get very ambiguous.
+17:41
+And we can hope to describe them on the basis of sort of
+17:45
+looking at these dependencies.
+17:48
+So that's important concept One.
+17:50
+The other important concept I wanted to introduce at this point is this idea of
+17:55
+full linguistics having annotated data in the form of treebanks.
+18:01
+This is probably a little bit small to see exactly.
+18:05
+But what this is, is we've got sentences.
+18:09
+These are actually sentences that come off Yahoo Answers.
+18:14
+And what's happened is, human beings have sat around and
+18:19
+drawn in the syntactic structures of these sentences as dependency graphs and
+18:24
+those things we refer to as treebanks.
+18:28
+And so a really interesting thing that's happened starting around
+18:33
+1990 is that people have devoted a lot of
+18:38
+resources to building up these kind of annotated treebanks and various
+18:43
+other kinds of annotated linguistic resources that we'll talk about later.
+18:47
+Now in some sense, from the viewpoint of sort of modern machine learning in 2017,
+18:52
+that's completely unsurprising,
+18:55
+because all the time what we do is say we want labelled data so
+18:59
+we can take our supervised classifier and chug on it and get good results.
+19:04
+But in many ways, it was kind of a surprising thing that happened,
+19:08
+which is sort of different to the whole of the rest of history, right?
+19:13
+Cuz for the whole of the rest of the history, it was back in this space of,
+19:18
+well, to describe linguistic structure what we should be doing
+19:22
+is writing grammar rules that describe what happens in linguistic structure.
+19:27
+Where here, we're no longer even attempting to write grammar rules.
+19:31
+We're just saying, give us some sentences.
+19:33
+And I'm gonna diagram these sentences and show you what their structure is.
+19:37
+And tomorrow give me a bunch more and I'll diagram them for you as well.
+19:41
+And if you think about it, in a way, that initially seems kind of
+19:46
+a crazy thing to do, cuz it seems like just putting structures over
+19:51
+sentences one by one seems really, really inefficient and slow.
+19:56
+Whereas, if you're writing a grammar,
+19:58
+you're writing this thing that generalizes, right?
+20:00
+The whole point of grammar is that you're gonna write this one small,
+20:03
+finite grammar.
+20:03
+And it describes an infinite number of sentences.
+20:06
+And so surely, that's a big labor saving effort.
+20:10
+But, slightly surprisingly, but maybe it makes sense in terms of what's happened
+20:16
+in machine learning, that it's just turned out to be kind of super successful,
+20:21
+this building of explicit, annotated treebanks.
+20:25
+And it ends up giving us a lot of things.
+20:28
+And I sort of mention a few of their advantages here.
+20:31
+First, it gives you a reusability of labor.
+20:34
+But the problem of human beings handwriting grammars is that they tend to,
+20:38
+in practice, be almost unreusable, because everybody does it differently and
+20:43
+has their idea of the grammar.
+20:45
+And people spend years working on one and no one else ever uses it.
+20:50
+Where effectively, these treebanks have been a really reusable tool that lots of
+20:54
+people have then built on top of to build all kinds of natural language
+20:58
+processing tools, of part of speech taggers and parsers and things like that.
+21:03
+They've also turned out to be a really useful resource, actually, for linguists,
+21:07
+because they give a kind of real languages are spoken, complete with syntactic
+21:12
+analyses that you can do all kinds of quantitative linguistics on top of.
+21:17
+It's genuine data that's broad coverage when people just work
+21:20
+with their intuitions as to what are the grammar rules of English.
+21:23
+They think of some things but not of other things.
+21:25
+And so this is actually a better way to find out all of the things that actually
+21:29
+happened.
+21:30
+For anything that's sort of probabilistic or
+21:33
+machine learning, it gives some sort of not only what's possible, but
+21:37
+how frequent it is and what other things it tends to co-occur with and
+21:41
+all that kind of distributional information that's super important.
+21:44
+And crucially, crucially, crucially, and we'll use this for assignment two,
+21:48
+it's also great because it gives you a way to evaluate any system that you
+21:54
+built because this gives us what we treat as ground truth, gold standard data.
+21:59
+These are the correct answers.
+22:01
+And then we can evaluate any tool on how good it is at reproducing those.
+22:06
+Okay, so that's the general advertisement.
+22:09
+And what I wanted to do now is sort of go through a bit more carefully for
+22:14
+sort of 15 minutes, what are dependency grammars and dependency structure?
+22:19
+So we've sort of got that straight.
+22:21
+I guess I've maybe failed to say, yeah.
+22:25
+I mentioned there was this sort of constituency context-free grammar
+22:29
+viewpoint and the dependency grammar viewpoint.
+22:33
+Today, it's gonna be all dependencies.
+22:36
+And what we're doing for assignment two is all dependencies.
+22:39
+We will get back to some notions of constituency and phrase structure.
+22:43
+You'll see those coming back in later classes in a few weeks' time.
+22:48
+But this is what we're going to be doing today.
+22:50
+And that's not a completely random choice.
+22:53
+It's turned out that, unlike what's happened in linguistics in most of
+22:57
+the last 50 years, in the last decade in natural language processing,
+23:02
+it's essentially been swept by the use of dependency grammars,
+23:06
+that people have found dependency grammars just a really suitable
+23:10
+framework on which to build semantic representations to get out the kind of
+23:14
+understanding of language that they'd like to get out easily.
+23:18
+They enable the building of very fast,
+23:21
+efficient parsers, as I'll explain later today.
+23:24
+And so in the last sort of ten years,
+23:26
+you've just sort of seen this huge sea change in natural language processing.
+23:30
+Whereas, if you pick up a conference volume around the 1990s, it was basically
+23:35
+all phrase structure grammars and one or two papers on dependency grammars.
+23:39
+And if you pick up a volume now,
+23:41
+what you'll find out is that of the papers they're using syntactic representations,
+23:46
+kind of 80% of them are using dependency representations.
+23:50
+Okay, yes.
+23:52
+>> What's that, a phrase structure grammar?
+23:53
+Phrase structure, what's the phrase structure grammar, that's exactly the same
+23:56
+as the context-free grammar when a linguist is speaking.
+23:59
+[LAUGH] Yes, formerly a context-free grammar.
+24:04
+Okay, so what does a dependency syntax say?
+24:09
+So the idea of dependency syntax is to say that the sort of model
+24:14
+of syntax is we have relationships between lexical items,
+24:19
+words, and only between lexical items.
+24:23
+They're binary, asymmetric relations, which means we draw arrows.
+24:28
+And we call those arrows dependencies.
+24:31
+So the whole, there is a dependency analysis of bills on ports and
+24:36
+immigration were submitted by Senator Brownback, Republican of Kansas.
+24:41
+Okay, so that's a start, normally hen we do dependency parsing,
+24:47
+we do a little bit more than that.
+24:50
+So typically we type the dependencies by giving them a name for
+24:56
+some grammatical relationship.
+25:00
+So I'm calling this the subject, and it's actually a passive subject.
+25:05
+And then this is an auxiliary modifier, and
+25:08
+Republican of Kansas is an appositional phrase that's coming off of Brownback.
+25:14
+And so we use this kind of typed dependency grammars.
+25:18
+And interestingly, I'm not going to go through it, but
+25:23
+there's sort of some interesting math that if you just have this,
+25:28
+although it's notationally very different,
+25:31
+from context-free grammar, these are actually equivalent
+25:37
+to a restricted kind of context-free grammar with one addition.
+25:41
+But things become sort of a bit more different once you put in a typing
+25:46
+of the dependency labels, where I wont go into that in great detail, right.
+25:51
+So a substantive theory of dependency grammar for
+25:55
+a language, we're then having to make some decisions.
+25:59
+So what we're gonna do is when we, we're gonna draw these arrows
+26:03
+between two things, and I'll just mention a bit more terminology.
+26:07
+So we have an arrow and its got what we called the tail end of the arrow, I guess.
+26:14
+And the word up here is sort of the head.
+26:16
+So bills is an argument of submitted, were is an auxiliary modifier of submitted.
+26:23
+And so this word here is normally referred to as the head, or the governor, or
+26:27
+the superior, or sometimes even the regent.
+26:31
+I'll normally call it the head.
+26:34
+And then the word at the other end of the arrow,
+26:37
+the pointy bit, I'll refer to as the dependent,
+26:40
+but other words that you can sometimes see are modifier, inferior, subordinate.
+26:46
+Some people who do dependency grammar really get into these classist notions
+26:50
+of superiors and inferiors, but I'll go with heads and dependents.
+26:55
+Okay, so the idea is you have a head of a clause and
+26:59
+then the arguments of the dependence.
+27:01
+And then when you have a phrase like,
+27:05
+by Senator Brownback, Republican of Texas.
+27:10
+It's got a head which is here being taken as Brownback and
+27:14
+then it's got words beneath it.
+27:16
+And so one of the main parts of dependency grammars at the end of the day
+27:21
+is you have to make decisions as to which words are heads and
+27:25
+which words are then the dependents of the heads of any particular structure.
+27:31
+So in these diagrams I'm showing you here, and
+27:35
+the ones I showed you back a few pages, what I'm actually showing you
+27:39
+here is analysis according to universal dependencies.
+27:43
+So universal dependencies is a new tree banking effort
+27:47
+which I've actually been very strongly involved in.
+27:50
+That sort of started a couple of years ago and
+27:52
+there are pointers in both earlier in the slides and
+27:55
+on the website if you wanna go off and learn a lot about universal dependencies.
+27:59
+I mean it's sort of an ambitious attempt to try and
+28:01
+have a common dependency representation that works over a ton of languages.
+28:06
+I could prattle on about it for
+28:08
+ages, and if by some off chance there's time at the end of the class I could.
+28:13
+But probably there won't be so I won't actually tell you a lot about that now.
+28:17
+But I will just mention one thing that probably you'll notice very quickly.
+28:22
+And we're also going to be using this representation in the assignment that's
+28:26
+being given out today, the analysis of universal dependencies
+28:32
+treats prepositions sort of differently to what you might have seen else where.
+28:37
+If you've seen any, many accounts of English grammar, or heard references in
+28:42
+some English classroom, to have prepositions, having objects.
+28:46
+In universal dependencies, prepositions don't have any dependents.
+28:52
+Prepositions are treated kind of like they were case markers,
+28:56
+if you know any language like, German, or
+28:59
+Latin, or Hindi, or something that has cases.
+29:04
+So that the by is sort of treated as if it were a case marker of Brownback.
+29:09
+So this sort of a bleak modifier of by Senator Brownback.
+29:13
+And so it's actually treating Brownback here as the head
+29:17
+with the preposition as sort of like a case marking dependent of by.
+29:21
+And that was sort of done to get more parallelism across different languages
+29:25
+of the world.
+29:26
+But I'll just mention that.
+29:29
+Other properties of old dependencies, normally dependencies form a tree.
+29:35
+So there are formal properties that goes along with that.
+29:37
+That means that they've got a single-head, they're acyclic, and they're connected.
+29:45
+So there is a sort of graph theoretic properties.
+29:49
+Yeah, I sort of mentioned that really
+29:52
+dependencies have dominated most of the world.
+29:55
+So just very quickly on that.
+29:58
+The famous first linguist was Panini,
+30:03
+who wrote his Grammar of Sanskrit around the fifth century BCE.
+30:08
+Really most of the work that Panini did was kind of on sound systems and
+30:13
+make ups of words, phonology, and morphology,
+30:16
+when we mentioned linguistic levels in the first class.
+30:20
+And he only did a little bit of work on the structure of sentences.
+30:24
+But the notation that he used for
+30:26
+structure of sentences was essentially a dependency grammar of having word
+30:31
+relationships being marked as dependencies.
+30:37
+Question?
+31:12
+Yeah, so the question is, well compare CFGs and PCFGs and
+31:17
+do they, dependency grammars look strongly lexicalized,
+31:22
+they're between words and does that makes it harder to generalize.
+31:28
+I honestly feel I just can't do justice to that
+31:31
+question right now if I'm gonna get through the rest of the lecture.
+31:33
+But I will make two comments, so I mean,
+31:36
+there's certainly the natural way to think of dependency grammars,
+31:41
+they're strongly lexicalized, you're drawing relationships between words.
+31:46
+Whereas the simplest way of thinking of context-free grammars is you've got these
+31:49
+rules in terms of categories like.
+31:51
+Noun phrase goes to determiner noun, optional prepositional phrase.
+31:56
+And so, that is a big difference.
+32:00
+But it kind of goes both ways.
+32:03
+So, normally, when actually, natural language processing people wanna work with
+32:07
+context-free grammars, they frequently lexicalize them so
+32:11
+they can do more precise probabilistic prediction, and vice versa.
+32:15
+If you want to do generalization and dependency grammar,
+32:18
+you can still use at least notions of parts of speech
+32:21
+to give you a level of generalization as more like categories.
+32:25
+But nevertheless, the kind of natural ways of sort of turning them into
+32:29
+probabilities, and machine learning models are quite different.
+32:33
+Though, on the other hand, there's sort of some results, or
+32:36
+sort of relationships between them.
+32:37
+But I would think I'd better not go on a huge digression.
+32:40
+But you have another question?
+32:44
+That means to rather than just have categories like noun phrase to have
+32:49
+categories like a noun phrase headed by dog, and so it's lexicalized.
+32:54
+Let's leave this for the moment though, please, okay.
+32:58
+[LAUGH] Okay, so
+33:02
+that's Panini, and there's a whole big history, right?
+33:05
+So, essentially for Latin grammarians, what they did for
+33:09
+the syntax of Latin, again, not very developed.
+33:13
+They mainly did morphology, but
+33:15
+it was essentially a dependency kind of analysis that was given.
+33:18
+There was sort of a flowering of Arabic grammarians in the first millennium, and
+33:23
+they essentially had a dependency grammar.
+33:25
+I mean, by contrast, I mean, really kind of context free grammars and constituency
+33:32
+grammar only got invented almost in the second half of the 20th century.
+33:39
+I mean, it wasn't actually Chomsky that originally invented them,
+33:41
+there was a little bit of earlier work in Britain, but only kind of a decade before.
+33:47
+So, there was this French linguist Lucien Tesniere,
+33:53
+he is often referred to as the father of modern dependency grammar,
+33:57
+he's got a book from 1959.
+33:59
+Dependency grammars have been very popular and more sorta free word order languages,
+34:06
+cuz notions, sort of like context-free grammars work really well for
+34:10
+languages like English that have very fixed word order, but
+34:13
+a lot of other languages of the world have much freer word order.
+34:19
+And that's often more naturally described with dependency grammars.
+34:24
+Interestingly, one of the very first natural language parsers developed
+34:28
+in the US was also a dependency parser.
+34:33
+So, David Hays was one of the first US computational linguists.
+34:37
+And one of the founders of the Association for Computational Linguistics which is our
+34:42
+main kind of academic association where we publish our conference papers, etc.
+34:46
+And he actually built in 1962, a dependency parser for English.
+34:55
+Okay, so a lot of history of dependency grammar.
+34:58
+So, couple of other fine points to note about the notation.
+35:03
+People aren't always consistent in which way they draw the arrows.
+35:07
+I'm always gonna draw the arrows, so they point, go from a head to a dependent,
+35:12
+which is the direction which Tesniere drew them.
+35:14
+But there are some other people who draw the arrows the other way around.
+35:18
+So, they point from the dependent to the head.
+35:20
+And so, you just need to look and see what people are doing.
+35:23
+The other thing that's very commonly done, and we will do in our parses,
+35:27
+is you stick this pseudo-word, which might be called ROOT or
+35:32
+WALL, or some other name like that, at the start of the sentence.
+35:37
+And that kind of makes the math and formalism easy,
+35:42
+because, then, every sentence starts with root and something is a dependent of root.
+35:48
+Or, turned around the other way, if you think of what parsing a dependency grammar
+35:53
+means is for every word in the sentence you're going to say,
+35:56
+what is it a dependent of, because if you do that you're done.
+35:59
+You've got the dependency structure of the sentence.
+36:02
+And what you're gonna want to say is, well, it's either gonna be a dependent of
+36:07
+some other word in the sentence, or it's gonna be a dependent of
+36:10
+the pseudo-word ROOT, which is meaning it's the head of the entire sentence.
+36:16
+And so, we'll go through some specifics of dependency parsing
+36:22
+the second half of the class.
+36:24
+But the kind of thing that you should think about is well,
+36:27
+how could we decide which words are dependent on what?
+36:33
+And there are certain various information sources that we can think about.
+36:38
+So yeah, it's sort of totally natural with the dependency representation to just
+36:42
+think about word relationships.
+36:44
+And that's great, cuz that'll fit super well with what we've done already in
+36:48
+distributed word representations.
+36:49
+So actually, doing things this way just fits well
+36:53
+with a couple of tools we already know how to use.
+36:57
+We'll want to say well, discussion of issues,
+37:00
+is that a reasonable attachment as lexical dependency?
+37:04
+And that's a lot of the information that we'll actually use, but
+37:07
+there's some other sources of information that we'd also like to use.
+37:11
+Dependency distance, so sometimes, there are dependency relationships and
+37:16
+sentences between words that is 20 words apart when you got some big long sentence,
+37:21
+and you're referring that back to some previous clause, but
+37:23
+it's kind of uncommon.
+37:24
+Most of dependencies are pretty short distance, so you want to prefer that.
+37:30
+Many dependencies don't, sort of, span certain kinds of things.
+37:35
+So, if you have the kind of dependencies that occur inside noun phrases,
+37:40
+like adjective modifier, they're not gonna cross over a verb.
+37:44
+It's unusual for many kinds of dependencies to cross over a punctuation,
+37:49
+so it's very rare to have a punctuation between a verb and a subject and
+37:53
+things like that.
+37:54
+So, looking at the intervening material gives you some clues.
+37:57
+And the final source of information is sort of thinking about heads, and thinking
+38:03
+how likely they are to have to dependence in what number, and on what sides.
+38:09
+So, the kind of information there is, right, a word like the,
+38:13
+is basically not likely to have any dependents at all, anywhere.
+38:18
+So, you'd be surprised if it did.
+38:21
+Words like nouns can have dependents, and they can have quite a few dependents,
+38:26
+but they're likely to have some kinds like determiners and adjectives on the left,
+38:31
+other kinds like prepositional phrases on the right
+38:34
+verbs tend to have a lot of dependence.
+38:36
+So, different kinds of words have different kinds of patterns of dependence,
+38:40
+and so there's some information there we could hope to gather.
+38:45
+Okay, yeah, I guess I've already said the first point.
+38:50
+How do we do dependency parsing?
+38:52
+In principle, it's kind of really easy.
+38:56
+So, we're just gonna take every word in the sentence and say,
+39:01
+make a decision as to what word or root this word is a dependent of.
+39:07
+And we do that with a few constraints.
+39:10
+So normally, we require that only one word can be a dependent of root,
+39:16
+and we're not going to allow any cycles.
+39:19
+And if we do both of those things,
+39:23
+we're guaranteeing that we make the dependencies of a tree.
+39:27
+And normally, we want to make out dependencies a tree.
+39:32
+And there's one other property I then wanted to mention,
+39:37
+that if you draw your dependencies as I have here, so
+39:42
+all the dependencies been drawn as loops above the words.
+39:48
+It's different if you're allowed to put some of them below the words.
+39:52
+There's then a question as to whether you can draw them like this.
+39:56
+So that they have that kind of nice, little nesting structure, but
+40:00
+none of them cross each other.
+40:02
+Or whether, like these two that I've got here, where they necessarily
+40:07
+cross each other, and I couldn't avoid them crossing each other.
+40:12
+And what you'll find is in most languages, certainly English,
+40:17
+the vast majority of dependency relationships have a nesting
+40:22
+structure relative to the linear order.
+40:26
+And if a dependency tree is fully nesting,
+40:29
+it's referred to as a projective dependency tree,
+40:32
+that you can lay it out in this plane, and have sort of a nesting relationship.
+40:37
+But there are few structures
+40:41
+in English where you'd get things that aren't nested and yet crossing.
+40:45
+And this sentence is a natural example of one.
+40:47
+So I'll give a talk tomorrow on bootstrapping.
+40:50
+So something that you can do with noun modifiers, especially if they're
+40:55
+kind of long words like bootstrapping or techniques of bootstrapping,
+40:59
+is you can sort of move them towards the end of the sentence, right.
+41:03
+I could have said I'll give a talk on bootstrapping tomorrow.
+41:07
+But it sounds pretty natural to say, I'll give a talk tomorrow on bootstrapping.
+41:12
+But this on bootstrapping is still modifying the talk.
+41:15
+And so that's referred to by linguists as right extraposition.
+41:20
+And so when you get that kind of rightward movement of phrases,
+41:23
+you then end up with these crossing lines.
+41:26
+And that gives you what's referred to as a non-projective dependency tree.
+41:31
+So, importantly, it is still a tree if you sort of
+41:35
+ignore the constraints of linear order, and you're just drawing it out.
+41:39
+There's a graph in theoretical computer science, right, it's still a tree.
+41:43
+It's only when you consider this extra thing of the linear order of the words,
+41:48
+that you're then forced to have the lines across.
+41:51
+And so that property which you don't actually normally see mentioned in
+41:54
+theoretical computer science discussions of graphs
+41:57
+is then this property that's referred to projectivity.
+42:00
+Yes. >> [INAUDIBLE]
+42:08
+>> So the questions is is it possible to
+42:10
+recover the order of the words from a dependency tree.
+42:14
+So given how I've defined dependency trees, the strict answer is no.
+42:20
+They aren't giving you the order at all.
+42:22
+Now, in practice, people write down the words of a sentence in order and have
+42:27
+these crossing brackets, right, crossing arrows when they're non-projective.
+42:33
+And, of course, it would be a straightforward thing to index the words.
+42:37
+And, obviously, it's a real thing about languages that they have linear order.
+42:41
+One can't deny it.
+42:42
+But as I've defined dependency structures, yeah,
+42:47
+you can't actually recover the order of words from them.
+42:50
+Okay, one more slide before we get to the intermission.
+42:56
+Yeah, so in the second half of the class,
+42:58
+I'm gonna tell you about a method of dependency parsing.
+43:04
+I just wanted to say, very quickly, there are a whole bunch
+43:08
+of ways that people have gone about doing dependency parsing.
+43:12
+So one very prominent way of doing dependency parsing is using dynamic
+43:17
+programming methods,
+43:18
+which is normally what people have used for constituency grammars.
+43:22
+A second way of doing it is to use graph algorithms.
+43:27
+So a common way of doing dependency parsing, you're using MST algorithms,
+43:32
+Minimum Spanning Tree algorithms.
+43:33
+And that's actually a very successful way of doing it.
+43:36
+You can view it as kind of a constraint satisfaction problem.
+43:40
+And people have done that.
+43:43
+But the way we're gonna look at it is this fourth way which is, these days,
+43:47
+most commonly called transition based-parsing, though when it was first
+43:51
+introduced, it was quite often called deterministic dependency parsing.
+43:56
+And the idea of this is that we're kind of greedily going to
+44:01
+decide which word each word is a dependent of,
+44:07
+guided by having a machine learning classifier.
+44:11
+And this is the method you're going to use for assignment two.
+44:14
+So one way of thinking about this is, so
+44:17
+far in this class, we only have two hammers.
+44:22
+One hammer we have is word vectors, and you can do a lot with word vectors.
+44:27
+And the other hammer we have is how to build a classifier as
+44:32
+a feedforward neural network with a softmax on top so
+44:36
+it classifies between two various classes.
+44:40
+And it turns out that if those are your two hammers,
+44:43
+you can do dependency parsing this way and it works really well.
+44:47
+And so, therefore, that's a great approach for using in assignment two.
+44:51
+And it's not just a great approach for assignment two.
+44:54
+Actually method four is the dominant way these days of doing
+44:59
+dependency parsing because it has extremely good properties of scalability.
+45:07
+That greedy word there is a way of saying this is a linear time algorithm,
+45:12
+which none of the other methods are.
+45:15
+So in the modern world of web-scale parsing,
+45:18
+it's sort of become most people's favorite method.
+45:21
+So I'll say more about that very soon.
+45:24
+But before we get to that,
+45:25
+we have Ajay doing our research spotlight with one last look back at word vectors.
+45:33
+>> Am I on? Okay, awesome, so
+45:35
+let's take a break from dependency parsing and
+45:38
+talk about something we should know a lot about, word embeddings.
+45:43
+So for today's research highlight, we're gonna be talking about a paper titled,
+45:48
+Improving Distributional Similarity with Lessons Learned from Word Embeddings.
+45:54
+And it's authored by Levy, et al.
+45:58
+So in class we've learned two major paradigms for generating word vectors.
+46:03
+We've learned count-based distributional models,
+46:07
+which essentially utilize a co-occurrence matrix to produce your word vectors.
+46:13
+And we've learned SVD, which is Singular Value Decomposition.
+46:17
+And we haven't really talked about PPMI.
+46:20
+But, in effect,
+46:21
+it still uses that co-occurrence matrix to produce sparse vector encodings for words.
+46:26
+We've also learned neural network-based models,
+46:28
+which you all should have lots of experience with now.
+46:31
+And, specifically, we've talked about Skip-Gram Negative Sampling,
+46:37
+as well as CBOW methods.
+46:39
+And GloVe is also a neural network-based model.
+46:43
+And the conventional wisdom is that neural network-based models are superior
+46:48
+to count-based models.
+46:51
+However, Levy et al proposed that hyperparameters and
+46:56
+system design choices are more important, not the embedding algorithms themselves.
+47:00
+So they're challenging this popular convention.
+47:04
+And so, essentially, what they do in their paper is
+47:09
+propose a slew of hyperparameters that, when implemented and tuned over,
+47:15
+the count-based distributional models pretty much approach the performance
+47:21
+of neural network-based models, to the point where there's no consistent,
+47:24
+better choice across the different tasks that they tried.
+47:29
+And a lot of these hyperparameters were actually
+47:32
+inspired by these neural network-based models such as Skip-Gram.
+47:37
+So if you recall, which you all should be very familiar with this,
+47:40
+we have two hyperparameters in Skip-Gram.
+47:44
+We have the number of negative samples that we're sampling, as well as
+47:47
+the unigram distributions smoothing exponent, which we fixed at 3 over 4.
+47:51
+But it can be thought of as more of a system design choice.
+47:57
+And these can also be transferred over to the account based variants.
+48:00
+And I'll go over those very quickly.
+48:03
+So the single hyper parameter that Levy et al.,
+48:07
+proposed that had the biggest impact in performance was
+48:12
+Context Distribution Smoothing which is analogous to
+48:16
+the unigram distribution smoothing constant 3 over 4 here.
+48:23
+And in effect they both achieved the same goal which is
+48:27
+to sort of smooth out your distribution such that you're penalizing rare words.
+48:33
+And using this hyperparameter which interestingly enough,
+48:38
+the optimal alpha they found was exactly 3 over 4,
+48:43
+which is the same as the Skip-Gram Unigram smoothing exponent.
+48:48
+They were able to increase performance by an average of three points across
+48:52
+tasks on average which is pretty interesting.
+48:56
+And they also propose Shifted PMI,
+48:58
+which I'm not gonna get into the details of this.
+49:00
+But this is analogous to the negative sampling,
+49:05
+choosing the number of negative samples in Skip-Gram.
+49:10
+And they've also proposed a total of eight hyperparameters in total.
+49:16
+And we've described one of them which is the Context Distribution Smoothing.
+49:22
+So here's the results.
+49:24
+And this is a lot of data, and if you're confused, that's actually the conclusion
+49:29
+that I want you to arrive at because clearly there's no trend here.
+49:35
+So, what the authors did was take all four methods, tried
+49:41
+three different windows, and then test all the models across a different task.
+49:46
+And those are split up into word similarity and analogy task.
+49:50
+And all of these methods are tuned
+49:54
+to find the best hyperparameters to optimize for the performance.
+49:57
+And the best models are bolded, and as you can see there's no consistent best model.
+50:03
+So, in effect, they're challenging the popular convention that
+50:09
+neural network-based models are superior to the count-based models.
+50:15
+However, there's a few things to note here.
+50:18
+Number one, adding hyperparameters is never a great thing because
+50:23
+now you have to train those hyperparameters which takes time.
+50:28
+Number two, we still have the issues with count-based
+50:33
+distributional models specifically with respect to the computational
+50:40
+issues of storing PPMI counts as well as performing SVD.
+50:52
+So the key takeaways here is that the paper challenges the conventional wisdom
+50:56
+that neutral network-based models are in fact superior to count-based models.
+51:02
+Number two, while model design is important,
+51:05
+hyperparameters are also key for achieving good results.
+51:09
+So this implies specifically to you guys especially if you're
+51:13
+doing a project instead of assignment four.
+51:16
+You might implement the model but that might only take you half way there.
+51:21
+Some models to find your optimal hyperparameters might take days or
+51:26
+even weeks to find.
+51:27
+So don't discount their importance.
+51:29
+And, finally, my personal interest within ML is in deep representation learning.
+51:35
+And this paper specifically excites me because I think it sort of
+51:39
+displays that there's still lots of work to be done in the field.
+51:44
+And so, the final takeaway is challenge the status quo.
+51:49
+Thank you.
+51:50
+>> [APPLAUSE]
+51:55
+>> Okay, thanks a lot Ajay.
+51:58
+Okay and so now we're back to learning about how to
+52:03
+build a transition based dependency parser.
+52:07
+So, maybe in 103 or compilers class, formal languages class,
+52:13
+there's this notion of shift reduced parsing.
+52:17
+How many of you have seen shift reduced parsing somewhere?
+52:21
+A minority it turns out.
+52:23
+They just don't teach formal languages the way they used to in the 1960s in computer
+52:28
+science anymore.
+52:29
+>> [LAUGH] >> You'll just have to spend more time
+52:33
+with Jeff Ullman.
+52:34
+Okay, well I won't assume that you've all seen that before.
+52:37
+Okay, essentially what we're going to have is,
+52:46
+I'll just skip these two slides and go straight to the pictures.
+52:51
+Because, they will be much more understandable.
+52:53
+But before I go on, I'll just mention the picture on this page,
+52:57
+that's a picture of Joakim Nivre.
+52:59
+So Joakim Nivre is a computational linguist in Uppsala,
+53:03
+Sweden who pioneered this approach of transition based dependency parsing.
+53:08
+He's one of my favorite computational linguists.
+53:11
+I mean he was also an example, going along with what Ajay said,
+53:15
+of sort of doing something unpopular and
+53:19
+out of the mainstream and proving that you can get it to work well.
+53:23
+So at an age when everyone else was trying to build sort of fancy dynamic program
+53:28
+parsers Joakim said no,no, what I'm gonna do, is I'm just gonna take each
+53:33
+successive word and have a straight classifier that says what to do with that.
+53:38
+And go onto the next word completely greedy cuz maybe that's kinda like what
+53:42
+humans do with incremental sentence processing and
+53:45
+I'm gonna see how well I can make that work.
+53:48
+And it turned out you can make it work really well.
+53:51
+So and then sort of transition based parsing has grown to this sort of
+53:56
+really widespread dominant way of doing parsing.
+53:59
+So it's good to find something different to do If everyone else is doing something,
+54:05
+it's good to think of something else that might be promising that you
+54:08
+got an idea from.
+54:08
+And I also like Joakim because he's actually another person that's really
+54:12
+interested in human languages and
+54:14
+linguistics which actually seems to be a minority of the field of
+54:18
+natural language processing when it comes down to it.
+54:20
+Okay, so here's some more formalism, but I'll skip that as well and
+54:25
+show it to you afterwards and I'll give you the idea of what
+54:29
+an arc-standard transition-based dependency parser does.
+54:36
+So what we're gonna do is were going to have a sentence we want to parse,
+54:41
+I ate fish, and so we've got some rules for parsing which is the transition
+54:46
+scheme which is written so small you can't possibly read it.
+54:51
+And this is how we start.
+54:53
+So we have two things, we have a stack, and
+54:56
+a stack is kinda got the gray cartouche around that.
+55:00
+And we start off parsing any sentence by putting it on the stack,
+55:05
+one thing, which is our root symbol.
+55:08
+Okay and the stack has its top towards the right.
+55:14
+And then we have this other thing which gets referred to as the buffer.
+55:18
+And the buffer is the orange cartouche and
+55:20
+the buffer is the sentence that we've got to deal with.
+55:24
+And so the thing that we regard as the top of the buffer is the thing to the left,
+55:29
+because we're gonna be taking off excessive words right?
+55:32
+So the top of both of them is sort of at that intersection point between them.
+55:37
+Okay and so, to do parsing under this transition-based
+55:42
+scheme there are three operations that we can perform.
+55:47
+We can perform, they're called Shift, Left-Arc and Right-Arc.
+55:53
+So the first one that we're gonna do is shift operation.
+55:57
+So shift is really easy.
+55:59
+All we do when we do a shift is we take the word that's on the top of the buffer
+56:04
+and put it on the top of the stack.
+56:07
+And then we can shift again and
+56:09
+we take the word that's on the top of the buffer and put it on the top of the stack.
+56:14
+Remember the stack, the top is to the right.
+56:17
+The buffer, the top is to the left.
+56:20
+That's pretty easy, right?
+56:22
+Okay, so there are two other operations left in this arc-standard
+56:28
+transition scheme which were left arc and right arc.
+56:33
+So what left arc and right arc are gonna do is we're going to make
+56:38
+attachment decisions by adding a word as the dependent,
+56:42
+either to the left or to the right.
+56:45
+Okay, so what we do for left arc is
+56:50
+on the stack we say that the second to the top
+56:55
+of the stack is a dependent of the thing that's the top of the stack.
+57:00
+So, I is a dependent of ate, and we remove that second top thing from the stack.
+57:06
+So that's a left arc operation.
+57:09
+And so now we've got a stack with just [root] ate on it.
+57:13
+But we collect up our decisions, so we've made a decision that I is a dependent of
+57:18
+ate, and that's that said A that I am writing in small print off to the right.
+57:22
+Okay, so we still had our buffer with fish on it.
+57:26
+So the next thing we're gonna do is shift again and put fish on the stack.
+57:33
+And so at that point our buffer is empty,
+57:35
+we've moved every word on to the stack in our sentence.
+57:38
+And we have on it root ate fish, okay.
+57:41
+So then the third operation we have
+57:46
+is right arc, and right arc is just the opposite of left arc.
+57:50
+So for the right arc operation, we say the thing that's on the top of the stack
+57:56
+should be made a dependent of the thing that's second to top on the stack.
+58:00
+We remove it from the stack and we add an arc saying that.
+58:05
+So we right arc, so
+58:08
+we say fish is a dependent of ate, and we remove fish from the stack.
+58:13
+We add a new dependency saying that fish is a dependent of ate.
+58:19
+And then we right arc one more time so
+58:24
+then we're saying that ate is the dependent of the root.
+58:28
+So we pop it off the stack and we're just left with root on the stack, and
+58:33
+we've got one new dependency saying that ate is a dependent of root.
+58:38
+So at this point, And I'll just mention, right,
+58:43
+in reality there's, I left out writing the buffer in a few of
+58:47
+those examples there just because it was getting pretty crowded on the slide.
+58:51
+But really the buffer is always there, right, it's not that the buffer
+58:55
+disappeared and came back again, it's just I didn't always draw it.
+58:59
+So but in our end state,
+59:01
+we've got one thing on the stack, and we've got nothing in the buffer.
+59:06
+And that's the good state that we want to be in if we
+59:08
+finish parsing our sentence correctly.
+59:11
+And so we say, okay, we're in the finished state and we stop.
+59:14
+And so that is almost all there
+59:19
+is to arc-standard transition based parsing.
+59:24
+So if just sort of go back to these slides that I skipped over.
+59:30
+Right, so we have a stack and our buffer, and then on the side we have a set of
+59:35
+dependency arcs A which starts off empty and we add things to.
+59:41
+And we have this sort of set of actions which are kind of legal moves that we can
+59:45
+make for parsing, and so this was how things are.
+59:50
+So we have a start condition, ROOT on the stack, buffer is the sentence, no arcs.
+59:56
+We have the three operations that we can perform.
+60:00
+Here I've tried to write them out formally, so
+60:03
+the sort of vertical bar is sort of appends an element to a list operation.
+60:09
+So this is sort of having wi as the first word on the buffer, it's written
+60:16
+the opposite way around for the stack because the head's on the other side.
+60:20
+And so we can sort of do this shift operation of moving a word onto the stack
+60:24
+and these two arc operations add a new dependency.
+60:29
+And then removing one word from the stack and our ending condition is one
+60:34
+thing on the stack which will be the root and an empty buffer.
+60:39
+And so that's sort of the formal operations.
+60:42
+So the idea of transition based parsing is that you have this sort of
+60:47
+set of legal moves to parse a sentence in sort of a shift reduced way.
+60:52
+I mean this one I referred to as arc-standard cuz it turns out there
+60:55
+are different ways you can define your sets of dependencies.
+60:59
+But this is the simplest one, the one we'll use for the assignment, and
+61:02
+one that works pretty well.
+61:04
+Question?
+61:06
+I was gonna get to that.
+61:08
+So I've told you the whole thing except for
+61:11
+one thing which is this just gives you a set of possible moves.
+61:15
+It doesn't say which move you should do when.
+61:18
+And so that's the remaining thing that's left.
+61:22
+And I have a slide on that.
+61:24
+Okay, so the only thing that's left is to say, gee, at any point in time,
+61:30
+like we were here, at any point in time, you're in some configuration, right.
+61:36
+You've got certain things on there, certain things in the stacks,
+61:40
+certain things in your buffer, you have some set of arcs that you've already made.
+61:45
+And which one of these operations do I do next?
+61:50
+And so that's the final thing.
+61:52
+And the way that you do that, that Nivre proposed,
+61:56
+is well what we should do is just build a machine learning classifier.
+62:02
+Since we have a tree bank with parses of sentences,
+62:06
+we can use those parses of sentences to see
+62:09
+which sequence of operations would give the correct parse of a sentence.
+62:14
+I am not actually gonna go through that right now.
+62:17
+But if you have the structure of a sentence in a tree bank,
+62:20
+you can sort of work out deterministically the sequence of shifts and
+62:25
+reducers that you need to get that structure.
+62:28
+And it's indeed unique, right, that for each tree structure there's a sequence of
+62:32
+shifts and left arcs and right arcs that will give you the right structure.
+62:36
+So you take the tree, you read off the correct operation sequence, and
+62:40
+therefore you've got a supervised classification problem.
+62:43
+Say in this scenario, what you should do next is you should shift,
+62:48
+and so you're then building a classified to try to predict that.
+62:52
+So in the early work that started off with Nivre and others in the mid 2000s,
+63:00
+this was being done with conventional machine learning classifiers.
+63:05
+So maybe an SVM, maybe a perceptron, a kind of maxent / soft max classifiers,
+63:11
+various things, but sort of some classified that you're gonna use.
+63:16
+So if you're just deciding between the operations, shift left arc,
+63:21
+right arc, you have got at most three choices.
+63:24
+Occasionally you have less because if there's nothing left on the buffer
+63:28
+you can't shift anymore, so then you'd only have two choices left maybe.
+63:32
+But something I didn't mention when I was showing this is when
+63:37
+I added to the arc set, I didn't only say that fish is an object of ate.
+63:41
+I said, the dependency is the object of ate.
+63:45
+And so if you want to include dependency labels,
+63:49
+the standard way of doing that is you just have sub types of left arc and right arc.
+63:54
+So rather than having three choices.
+63:57
+If you have a approximately 40 different dependency labels.
+64:00
+As we will in assignment two and in universal dependencies.
+64:04
+You actually end up with the space of 81 way classification.
+64:10
+Because you have classes with names like left arc as an object.
+64:15
+Or left arc as an adjectival modifier.
+64:19
+For the assignment, you don't have to do that.
+64:21
+For the assignment, we're just doing un-type dependency trees.
+64:25
+Which sort of makes it a bit more scalable and easy for you guys.
+64:28
+So it's only sort of a three way decision is all you're doing.
+64:32
+In most real applications, it's really handy to have those dependency labels.
+64:37
+Okay.
+64:38
+And then what do we use as features?
+64:41
+Well, in the traditional model, you sort of looked at all the words around you.
+64:45
+You saw what word was on the top of the stack.
+64:48
+What was the part of speech of that word?
+64:50
+What was the first word in the buffer?
+64:51
+What was its parts of speech?
+64:53
+Maybe it's good to look at the thing beneath the top of the stack.
+64:57
+And what word and part of speech it is.
+65:00
+And further ahead in the buffers.
+65:01
+So you're looking at a bunch of words.
+65:03
+You're looking at some attributes of those words, such as their part of speech.
+65:07
+And that was giving you a bunch of features.
+65:10
+Which are the same kind of classic, categorical,
+65:13
+sparse features of traditional machine learning.
+65:17
+And people were building classifiers over that.
+65:20
+Yeah, Question?
+65:27
+So yeah, the question is are most treebanks annotated with part of speech?
+65:32
+And the answer is yes.
+65:33
+Yeah, so I mean.
+65:35
+We've barely talked about part of speech so far,
+65:38
+things like living things, nouns, and verbs.
+65:41
+So the simplest way of doing dependency parsing as you're
+65:44
+first writing a part of speech, tag it or assign parts of speech to words.
+65:48
+And then you're doing the syntactic structure of dependency parsing over
+65:53
+a sequence of word, part of speech, tag pairs.
+65:56
+Though there has been other work that's done joint parsing and
+66:00
+part of speech tag prediction at the same time.
+66:02
+Which actually has some advantages, because you can kind of explore.
+66:06
+Since the two things are associated,
+66:09
+you can get some advantages from doing it jointly.
+66:13
+Okay, on the simplest possible model, which was what Nivre started to explore.
+66:19
+There was absolutely no search.
+66:21
+You just took the next word, ran your classifier.
+66:23
+And said, that's the object of the verb, what's the next word?
+66:28
+Okay, that one's a noun modifier.
+66:29
+And you went along and just made these decisions.
+66:33
+Now you could obviously think, gee maybe if I did some more searching and
+66:37
+explore different alternatives I could do a bit better.
+66:39
+And the answer is yes, you can.
+66:41
+So there's a lot of work in dependency parsing.
+66:44
+Which uses various forms of beam search where you explore different alternatives.
+66:48
+And if you do that, it gets a ton slower.
+66:51
+And gets a teeny bit better in terms of your performance results.
+66:57
+Okay, but especially if you start from the greediest end or you have a small beam.
+67:02
+The secret of this type of parsing is it gives you extremely fast
+67:07
+linear time parsing.
+67:09
+Because you're just going through your corpus, no matter how big.
+67:12
+And say, what's the next word?
+67:14
+Okay, attach it there.
+67:15
+What's the next word?
+67:16
+Attach it there.
+67:17
+And you keep on chugging through.
+67:19
+So when people, like prominent search engines in suburbs south of us,
+67:24
+want to parse the entire content of the Web.
+67:26
+They use a parser like this because it goes super fast.
+67:31
+Okay.
+67:33
+And so, what was shown was these kind of greedy dependencies parses.
+67:38
+Their accuracy is slightly below the best dependency parses possible.
+67:44
+But their performance is actually kind of close to it.
+67:48
+And the fact that they're sort of so fast and scalable.
+67:51
+More than makes up for their teeny performance decrease.
+67:55
+So that's kind of exciting.
+67:59
+Okay, so then for the last few minutes I now want to get back to neural nets.
+68:04
+Okay so where are we at the moment?
+68:06
+So at the moment we have a configuration where we have a stack and
+68:10
+a buffer and parts of speech or words.
+68:12
+And as we start to build some structure.
+68:19
+The things that we've taken off the stack when we build arcs.
+68:22
+We can kind of sort of think of them as starting to build up a tree as we go.
+68:26
+As I've indicated with that example below.
+68:29
+So, the classic way of doing that is you could then say, okay,
+68:33
+well we've got all of these features.
+68:35
+Like top of stack is word good, or top of stack is word bad,
+68:39
+or top of stack is word easy.
+68:41
+Top of stack's part of speech as adjective.
+68:43
+Top of stack's word is noun.
+68:45
+And if you start doing that.
+68:47
+When you've got a combination of positions and words and parts of speech.
+68:52
+You very quickly find that the number of features you have in your model
+68:57
+is sort of order ten million.
+68:59
+Extremely, extremely large.
+69:01
+But you know that's precisely how these kinds of parses were standardly made
+69:06
+in the 2000s.
+69:08
+So you're building these huge machine learning classifiers over sparse features.
+69:13
+And commonly you even had features that were conjunctions of things.
+69:16
+As that helped you predict better.
+69:18
+So you had features like the second word on the stack is has.
+69:22
+And its tag is present tense verb.
+69:25
+And the top word on the stack is good.
+69:27
+And things like that would be one feature.
+69:28
+And that's where you easily get into the ten million plus features.
+69:33
+So even doing this already worked quite well.
+69:37
+But the starting point from going on is saying,
+69:41
+well it didn't work completely great.
+69:46
+That we wanna do better than that.
+69:48
+And we'll go on and do that in just a minute.
+69:52
+But before I do that, I should mention just the evaluation of dependency parsing.
+69:56
+Evaluation of dependency parsing is actually very easy.
+70:00
+Cuz since for each word we're saying, what is it a dependent of.
+70:04
+That we're sort of making choices of what each word is a dependent of.
+70:09
+And then there's a right answer.
+70:10
+Which we get from our tree bank, which is the gold thing.
+70:14
+We're sort of, essentially, just counting how often we are right.
+70:18
+Which is an accuracy measure.
+70:20
+And so, there are two ways that that's commonly done.
+70:24
+One way is that we just look at the arrows and ignore the labels.
+70:29
+And that's often referred to as the UAS measure, unlabeled accuracy.
+70:34
+Or we can also pay attention to the labels.
+70:37
+And say you're only right if you also get the label right.
+70:40
+And that's referred to as the LAS, the labelled accuracy score.
+70:44
+Yes?
+70:53
+So the question is, don't you have waterfall effects if you get something
+70:58
+wrong high up that'll destroy everything else further down?
+71:02
+You do get some of that.
+71:04
+Because, yes, one decision will prevent some other decisions.
+71:10
+It's typically not so bad.
+71:12
+Because even if you mis-attach something like a prepositional phrase attachment.
+71:16
+You can still get right all of the attachments inside noun
+71:19
+phrase that's inside that prepositional phrase.
+71:21
+So it's not so bad.
+71:23
+And I mean actually dependency parsing
+71:26
+evaluation suffers much less badly from waterfall effects.
+71:30
+Than doing CFG parsing which is worse in that respect.
+71:35
+So it's not so bad.
+71:38
+Okay, I had one slide there which I think I should skip.
+71:49
+Okay I'll skip on to Neural ones.
+71:54
+Okay, so, people could build quite good
+72:00
+machine learning dependency parsers on these kind of categorical features.
+72:05
+But nevertheless, there was a problems of doing that.
+72:09
+So, Problem #1 is the features were just super sparse.
+72:14
+That if you typically might have a tree bank that is an order about a million
+72:19
+words, and if you're then trying to train 15 million features,
+72:24
+which are kinda different combinations of configurations.
+72:27
+Not surprisingly, a lot of those configurations, you've seen once or twice.
+72:31
+So, you just don't have any accurate model of what happens in
+72:35
+different configurations.
+72:36
+You just kind of getting these weak feature weights, and
+72:40
+crossing your fingers and hoping for the best.
+72:42
+Now, it turns out that modern machine learning,
+72:44
+crossing your fingers works pretty well.
+72:46
+But, nevertheless, you're suffering a lot from sparsity.
+72:50
+Okay, the second problem is, you also have an incompleteness problem,
+72:54
+because lots of configurations you'll see it run time, will be
+72:58
+different configurations that you just never happened to see the configuration.
+73:02
+When exquisite was the second word on the stack, and
+73:05
+the top word of the stack, speech, or something.
+73:10
+Any kind of word pale, I've only seen a small fraction of them.
+73:13
+Lot's of things you don't have features for.
+73:16
+The third one is a little bit surprising.
+73:18
+It turned out that when you looked at these symbolic dependency parsers,
+73:23
+and you ask what made them slow.
+73:25
+What made them slow wasn't running your SVM,
+73:29
+or your dot products in your logistic regression, or things like that.
+73:34
+All of those things were really fast.
+73:37
+What these parsers were ending up spending 95% of their time doing
+73:42
+is just computing these features, and looking up their weights because you
+73:46
+had to sort of walk around the stack and the buffer and sort of put together.
+73:50
+A feature name, and then you had to look it up in some big hash table to
+73:54
+get a feature number and a weight for it.
+73:56
+And all the time is going on that, so
+73:59
+even though there are linear time, that slowed them down a ton.
+74:04
+So, in a paper in 2014 Danqi and
+74:08
+I developed this alternative where we said well,
+74:12
+let's just replace that all with a neural net classifier.
+74:16
+So that way, we can have a dense compact feature representation and
+74:20
+do classification.
+74:22
+So, rather than having our 10 million categorical features,
+74:26
+we'll have a relatively modest number of dense features, and
+74:31
+we'll use that to decide our next action.
+74:33
+And so, I want to spend the last few minutes sort of showing
+74:37
+you how that works, and this is basically question two of the assignment.
+74:42
+Okay, and basically, just to give you the headline, this works really well.
+74:48
+So, this was sort of the outcome the first Parser MaltParser.
+74:51
+So, it has pretty good UAS and
+74:54
+LAS and it had this advantage, that it was really fast.
+74:58
+When I said that's been the preferred method, I give you some contrast in gray.
+75:02
+So, these are two of the graph base parsers.
+75:05
+So, the graph based parsers have been somewhat more accurate, but
+75:09
+they were kind of like two orders in magnitude slower.
+75:12
+So, if you didn't wanna parse much stuff than you wanted accuracy, you'd use them.
+75:15
+But if you wanted to parse the web, no one use them.
+75:19
+And so, the cool thing was that by doing this as
+75:23
+neural network dependency parser, we were able to get much better accuracy.
+75:28
+We were able to get accuracy that was virtually as good as the best,
+75:32
+graph-based parsers at that time.
+75:35
+And we were actually about to build a parser that works significantly
+75:39
+faster than MaltParser, because of the fact that it wasn't spending
+75:44
+all this time doing feature combination.
+75:47
+It did have to do more vector matrix multiplies,
+75:49
+of course, but that's a different story.
+75:52
+Okay, so how did we do it?
+75:54
+Well, so, our starting point was the two tools we have, right?
+75:57
+Distributed representation.
+75:59
+So, we're gonna use distributed representations of words.
+76:03
+So, similar words have close by vectors, we've seen all of that.
+76:07
+We're also going to use part, in our POS, we use part-of-speech tags and
+76:12
+dependency labels.
+76:13
+And we also learned distributed representations for those.
+76:17
+That's kind of a cool idea,
+76:19
+cuz it's also the case that parts of speech some are more related than others.
+76:23
+So, if you have a fine grain part-of-speech set where you have
+76:27
+plural nouns and proper names as different parts of speech from nouns,
+76:31
+singular, you want to say that they are close together.
+76:34
+So, we also had distributed representations for those.
+76:39
+So now, we have the same kind of configuration.
+76:43
+We're gonna run exactly the same transition based dependency parser.
+76:47
+So, the configuration is no different at all.
+76:51
+But what we're going to extract from it is the starting point.
+76:55
+We extract certain positions,
+76:58
+just like Nivre's MaltParser but then what we're gonna do is,
+77:02
+for each of these positions, like top of stack, second top of stack, buffer etc.
+77:08
+We're then going to look then up in our bedding matrix, and
+77:12
+come up with a dense representation.
+77:14
+So, you might be representing words as sort of a 50 or
+77:17
+100 dimensional word vector representation of the kind that we've talked about.
+77:23
+And so, we get those representations for the different words as vectors, and
+77:27
+then what we're gonna do is just concatenate those into one longer vector.
+77:33
+So, any configuration of the parser is just being represented as
+77:37
+the longest vector.
+77:38
+Well, perhaps not that long,
+77:39
+our vectors are sort of more around 1,000 not 10 million, yeah.
+77:51
+Sorry, the dependency of, right,
+77:53
+the question is what's this dependency on feeding as an input?
+77:57
+The dependency I'm feeding here as an import,
+77:59
+is when I previously built some arcs that are in my arc set, I'm thinking
+78:05
+maybe it'll be useful to use those arcs as well, to help predict the next decision.
+78:10
+So, I'm using previous decisions on arcs as well to predict my follow-up decisions.
+78:17
+Okay, so how do I do this?
+78:19
+And this is essentially what you guys are gonna build.
+78:24
+From my configuration, I take things out of it.
+78:28
+I get there embedding representations, and
+78:33
+I can concatenate them together, and that's my input layer.
+78:38
+I then run that through a hidden layer Is a neural network,
+78:43
+feedforward neural network, I then have, from the hidden layer,
+78:48
+I've run that through a Softmax layer, and I get an output layer,
+78:52
+which is a probability distribution of my different actions in the standard Softmax.
+78:59
+And of course, I don't know what any of these numbers are gonna be.
+79:02
+So, what I'm gonna be doing is I'm going to be using cross-entropy error, and
+79:06
+then back-propagating down to learn things.
+79:10
+And this is the whole model, and it learns super well,
+79:15
+and it produces a great dependency parser.
+79:20
+I'm running a tiny bit short of time, but let me just,
+79:23
+I think I'll have to rush this but I'll just say it.
+79:27
+So, non-linearities, we've mentioned non-linearities a little bit.
+79:32
+We haven't said very much about them, and
+79:36
+I just want to say a couple more sentences on non-linearities.
+79:40
+Something like a softmax.
+79:41
+You can say that using a logistic function gives you a probability distribution.
+79:46
+And that's kind of what you get in generalized linear models and statistics.
+79:49
+In general, though, you want to say that.
+79:52
+For neural networks.
+79:54
+Having these non-linearities sort of let's us do function approximation by
+79:59
+putting together these various neurons that have some non-linearity.
+80:03
+We can sorta put together little pieces like little wavelets to do
+80:07
+functional approximation.
+80:09
+And the crucial thing to notice is you have to use some non-linearity, right?
+80:15
+Deep networks are useless unless you put something in between the layers, right?
+80:20
+If you just have multiple linear layers they could just be collapsed down into one
+80:24
+linear layer that the sort of product of linear transformations,
+80:28
+affine transformations is just an affine transformation.
+80:32
+So deep networks without non-linearities do nothing, okay?
+80:35
+And so we've talked about logistic non-linearities.
+80:40
+A second very commonly used non-linearity is the tanh non-linearity,
+80:45
+which is tanh is normally written a bit differently.
+80:50
+But if you sort of actually do your little bit of math, tanh is really
+80:55
+the same as a logistic, just sort of stretched and moved a little bit.
+81:01
+And so tanh has the advantage that it's sort of symmetric around zero.
+81:07
+And so that often works a lot better if you're putting it in the middle
+81:11
+of a new neural net.
+81:12
+But in the example I showed you earlier, and for
+81:15
+what you guys will be using for the dependency parser,
+81:19
+the suggestion to use for the first layer is this linear rectifier layer.
+81:25
+And linear rectifier non-linearities are kind of freaky.
+81:29
+They're not some interesting curve at all.
+81:32
+Linear rectifiers just map things to zero if they're negative, and
+81:36
+then linear If they're positive.
+81:39
+And when these were first introduced, I thought these were kind of crazy.
+81:43
+I couldn't really believe that these were gonna work and do anything useful.
+81:47
+But they've turned out to be super successful, so
+81:50
+in the middle of neural networks, these days often the first thing you try and
+81:55
+often what works the best is what's called ReLU, which is rectified linear unit.
+82:02
+And they just sort of effectively have these nice properties where
+82:06
+if you're on the positive side the slope is just 1.
+82:10
+Which means that they transmit error in the back propagation step
+82:15
+really well linearly back down through the network.
+82:19
+And if they go negative that gives enough of a non-linearity that they're just
+82:23
+sort of being turned off in certain configurations.
+82:26
+And so these really non-linearities have just been super, super successful.
+82:30
+And that's what we suggest that you use in the dependency parser.
+82:36
+Okay, so I should stop now.
+82:39
+But this kind of putting a neural network into a transition based
+82:44
+parser was just a super successful idea.
+82:47
+So if any of you heard about the Google announcements of Parsey McParseface.
+82:52
+And SyntaxNet for their kind of open source dependency parser.
+82:57
+It's essentially exactly the same idea of this.
+83:00
+Just done with a bigger scaled up, better optimized neural network.
+83:04
+Okay, thanks a lot.

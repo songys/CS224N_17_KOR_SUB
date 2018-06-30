@@ -1,0 +1,2290 @@
+00:00
+[MUSIC]
+00:04
+Stanford University.
+00:08
+It's getting real today.
+00:10
+So, let's talk about a little bit of the overview today.
+00:15
+So, we'll really get you into the background for classification.
+00:20
+And then, we'll do some interesting things with updating these word vectors that we
+00:24
+so far have learned in an unsupervised way.
+00:26
+We'll update them with some real supervision signals such as sentiment and
+00:29
+other things.
+00:30
+Then, we'll look at the first real model that is actually useful and
+00:33
+you might wanna use in practice.
+00:35
+Well, other than, of course, the word vectors, but one sort of downstream task
+00:39
+which is window classification and we'll really also clear up some of the confusion
+00:44
+around the cross entropy error and how it connects with the softmax.
+00:48
+And then, we'll introduce the famous neural network, our most basic LEGO block
+00:54
+that we may start to call deep to get to the actual title of this class.
+01:00
+Deep learning in NLP. And then,
+01:01
+we'll actually introduce another loss function, the max margin loss and
+01:05
+take our first steps into the direction of backprop.
+01:09
+So, this lecture will be, I think very helpful for problem set one.
+01:14
+We'll go into a lot of the math that you'll need probably for
+01:17
+number two in the problem set.
+01:18
+So, I hope it'll be very useful and I'm excited for you cuz at the end of this
+01:23
+lecture, you'll feel hopefully a lot better about the magic of deep learning.
+01:30
+All right, are there any organizational questions around
+01:34
+problem sets or programming sessions with the TAs?
+01:40
+No, we're all good?
+01:41
+Awesome, thanks to the TAs for clearing up everything.
+01:44
+Cool, so let's be very careful about our notation today because that is one
+01:50
+of the main things that a lot of people trip up over
+01:52
+as we go through very complex chain-rules and so on.
+01:55
+So, let's start at the beginning and say, all right,
+01:58
+we have usually a training dataset of some input X and some output Y.
+02:02
+X could be in the simplest case, words in isolation, just a single word vector.
+02:07
+It's not something you would usually do in practice.
+02:10
+But it'll be easy for us to learn that way.
+02:13
+So we'll start with that but then, we'll move to context windows today.
+02:15
+And then eventually, we'll use the same basic building blocks that we introduce
+02:20
+today for sentences and documents and then complex interactions for everything.
+02:26
+Now, the output in the simplest case it's just a single label.
+02:30
+It's just a positive or a negative kind of sentence.
+02:33
+It could be the named entities of certain words in their context.
+02:37
+It can also be other words, so in machine translation, for instance,
+02:41
+you might wanna output eventually a sequence of other words as our yi and
+02:44
+we'll get to that in a couple weeks.
+02:46
+And, yeah, basically they have multiword sequences as potential outputs.
+02:50
+All right, so what is the intuition for classification?
+02:54
+In the standard machine learning case, so not yet the deep learning world,
+02:58
+we usually just, for something as simple logistic regression,
+03:02
+basically want to define and learn a simple decision boundary where we say
+03:07
+everything to the left of this or in one direction is in one class and
+03:12
+the other one, all the other things in the other class.
+03:14
+And so, in general machine learning, we assume our inputs,
+03:19
+the Xs are kinda fixed, they're just set and
+03:23
+we'll only train the W parameter, which is our softmax weights.
+03:28
+So, we'll compute the probability of Y, given the input X with this kind of input.
+03:34
+And so, one notational comment here is for
+03:37
+the whole dataset, we often subscript with i but then,
+03:42
+when I drop the i we're just looking at a single example of x and y.
+03:49
+Eventually, we're going to overload at the subscript a little bit and
+03:52
+look at the indices of certain vector so, if you get confused,
+03:56
+just raise your hand and ask.
+03:57
+I'll try to make it clear which one is which.
+04:01
+Now, let's dive into the softmax.
+04:04
+We mentioned it before but we wanna really carefully define and recall the notation
+04:09
+here cuz we'll go and take derivatives with respect to all of these parameters.
+04:14
+So, we can tease apart two steps here for computing this probability of y given x.
+04:21
+The first thing is, we'll take the y'th row of W and multiply that row with x.
+04:25
+And so again this notation here, when we have Wy.
+04:31
+And that means we'll have, we're taking the y'th row of this matrix.
+04:37
+And then, multiplying it here with x.
+04:42
+Now if we do that multiple times for all c from one to our classes.
+04:48
+So let's say, this is 1, 2, 3, the 4th row and multiply each of these.
+04:53
+So then we get four numbers here.
+04:55
+And these are unnormalized scores.
+04:59
+And then, we'll basically, pipe this vector through the softmax to
+05:03
+compute a probability distribution that sums to one.
+05:08
+All right, that's our step one.
+05:11
+Any questions around that?
+05:13
+Cuz it's just gonna keep on going from here.
+05:17
+All right, great.
+05:19
+And, I get that sometimes in general from previous
+05:24
+sort of surveys, it seems to be that 15% of the class are usually bored
+05:29
+when we go through all of these, like all of these derivatives.
+05:32
+15% are super overwhelmed and then the majority of people are like, okay, it's
+05:36
+a good speed, I'm learning something, I'm getting it, and you're making progress.
+05:39
+So, sorry for the 30% for whom this is too slow or too fast.
+05:44
+You can probably just skim through the lecture slides or
+05:47
+speed it up if you're watching online.
+05:50
+If you're super familiar with taking super complex derivatives and
+05:53
+if it's a little overwhelming, then definitely come to all the office hours.
+05:56
+We have an awesome set of TAs who will help you.
+05:59
+All right, now we, let's look at a single example of an x and
+06:04
+y that we wanna predict.
+06:07
+In general, we want our model to essentially maximize the probability
+06:12
+of the correct class.
+06:12
+We wanted to output the right class at the end by taking the argmax of that output.
+06:19
+And maximizing probability is the same as maximizing log probability,
+06:23
+it's the same as minimizing the negative of that log probability and
+06:27
+that is often our objective function.
+06:29
+So, why do we call this the cross-entropy error?
+06:33
+Well, we can define the cross-entropy in the abstract in general as follows.
+06:39
+So let's assume we have the ground truth or gold or
+06:42
+target probability distribution, we use those three terms interchangeably.
+06:47
+Basically, what the ideal target in our training dataset, the y and
+06:51
+we'll assume that, that is one at the right class and zero everywhere else.
+06:56
+So if we have for instance, five classes here and it's the center class.
+07:01
+Its the third class and this would be one and all the other, numbers would be zero.
+07:05
+So, if we define this as p in our computed probability,
+07:09
+that our softmax outputs as q then we would define here the cross-entropy
+07:13
+is basically this sum over all the classes.
+07:17
+And in our case, p here is just one-hot vector that's really only 1 in
+07:21
+one location and 0 everywhere else.
+07:24
+So, all these other terms are basically gone.
+07:28
+And we end up with just log of q and
+07:30
+that's exactly the log of what our softmax outputs, all right?
+07:34
+And then, there are some nice connections to Kullback-Leibler divergence and so on.
+07:39
+I used to talk about it but we don't have that much time today.
+07:42
+So and you can also if you're familiar of this in stats,
+07:45
+you can see this as trying to minimize the Kullback-Leibler divergence between these
+07:49
+two distributions.
+07:50
+But really, this is all you need to know for the purpose of this class.
+07:55
+So this is for one element of your training data set.
+07:59
+Now, of course, in general, you have lots of training examples.
+08:03
+So we have our overall objective function we often denote with J,
+08:06
+over all our parameters theta.
+08:09
+And we basically sum these negative log probabilities of the correct classes
+08:14
+that we index here, a sub-index with yi.
+08:18
+And basically we want to minimize this whole sum.
+08:23
+So that's our cross-entropy error that we're trying to minimize, and
+08:25
+we'll take lots of derivatives off in a lot of the next couple of hours.
+08:32
+All right, any questions so far?
+08:35
+So this is the general ML case where we assume our inputs here are fixed.
+08:43
+Yes, it's a single number.
+08:51
+So we are not multiplying a vector here, so p(c) is the probability for that class,
+08:56
+so that's one single number.
+08:58
+Great question.
+09:01
+So the cross entropy, a single number, our main objective that we're trying
+09:05
+to minimize, or our error that we're trying to minimize.
+09:09
+Now, whenever you write this F subscript Y here,
+09:13
+we don't want to forget that F is really also a function of X, our inputs, right?
+09:18
+It's sort of an intermediate step and it's very important for
+09:20
+us to play around with this notation.
+09:24
+So we can also rewrite this as W y, that row,
+09:29
+times x, and we can write out that whole sum.
+09:31
+And that can often be helpful as you are trying to take derivatives of one element
+09:35
+at a time to eventually see the bigger picture of the whole matrix notation.
+09:43
+All right, so often we'll write f here in terms of this matrix notation.
+09:46
+So this is our f, this is our W, and this is our x.
+09:49
+So just standard matrix multiplication with a vector.
+09:55
+All right, now most of the time we'll just talk about this first part of
+09:59
+the objective function but it's a bit of a simplification because in
+10:02
+all your real applications you will also have this regularization term here.
+10:07
+As part of your overall objective function.
+10:10
+And in many cases, this theta here for instance,
+10:13
+if it's the W matrix of our standard logistic regression,
+10:17
+we'll essentially just try this part of the objective function.
+10:21
+We'll try to encourage the model to keep all the weights as small as possible and
+10:25
+as close as possible to zero.
+10:28
+You can kind of assume if you want as a Bayesian that you can have a prior,
+10:33
+a Gaussian distributed prior that says ideally all these are small numbers.
+10:38
+Often times if you don't have this regularization term
+10:40
+your numbers will blow up and it will start to overfit more and more.
+10:43
+And in fact, this kind of plot is something that you will very often see
+10:47
+in your projects and even in the problem sets.
+10:50
+And when I took my very first statistical learning class, the professor said,
+10:55
+this is the number one plot to remember.
+10:56
+So, I don't know if it's that important, but it is very,
+10:58
+very important for all our applications.
+11:01
+And it's basically a pretty abstract plot.
+11:03
+You can think of the x-axis as a variety of different things.
+11:07
+For instance, how powerful your model is.
+11:09
+How many deep layers you'll have or how many parameters you'll have.
+11:12
+Or how many dimensions each word vector has.
+11:15
+Or how long you trained a model for.
+11:18
+You'll see the same kind of pattern with a lot of different, x-axis and
+11:22
+then the y-axis here is essentially your error.
+11:26
+Or your objective function that you're trying to optimize and minimize.
+11:30
+And what you often observe is, the more powerful your model gets,
+11:33
+the better you are on lowering your training error,
+11:39
+the better you can fit these x-i, y-i pairs.
+11:42
+But at some point you'll actually start to over-fit, and then your test error, or
+11:47
+your validation or development set error, will go up again.
+11:50
+We'll go into a little bit more details on how to avoid all of that throughout
+11:55
+this course and in the project advice and so on.
+11:57
+But this is a pretty fundamental thing and just keep in mind that for a lot of
+12:02
+the implementations, and your projects you will want this regularization parameter.
+12:07
+But really it's the same one for almost all the objective functions so
+12:10
+we're going to chop it and mostly focus on actually fitting our dataset.
+12:15
+All right, any questions around regularization?
+12:26
+So basically, you can think of this in terms of if you really
+12:31
+care about one specific number, then you can adjust all your
+12:36
+parameters such that it will exactly go to those different points.
+12:42
+And if you force it to not do that, it will kind of be a little smoother.
+12:47
+And be less likely to fit exactly those points and
+12:50
+hence often generalize slightly better.
+12:53
+And we'll go through a couple of examples of what this will look like soon.
+12:59
+All right, now as I mentioned in general machine learning,
+13:03
+we'll only optimize the W here, the parameters of our Softmax classifier.
+13:10
+And hence our updates and gradients will only be pretty small,
+13:13
+so in many cases we only have you know a handful of classes and
+13:16
+maybe our word vectors are hundred so if we have three classes and 100 dimensional
+13:21
+word vectors we're trying to classify, we'd only have 300 parameters.
+13:27
+Now, in deep learning, we have these amazing word vectors.
+13:31
+And we actually will want to learn not just the Softmax but
+13:35
+also the word vectors.
+13:37
+We can back propagate into them and we'll talk about how to do that today.
+13:41
+Hint, it's going to be taking derivatives.
+13:44
+But the problem is when we update word vectors, conceptually
+13:47
+as you are thinking through this, you have to realize this is very, very large.
+13:51
+And now all of the sudden have a very large set of parameters, right?
+13:54
+Let's say your word vectors are 300 dimensional you have,
+13:57
+you know 10,000 words in your vocabulary.
+14:00
+All of the sudden you have an immensely large set of parameters so
+14:05
+on this kind of plot you're going to be very likely to overfit.
+14:10
+And so before we dive into all this optimization, I want you to get
+14:14
+a little bit of an intuition of what it means to update word vectors.
+14:17
+So let's go through a very simple example
+14:20
+where we might want to classify single words.
+14:22
+Again, it's not something we'll do very often, but
+14:25
+let's say you want to classify single words as positive or negative.
+14:29
+And let's say in our training data set we have the word TV and telly and say you
+14:33
+know this is movie reviews and if you say this movie is better suited for TV.
+14:36
+It's not a very positive thing to say about a movie that's just coming out into
+14:40
+movie theaters.
+14:41
+And so we would assume that in the beginning telly, TV,
+14:44
+and television are actually all close by in the vector space.
+14:49
+We learn something with word2vec or glove vectors and we train these word
+14:54
+vectors on a very, very large corpus and it learned all these three words appear
+14:57
+often in a similar context, so they are close by in the vector space.
+15:01
+And now we're going to train but, our smaller sentiment data set
+15:07
+only includes in the training set, the X-i Y-i as TV and telly and not television.
+15:14
+So now what happens as we train these word vectors?
+15:17
+Well, they will start to move around.
+15:19
+We'll project sentiment into them and so you now might see telly and
+15:24
+TV, that's a British dataset, so like to move somewhere else into the vector space.
+15:29
+But television actually stays where it was in the beginning.
+15:33
+And now when we want to test it,
+15:36
+we would actually now misclassify this word because it's never been moved.
+15:41
+And so what does that mean?
+15:42
+The take home message here will be that
+15:45
+if you have only a very small training dataset.
+15:48
+That will allow you especially with these deep models to overfit very quickly,
+15:52
+you do not want to train your word vectors.
+15:55
+You want to keep them fixed, you pre-trained them with nice Glove or
+15:59
+word2vec models on a very large corpus or
+16:01
+you just downloaded them from the cloud website and you want to keep them fixed,
+16:05
+cuz otherwise you will not generalize as well.
+16:08
+However, if you have a very large dataset it may be better to train them in a way
+16:13
+we're going to describe in the next couple of slides.
+16:16
+So, an example for where you do that is, for instance,
+16:18
+machine translation where you might have many hundreds of Megabytes or Gigabytes of
+16:23
+training data and you don't really need to do much with the word vectors other than
+16:28
+initialize them randomly, and then train them as part of your overall objective.
+16:30
+All right,
+16:32
+any questions around generalization capabilities of word vectors?
+16:41
+All right, it might still be magical how we're training this, so
+16:45
+that's what we're gonna describe now.
+16:48
+So, we rarely ever really classify single words.
+16:51
+Really what we wanna do is classify words in their context.
+16:55
+And there are a lot of fun and interesting.
+16:58
+Issues that arise in context really that's where language begins and
+17:01
+grammar and the connection to meaning and so on.
+17:05
+So here, a couple of fun examples of where context is really necessary.
+17:09
+So for instance, we have some words that actually auto-antonyms, so
+17:13
+they mean their own opposite.
+17:14
+So for instance to sanction can mean to permit or to punish.
+17:18
+And it really depends on the context for you to understand which one is meant, or
+17:23
+to seed can mean to place seeds or to remove seeds.
+17:26
+So without the context, we wouldn't really understand the meaning of these words.
+17:31
+And in one of the examples that you'll see a lot, which is named entity recognition,
+17:35
+let's say we wanna find locations or people names,
+17:39
+we wanna identify is this the location or not.
+17:41
+You may also have things like Paris, which could be Paris in France or Paris Hilton.
+17:46
+And you might have Paris staying in Paris and
+17:48
+you still wanna understand which one is which.
+17:51
+Or if you wanna use deep learning for financial trading and you see Hathaway,
+17:55
+you wanna make sure that if it's just a positive movie review from Anne Hathaway.
+17:59
+You're not all the sudden buying stocks from Berkshire Hathaway, right?
+18:03
+And so, there are a lot of issues that are fun and
+18:05
+interesting and complex that arise in context.
+18:08
+And so, let's now carefully walk through this first useful model,
+18:13
+which is Window classification.
+18:15
+So, we'll use as our first motivating example here 4-class named
+18:20
+entity recognition, where we basically wanna identify a person or location or
+18:24
+organization or none of the above for every single word in a large corpus.
+18:30
+And there are lots of different possibilities that exist.
+18:33
+But we'll basically look at the following model.
+18:35
+Which is actually quite a reasonable model.
+18:37
+And also one that started in 2008.
+18:39
+So the first beginning by Collobert and Weston, a great paper,
+18:44
+to do the first kind of useful state of the art Text classification and
+18:48
+word classification context.
+18:50
+So, what we wanna do is basically train a softmax classifier by assigning a label to
+18:55
+the center word and then concatenating all the words in a window around that word.
+19:01
+So, let's take for example this subphrase here from a longer sentence.
+19:07
+We basically wanna classify the center word here which is Paris,
+19:11
+in the context of this window.
+19:13
+And we'll define the window length as 2.
+19:15
+2 being 2 words to the left and
+19:17
+2 words to the right of the current center word that we're trying to classify.
+19:23
+All right, so what we will do is we'll define our new x for
+19:27
+this whole window as the concatenation of these five word vectors.
+19:35
+And just in general
+19:38
+throughout all of this lecture all my vectors are going to be column vectors.
+19:43
+Sadly in number two of the problem set, they're row vectors.
+19:46
+Sorry for that.
+19:49
+Eventually, all these programming frameworks they're actually row-wise first
+19:54
+and so it's faster in the low-level optimization to use row vectors.
+19:59
+For a lot of the math it's actually I find it simpler to think of them as column
+20:02
+vectors so.
+20:03
+We're very clear in the problem set but don't get tripped up on that.
+20:07
+So basically, we'll define this here as one five D dimensional column vector.
+20:13
+So, we have T dimensional word vectors, we have five of them and
+20:16
+we stack them up in one column, all right.
+20:20
+Now, the simplest window classifier that we could think of is to now just put
+20:25
+the softmax on top of this concatenation of five word vectors and
+20:30
+we'll define this, our x here.
+20:33
+Our inputs is just the x of the entire window for this concatenation.
+20:37
+And we have the softmax on top of that.
+20:39
+And so, this is the same notation that we used before.
+20:42
+We're introducing here y hat, with sadly the subscript y for
+20:47
+the correct current class.
+20:51
+It's tough, I went through [LAUGH] several iterations, it's tough to have like
+20:54
+prefect notation that works through the entire lecture always.
+20:57
+But you'll see why soon.
+21:00
+So, our overall objective here is, again, this whole sum over all
+21:04
+these probabilities that we have, or negative log of those.
+21:10
+So now, the question is, how do we update these word vectors x here?
+21:13
+One x is a window, and x is now deep inside the softmax.
+21:18
+All right, well, the short answer is we'll take a lot of derivatives.
+21:21
+But the long answer is, you're gonna have to do that a lot in problem set one and
+21:25
+maybe in the midterm.
+21:26
+So, let's be a little more helpful, and actually go through some of the steps and
+21:31
+give you some hints.
+21:32
+So some of this, you'll actually have to do in your problem set, so
+21:35
+I'm not gonna go through all the details.
+21:37
+But I'll give you a couple of hints along the way and then you can know if
+21:42
+you're hitting those and then you'll see if you're on the right track.
+21:46
+So, step one, always very carefully define your variables,
+21:50
+their dimensionality and everything.
+21:51
+So, y hat will define as the softmax probability of the vector.
+21:56
+So, the normalized scores or the probabilities for
+22:00
+all the different classes that we have.
+22:02
+So, in our case we have four.
+22:05
+Then we have the target distribution.
+22:07
+Again, that will be a one hot vector where it's all zeroes except
+22:11
+at the ground truth index of the class y, where it's one.
+22:15
+And we'll define our f here as f of x again,
+22:18
+which is this matrix multiplication.
+22:20
+Which is going to be a C dimensional vector where capital C is the number of
+22:24
+classes that we have, all right.
+22:28
+So, that was step one.
+22:29
+Carefully define all of your variables and keep track of their dimensionality.
+22:32
+It's very easy when you implement this and you multiply two things, and
+22:36
+they have wrong dimensionality, and you can't actually legally multiply them,
+22:40
+you know you have a bug.
+22:41
+And you can do this also in a lot of your equations.
+22:43
+You'd be surprised.
+22:44
+In the midterm, you're nervous.
+22:46
+But maybe at the end you have some time.
+22:48
+And you could totally grade it by yourself in the first pass,
+22:51
+by just making sure that all your dimensionality of your matrix and
+22:54
+vector multiplications are correct.
+22:58
+All right, the second tip is the chain rule, we went over this before, but
+23:01
+I heard there's a little bit of confusion still in the office hours.
+23:04
+So, let's define this carefully for a simple example and then we'll go and
+23:09
+give you a couple more hints also for more complex example.
+23:12
+So again, if you have something very simple, such as a function y,
+23:15
+which you can defined here as f of u and u can be defined as g of
+23:20
+x as in the whole function, y of x, can be described as f of g of x,
+23:25
+then you would basically multiply dy, u times the udx.
+23:30
+And so very concretely here, this is sort of high school level,
+23:34
+but we'll define it properly in order to show the chain rule.
+23:39
+So here, you can basically define u as g(x),
+23:42
+which is just the inside in the parentheses here, so x cubed + 7.
+23:46
+It can have y as a function of f(u),
+23:49
+where we use 5 times u, just replacing the inside definition here.
+23:54
+So it's very simple, just replacing things.
+23:57
+And now, we can take the derivative with respect to u and
+24:00
+we can take the derivative with respect to x(u).
+24:04
+And then we just multiply these two terms, and we plug in u again.
+24:08
+So in that sense, we all know, in theory, the chain rule.
+24:12
+But, now we're gonna have the softmax, and
+24:14
+we're gonna have lots of matrices and so on.
+24:16
+So, we have to be very, very careful about our notation.
+24:20
+And we also have to be careful about understanding,
+24:22
+which parameters appear inside what other higher level elements.
+24:28
+So, f for instance is a function of x.
+24:30
+So, if you're trying to take a derivative with respect to x,
+24:34
+of this overall soft max you're gonna have to sum over all of the different classes
+24:38
+inside which x appears.
+24:41
+And you'll see here, this first application, but
+24:43
+not just of fy again this is just a subscript the y element of the effector
+24:48
+which is the function of x, but also multiply it then here by this.
+24:54
+So, when you write this out, another tip that can be helpful is for
+24:59
+this softmax part of he derivative is to actually think of two cases.
+25:03
+One where c = y, the correct class,
+25:05
+and one where it's basically all the other incorrect classes.
+25:09
+And as you write this out, you will observe and
+25:14
+come up with something like this.
+25:15
+So, don't just write that as your thing you have to put in your problems,
+25:19
+the steps on how to get there.
+25:21
+Bur, basically at some point you observe this kinda pattern when you now
+25:25
+try to look at all the derivatives with respect to all the elements of f.
+25:30
+And now, when you have this you realize ,okay at
+25:33
+the correct class we're actually subtracting one here,
+25:35
+and all the incorrect classes, you will not do anything.
+25:40
+Now, the problem is when you implement this,
+25:42
+it kind of looks like a bunch of if statements.
+25:44
+If y equals the correct class for
+25:47
+my training set, then, subtract 1, that's not gonna be very efficient.
+25:51
+Also, you're gonna go insane if you try to actually write down equations for
+25:54
+more complex neural network architectures ever.
+25:56
+And so, instead, what we wanna do is always try to vectorize a lot of our
+26:01
+notation, as well as our implementation.
+26:05
+And so, what this means here, in this case,
+26:07
+is you can actually observe that, well, this 1 is exactly 1,
+26:10
+where t, our hot to target distribution, also happens to be 1.
+26:15
+And so, what you're gonna wanna do, is basically
+26:20
+describe this as y(hat)- t, so it's the same thing as this.
+26:27
+And don't worry if you don't understand how we got there,
+26:28
+cuz that's part of your problem set.
+26:31
+You have to, at some point,
+26:32
+see this equation while you're taking those derivatives.
+26:36
+And now, the very first baby step towards back-propagation is actually to define
+26:41
+this term, in terms of a simpler single variable and we'll call this delta.
+26:47
+We'll get good, we'll become good friends with deltas because they are sort of our
+26:50
+error signals.
+26:51
+Now, the last couple of tips.
+26:55
+Tip number six.
+26:56
+When you start with this chain rule, you might want to sometimes use explicit sums,
+27:01
+before and look at all the partial derivatives.
+27:03
+And if you do that a couple of times at some point you see a pattern, and
+27:06
+then you try to think of how to extrapolate from those patterns of
+27:11
+single partial derivatives, into vector and matrix notation.
+27:16
+So, for example, you'll see something like this here,
+27:21
+in at some point in your derivation.
+27:25
+S,o the overall derivative with respect to x of our overall objective function for
+27:31
+one element, for one element from our training set x and y is this sum.
+27:37
+And it turns out when you think about this for a while,
+27:39
+you take here this row vector but then you transpose it,
+27:44
+and becomes an inner product, well if you do that multiple times for all the C's and
+27:49
+you wanna get in the end a whole vector out, it turns out you can actually just
+27:53
+re-write the sum as W transpose* the delta.
+27:58
+So, this is one error signal here that we got from our softmax,
+28:03
+and we multiply the transpose of our softmax weights with this.
+28:08
+And again, if some of these are not clear and
+28:10
+you're confused, write them out into full sum,
+28:11
+and then you'll see that it's really just re-write this in vector notation.
+28:16
+All right, now what is the dimensionality of the window vector gradient?
+28:22
+So in the end, we have this derivative of the overall cost here for
+28:28
+one element of our training set with respect to x.
+28:30
+But x is a window.
+28:32
+All right, so each say we have a window of five words.
+28:36
+And each word is d-dimensional.
+28:39
+Now, what should be the dimensionality of this derivative of this gradient?
+28:55
+That's right, it's five times the dimensionality.
+28:58
+And that's another really good way, and one of the reasons we make you implement
+29:02
+this from scratch, if you have any kinda parameter, and you have a gradient for
+29:07
+that parameter, and they're not the same dimensionality, you'll also know you
+29:11
+screwed up and there's some mistake or bug in either your code or your map.
+29:15
+So, it's very simple debugging skill.
+29:19
+And way to check your own equations.
+29:22
+So, the final derivative with respect to this window is now this five
+29:26
+vector because we had five d-dimensional vectors that we concatenated.
+29:29
+Now, of course the tricky bit is,
+29:32
+you actually wanna update your word vectors and not the whole window, right?
+29:35
+The window is just this intermediate step also.
+29:38
+So really, what you wanna do is update and
+29:40
+take derivatives with respect to each of the elements of your word vectors.
+29:45
+And so it turns out, very simply, that can be done by just splitting
+29:51
+that error that you've got on the gradient overall, at the whole window and that's
+29:56
+just basically the concatenation of the reduced of all the different word vectors.
+30:02
+And those you can use to update your word vectors, as you train the whole system.
+30:06
+All right, any questions?
+30:19
+Is there a mathematical what?
+30:19
+Is there a mathematical notation for the word vector t,
+30:24
+other than it's just variable t?
+30:27
+Or that seems like a fine notation.
+30:31
+You can see this as a probability distribution, that is very peaked.
+30:36
+>> Yeah. >> That's all, there's nothing else to it.
+30:39
+Just a single vector with all zeroes, except in one location.
+30:41
+>> So I'll just write that down?
+30:44
+>> You can write that up, yeah.
+30:45
+You can always just write out and it's also something very important.
+30:49
+You always wanna define everything, so that you make sure that the TAs know that
+30:54
+you're thinking about the right thing, as you're writing out your derivatives,
+30:57
+you write out the dimensionality, you define them properly,
+31:00
+you can use dot, dot, dot if it's a larger dimensional vector.
+31:03
+You can just define t as your target distribution [INAUDIBLE]
+31:12
+>> The question is,
+31:13
+do we still have two vectors for each word?
+31:15
+Great question, no.
+31:16
+We essentially, when we did glove and word2vec, and had these two u's and v's,
+31:21
+for all subsequent lectures from now on, we'll just assume we have the sum of u and
+31:25
+v and that's our single vector x, for each word.
+31:34
+So, the question is does this gradient appear in lots of other windows
+31:36
+and it does.
+31:37
+So, if you, the answer is yes.
+31:39
+If you have the word "in," that vector here and the gradients will appear
+31:44
+in all the windows that have the word "in" inside of them.
+31:49
+And same with museums and so on.
+31:51
+And so as you do stochastic gradient descent you look at one window at a time,
+31:54
+you update it, then you go to the next window, you update it and so on.
+31:57
+Great questions.
+32:01
+All right.
+32:04
+Now, let's look at how we update these concatenated word vectors.
+32:10
+So basically, as we're training this, if we train it for
+32:12
+instance with sentiment we'll push all the positive words in one direction and
+32:16
+the other words in other direction.
+32:18
+If we train it, for named entity recognition and
+32:22
+eventually our model can learn that seeing something like in as the word just before
+32:26
+the center word, would be indicative for that center word to be a location.
+32:32
+So now what's missing for training this full window model?
+32:36
+Well mainly the gradient of J with respect to the softmax weights W.
+32:43
+And so we basically will take similar steps.
+32:45
+We'll write down all the partial derivatives with respect to Wij
+32:48
+first and so on.
+32:49
+And then we have our full gradient for this entire model.
+32:53
+And again, this will be very sparse, and
+32:55
+you're gonna wanna have some clever ways of implementing these word vector updates.
+33:00
+So you don't send a bunch of zeros around at every single window,
+33:05
+Cuz each window will only have a few words.
+33:09
+So in fact, it's so important for your code in the problem set to think
+33:13
+carefully through your matrix implementations,
+33:17
+that it's worth to spend two or three slides on this.
+33:20
+So there are essentially two very expensive operations in the softmax.
+33:25
+The matrix multiplication and the exponent.
+33:28
+Actually later in the lecture, we'll find a way to deal with the exponent.
+33:34
+But the matrix multiplication can also be implemented much more efficiently.
+33:40
+So you might be tempted in the beginning to think this is probability for
+33:43
+this class and this is the probability for that class.
+33:45
+And so implemented a for loop of all my different classes and
+33:49
+then I'll take derivatives or matrix multiplications one row at a time.
+33:53
+And that is going to be very, very inefficient.
+33:57
+So let's go through some very simple Python code here to show you what I mean.
+34:02
+So essentially, always looping over these word vectors
+34:05
+instead of concatenating everything into one large matrix.
+34:09
+And then multiplying these is always going to be more efficient.
+34:13
+So let's assume we have 500 windows that we want to classify,
+34:18
+and let's assume each window has a dimensionality of 300.
+34:23
+These are reasonable numbers, and
+34:26
+let's assume we have five classes in our softmax.
+34:30
+And so at some point during the computation, we now have two options.
+34:34
+So W here are weights for the softmax.
+34:36
+It's gonna be C many rows and d many columns.
+34:40
+Now the word vectors here that you concatenated for each window.
+34:44
+We can either have the list of a bunch of separate word vectors,
+34:48
+or we can have one large matrix that's going to be d times n.
+34:52
+So d many rows and n many windows.
+34:55
+So we have 500 windows, so we have 500 columns here in this 1 matrix.
+35:01
+And now essentially, we can multiply the W here for each vector separately,
+35:07
+or we can do this one matrix multiplication entirely.
+35:11
+And you literally have a 12x speed difference.
+35:16
+And sadly with these larger models, one iteration or
+35:19
+something might take a day, eventually for more complex models large data sets.
+35:24
+So the difference is between literally 12 days or
+35:26
+1 day of you iterating and making your deadlines and everything.
+35:31
+So it's super important, and now sometimes people
+35:35
+are tripped up by what does it mean to multiply and do this here.
+35:39
+Essentially, it's the same thing that we've done here for
+35:44
+one softmax, but what we did is we actually concatenated.
+35:51
+A lot of different input vectors x, and so
+35:55
+we'll get a lot of different unnormalized scores out at the end.
+36:01
+And then we can tease them apart again for them.
+36:04
+So you have here, c times t dimensional matrix for the d dimensional input.
+36:10
+So using the same notation, yeah,
+36:13
+dimensional of each window times d times n matrix to get a c times n matrix.
+36:18
+So these are all the probabilities here for
+36:24
+your N many training samples.
+36:30
+Any questions around that?
+36:31
+So it's super important, all your code will be way too slow if you don't do this.
+36:38
+And so this is very much an implementation trick.
+36:42
+And so in most of the equations,
+36:44
+we're not gonna actually go there cuz that makes everything more complicated.
+36:49
+And the equations look at only a singular example at a time, but
+36:53
+in the end you're gonna wanna vectorize all your code.
+37:00
+Yeah, matrices are your friend, use them as much as you can.
+37:04
+Also in many cases, especially for this problem set where you really
+37:09
+understand the nuts and bolts of how to train and optimize your models.
+37:13
+You will come across a lot of different choices.
+37:17
+It's like, I could implement it this way or that way.
+37:19
+And you can go to your TA and ask, should I implement this way or that way?
+37:22
+But you can also just use time it as your magic Python and just let,
+37:28
+make a very informed decision and gain intuition yourself.
+37:33
+And just basically wanna speed test a lot of different
+37:37
+options that you have in your code a lot of the time.
+37:43
+All right, so this is was just a pure softmax,
+37:47
+and now the softmax alone is not play powerful.
+37:52
+Because it really only gets with this linear decision boundaries in your
+37:56
+original space.
+37:57
+If you have very, very little training data that could be okay, and
+38:01
+you kind of used a not so powerful model almost as an abstract regularizer.
+38:06
+But with more data, it's actually quite limiting.
+38:08
+So if we have here a bunch of words and we don't wanna update our word vectors,
+38:13
+softmax would only give us this linear decision boundary which is kind of lame.
+38:18
+And it would be way better if we could
+38:21
+correctly classify these points here as well.
+38:25
+And so basically, this is one of the many motivations for using neural networks.
+38:30
+Cuz neural networks will give us much more complex decision boundaries and
+38:35
+allow us to fit much more complex functions to our training data.
+38:40
+And you could be snarky and
+38:42
+actually rename neural networks which sounds really cool.
+38:45
+It's just general function approximators.
+38:46
+Just wouldn't have quite the same ring to it, but it's essentially what they are.
+38:53
+So let's define how we get from the symbol of logistic regression to
+38:58
+a neural network and beyond, and deep neural nets.
+39:01
+So let's demystify the whole thing by starting,
+39:03
+defining again some of the terminology.
+39:05
+And we can have more fun with the math, and then one and a half lectures from now.
+39:10
+We can just basically use all of these Lego blocks.
+39:12
+So bear with me, this is going to be tough.
+39:15
+And try to concentrate and ask questions if you have any,
+39:19
+cuz we'll keep building now a pretty awesome large model that's really useful.
+39:25
+So we'll have inputs, we'll have a bias unit, we'll have an activation
+39:30
+function and output for each single neuron in our larger neuron network.
+39:36
+So let's define a single neuron first.
+39:39
+Basically, you can see it as a binary logistic regression unit.
+39:44
+We're going to have inside,
+39:47
+again a set of weights that we have in a product with our input.
+39:52
+So we have the input x here to this neuron.
+39:55
+And in the end, we're going to add a bias term.
+39:56
+So we have an always on feature, and
+39:58
+that kind of defines how likely should this neuron fire.
+40:02
+And by firing, I mean have a very high probability that's close to one.
+40:07
+For being on.
+40:08
+And f here is always, from now on, going to be this element wise function.
+40:14
+In our case here the sigmoid that just squashes whatever this sum gives us in our
+40:20
+product plus the bias term and basically just squashes it to be between 0 and 1.
+40:26
+All right, so this is the definition of the single neuron.
+40:30
+Now if we feed a vector of inputs through all this different little logistic
+40:34
+regression functions and neurons, we get this output.
+40:38
+And now the main difference between just predicting directly a softmax and
+40:43
+standard machine learning and
+40:45
+deep learning is that we'll actually not force this to give directly the output.
+40:50
+But they will themselves be inputs to yet another neuron.
+40:56
+And it's a loss function on top of that neuron such as cross entropy that will
+41:01
+now govern what these intermediate hidden neurons.
+41:06
+Or in the hidden layer what they will actually try to achieve.
+41:09
+And the model can decide itself what it should represent,
+41:13
+how it should transform this input inside these hidden units here
+41:17
+in order to give us a lower error at the final output.
+41:23
+And it's really just this concatenation of these hidden neurons,
+41:27
+these little binary logistic regression units
+41:30
+that will allow us to build very deep neural network architectures.
+41:37
+Now again, for sanity's sake, we're going to have to use matrix notation cuz
+41:43
+all of this can be very simply described in terms of matrix multiplication.
+41:48
+So a1 here is where going to be the final
+41:52
+activation of the first neuron, a2 in second neuron and so on.
+41:56
+So instead of writing out the inner product here, or writing even this
+42:00
+as an inner product plus the bias term we're going to use matrix notation.
+42:06
+And it's very important now to pay attention to this intermediate variables
+42:10
+that we'll define because we'll see these over and
+42:12
+over again as we use a chain rule to take derivatives.
+42:17
+So we'll define z here as W times x plus the bias vector.
+42:24
+So we'll basically have here as many bias terms and this vector has
+42:28
+the same dimensionality as the number of neurons that we have in this layer.
+42:34
+And W will have number of rows for the number of neurons that we have
+42:39
+times number of columns for the input dimensionality of x.
+42:44
+And then, whenever we write a of f(z),
+42:47
+what that means here is that we'll actually apply f element wise.
+42:52
+So f(z) when z is a vector is just f(z1), f(z2) and f(z3).
+42:59
+And now you might ask, well, why do we have all this added complexity here
+43:03
+with this sigmoid function.
+43:07
+Later on we can actually have other kinds of so called non linearities.
+43:10
+This f function and it turns out that if we don't have
+43:13
+the non-linearities in between and we will just stack a couple of
+43:17
+this linear layers together it wouldn't add a very different function.
+43:20
+In fact it would be continuing to just be a single linear function.
+43:25
+And intuitively as you have more hidden neurons,
+43:29
+you can fit more and more complex functions.
+43:31
+So this is like a decision boundary in a three dimensional space,
+43:34
+you can think of it also in terms of simple regression.
+43:37
+If you had just a single hidden neuron,
+43:39
+you kinda see here almost an inverted sigmoid.
+43:42
+If you have three hidden neurons, you could fit this kind of more complex
+43:46
+functions and with ten neurons, each neuron can start to essentially,
+43:50
+over fit and try to be very good at fitting exactly one point.
+43:56
+All right, now let's revisit our single window classifier and
+44:00
+instead of slapping a softmax directly onto the word vectors we're now going
+44:05
+to have an intermediate hidden layer between the word vectors and the output.
+44:10
+And that's when we really start to gain an accuracy and expressive power.
+44:17
+So let's define a single layer neural network.
+44:24
+We have our input x that will be again,
+44:26
+our window, the concatenation of multiple word vectors.
+44:31
+We'll define z and we'll define a as element wise on the areas a and z.
+44:37
+And now, we can use this neural activation vector a as
+44:43
+input to our final classification layer.
+44:48
+The default that we've had so far was the softmax, but
+44:51
+let's not rederive the softmax.
+44:53
+We've done it multiple times now, you'll do it again in a problem set and
+44:56
+introduce an even simpler one and
+44:59
+walk through all the glory details of that simple classifier.
+45:03
+And that will be a simple, unnormalized score.
+45:06
+And this case here, this will essentially be the right mechanism for
+45:12
+various simple binary classification problems,
+45:13
+where you don't even care that much about this probability z is 0.8.
+45:17
+You really just cares like, is it one, is it in this class, or is it not?
+45:23
+And so we'll define the objective function for this new output layer in a second.
+45:28
+Well, let's first understand the feed-forward process.
+45:31
+And well feed-forward process is what you will end up using a test time and for
+45:35
+each element also in training before you can take derivative.
+45:38
+Always be feed-forward and then backward to take the derivatives.
+45:43
+So what we wanna do here is for
+45:45
+example, take basically each window and then score it.
+45:50
+And say if the score is high we want to train the model such that it would assign
+45:54
+high scores to windows where the center word is a named entity location.
+46:01
+Such as Paris, or London, or Germany, or Stanford, or something like that.
+46:06
+Now we will often use and
+46:09
+you'll see a in a lot of papers this kind of graph, so it's good to get used to it.
+46:14
+There are various other kinds, and we'll try to introduce them
+46:17
+slowly throughout the lecture but this is the most common one.
+46:20
+So we'll define bottom up, what each of these layers will do and
+46:26
+then we'll take the derivatives and learn how to optimize it.
+46:31
+Now x window here is the concatenation of all our word vectors.
+46:35
+So let's hear, and I'll ask you a question in a second,
+46:39
+let's try to figure out the dimensionality here of all our parameters so that you're,
+46:42
+I know you're with me.
+46:44
+So let's say each of our word vectors here is four dimensional and
+46:49
+we have five of these word vectors in each window that are concatenated.
+46:52
+So x is a 20 dimensional vector.
+46:57
+And again, we'll define it as column vectors.
+47:00
+And then lets say we have in our first hidden layer,
+47:03
+lets say we have eight units here.
+47:05
+So you want an eight unit hidden layer as our intermediate representation.
+47:11
+And then our final scores just again a simple single number.
+47:15
+Now what's the dimensionality of our W given what I just said?
+47:21
+20 dimensional input, eight hidden units.
+47:31
+20 rows and eight columns.
+47:34
+We have one more transfer, [LAUGH] that's right.
+47:38
+So it's going to be eight rows and 20 columns, right?
+47:41
+And you can always whenever you're unsure and
+47:44
+you have something like this then this will have some n times d.
+47:48
+And then multiply this and then this will have, this will always be d,
+47:53
+and so these two always have to be the same, right?
+47:55
+So all right, now
+48:00
+what's the main intuition behind this extra layer, especially for NLP?
+48:03
+Well, that will allow us to learn non-linear
+48:06
+interactions between these different input words.
+48:08
+Whereas before, we could only say well if in appears in this location,
+48:12
+always increase the probability that the next word is a location.
+48:17
+Now we can learn things and patterns like, if in is in the second position, increase
+48:23
+the probability of this being the location only if museum is also the first vector.
+48:28
+So we can learn interactions between these different inputs.
+48:31
+And now we'll eventually make our model more accurate.
+48:43
+Great question.
+48:44
+So do I have a second W there.
+48:45
+So the second layer here the scores are unnormalized, so it'll just be U and
+48:50
+because we just have a single U, this will just be a single column vector and we'll
+48:54
+transpose that to get our inner product to get a single number out for the score.
+48:59
+Sorry, yeah, so the question was do we have a second W vector.
+49:04
+So yeah, that's in some sense our second matrix, but
+49:07
+because we only have one hidden neuron in that layer, we only need a single vector.
+49:16
+Wonderful.
+49:17
+All right, so, now let's define the max-margin loss.
+49:21
+It's actually a super powerful loss function often is even more robust
+49:26
+than the cross entropy error in softmax, and is quite powerful and useful.
+49:31
+So let's define here two examples.
+49:35
+Basically, you want to give a high score to windows,
+49:40
+where the center word is a location.
+49:42
+And we wanna give low scores to corrupt or
+49:46
+incorrect windows where the center word is not a named entity location.
+49:50
+So museum is technically a location, but it's not a named entity location.
+49:55
+And so the idea for
+49:56
+this training objective of max-margin is to essentially try to make the score of
+50:01
+the true windows larger than the ones of the corrupt windows smaller or lower.
+50:07
+Until they're good enough.
+50:08
+And we define good enough as being different by the value of one.
+50:14
+And this one here is a margin.
+50:16
+You can often see it as a hyperparameter too and
+50:18
+set it to m and try different ones but in many cases one works fine.
+50:22
+This is continuous and we'll be able to use SGD.
+50:25
+So now what's the intuition behind the softmax, sorry the max-margin loss here?
+50:32
+If you have for instance a very simple data set and
+50:35
+you have here a couple of training samples.
+50:38
+And here you have the other class c, what a standard
+50:43
+softmax may give you is a decision boundary that looks like this.
+50:50
+It's like perfectly separates the two.
+50:52
+It's a very simple training example.
+50:54
+Most standard softmax classifiers will be able to
+50:56
+perfectly separate these two classes.
+50:59
+And again, this is just for illustration in two dimensions.
+51:01
+These are much higher dimensional problems and so on.
+51:03
+But a lot of the intuition carries through.
+51:06
+So now here we have our decision boundary and this is the softmax.
+51:09
+Now, the problem is maybe that was your training data set.
+51:12
+But your test set, actually, might include some other ones that
+51:17
+are quite similar to those stuff you saw at training, but a little different.
+51:22
+And now this kind of decision boundary is not very robust.
+51:27
+In contrast to this, what the max margin
+51:32
+loss will attempt to do is to try to increase the margin
+51:37
+between the closest points of your training data set.
+51:42
+So if you have a couple of points here and you have different points here.
+51:48
+We'll try to maximize the distance between
+51:52
+the closest points here, and essentially be more robust.
+51:56
+So then if at test time you have some things that are kinda similar, but
+52:00
+not quite there, you're more likely to also correctly classify them.
+52:05
+So it's a really great lost or objective function.
+52:10
+Now in our case here when we say a sc for one corrupt window.
+52:15
+In many cases in practice we're actually going to have a sum over
+52:18
+multiple of these.
+52:19
+And you can think of this similar to the skip-gram model where we sample randomly
+52:23
+a couple of corrupt examples.
+52:25
+So you really only need for this kind of training
+52:28
+a bunch of true examples of this is a location in this context.
+52:32
+And then all the other windows where you don't have that
+52:35
+as your training data are essentially part of your negative class.
+52:40
+All right, any questions around the max-margin objective function?
+52:43
+We're gonna take a lot of derivatives of it now.
+52:57
+That's right, is the corrupt window just a negative class?
+53:00
+Yes, that's exactly right.
+53:02
+So you can think of any other window that doesn't have as its center location just
+53:07
+as the other class.
+53:11
+All right, now how do we optimize this?
+53:14
+We're going to take very similar steps to what we've done with cross entropy, but
+53:19
+now we actually have this hidden layer and we'll take our second to last step towards
+53:25
+the full back-propagation algorithm which we'll cover in the next lecture.
+53:29
+So let's assume our cost J here is larger than 0.
+53:35
+So what does that mean?
+53:36
+In the very beginning you will initialize all your parameters here again.
+53:41
+Either randomly or maybe you'll initialize your word vectors to be reasonable.
+53:44
+But they're not gonna be quite perfect at learning in this context in the window
+53:48
+what is location and what isn't.
+53:50
+And so in the beginning all your scores are likely going to be low cuz all
+53:55
+our parameters, U and W and b have been initialized to small, random numbers.
+54:01
+And so I'm unlikely going to be great at distinguishing the window with
+54:06
+a correct location at center versus one that is corrupt.
+54:10
+And so basically, we will be in this regime.
+54:15
+After a while of training, eventually you're gonna get better and better.
+54:19
+And then intuitively if your score here for
+54:21
+instance of the good window is five and one of the corrupt is just two,
+54:26
+then you'll see 1- 5 + 2 is less than 0 so
+54:30
+you just basically have 0 loss on those elements.
+54:34
+And that's another great property of this objective function which is over
+54:39
+time you can start ignoring more and more of your training set cuz it's good enough.
+54:44
+It will assign 0 cost as in 0
+54:48
+error to these examples and so you can start to focus on your objective
+54:54
+function only on the things that the model still has trouble to distinguish.
+54:59
+All right, so let's in the very beginning assume most of our examples
+55:03
+will J will be larger than 0 for them.
+55:06
+And so what we're gonna have to do now is take derivatives with respect to
+55:09
+all the parameters of our model.
+55:12
+And so what are those?
+55:13
+Those are U, W, b and our word vectors x.
+55:17
+So we always start from the top and then we go down because we'll start to reuse
+55:22
+different elements and just the simple combination of taking derivatives and
+55:26
+reusing variables is going to lead us to back propagation.
+55:30
+So derivative of s with respect to U.
+55:32
+Well, what was s?
+55:34
+s was just u transpose times a and so
+55:38
+we all know that derivative of that is just a.
+55:41
+So that was easy, first element, first derivative super straight forward.
+55:47
+Now it's important when we take the next derivative
+55:51
+to also be aware of all our definitions.
+55:53
+How we define these functions that we're taking derivatives off.
+55:57
+So s is basically U transpose a, a was f(z) and z was just Wx + b.
+56:04
+All right, it's very important to just keep track.
+56:06
+That's like almost 80% of the work.
+56:09
+Now, let's take the derivative like I said,
+56:12
+first partial of only one element of W to gain intuitions.
+56:16
+And then we can put it back together and have a more complex matrix notation.
+56:23
+So we'll observe for Wij that it will actually only appear
+56:28
+in the ith activation of our hidden layer.
+56:32
+So for example, let's say we have a very simple input with a three dimensional x.
+56:37
+And we have two hidden units, and this one final score U.
+56:43
+Then we'll observe that if we take the derivative with respect to W23.
+56:48
+So the second row and the third column of W,
+56:52
+well that actually only is needed in a2.
+56:55
+You can compute a1 without using W23.
+57:00
+So what does that mean?
+57:01
+That means if we take the derivative of weight Wij,
+57:05
+we really only need to look at the ith element of the vector a.
+57:11
+And hence, we don't need to look at this whole inner product.
+57:16
+So what's the next step?
+57:17
+Well as we're taking derivatives with W, we need to be again aware of where does W
+57:21
+appear and all the other parameters are essentially constant.
+57:25
+So U here is not something we're taking a derivative off.
+57:29
+So what we can do is just take it out, just as like a single number, right.
+57:32
+We'll just get it outside, put the derivative inside here.
+57:36
+And now, we just need to very carefully define our ai.
+57:41
+So a subscript i, so that's where Wij appears.
+57:45
+Now, ai was this function, and we defined it as f of zi.
+57:50
+So why don't we just write this carefully out,
+57:54
+and now this is first application of the chain rule with
+57:59
+derivative of ai with respect to zi, and then zi with respect to Wij.
+58:04
+So this is single application of the chain rule.
+58:14
+And then end of it it looks kind of overwhelming, but each step is very clear.
+58:18
+And each step is simple, we're really writing out all the glory details.
+58:23
+So application of the chain rule, now we're going to define ai.
+58:29
+Well ai is just f of zi, and f was just an element y function on a single number zi.
+58:36
+So we can just rewrite ai with its definition of f of zi,
+58:40
+and we keep this one intact, all right?
+58:43
+And now derivative of f, we can just for now assume is f prime.
+58:48
+Just a single number, take derivative.
+58:50
+We'll just define this as f prime for now.
+58:52
+It's also just a single number, so no harm done.
+58:57
+Now we're still in this part here,
+58:59
+where we basically wanna take the derivative of zi with respect to Wij.
+59:03
+Well let's define what zi was, zi was just here.
+59:08
+The W of the ith row times x plus the ith element of b.
+59:15
+So let's just replace zi with it's definition.
+59:20
+Any questions so far?
+59:31
+All right,
+59:34
+good or not?
+59:38
+So we have our f prime and we have now the derivative
+59:43
+with respect to Wij of just this inner product here.
+59:48
+And we can again, very carefully write out well,
+59:51
+the inner product is just this row times this column vector.
+59:56
+That's just the sum, and now when we take the derivative with respect to Wij,
+60:02
+all the other Ws are constants.
+60:04
+They fall out, and so basically it's only the xk,
+60:09
+the only one that actually appears in the sum with Wij is xj and
+60:15
+so basically this derivative is just Xj.
+60:22
+All right, so now we have this whole expressions of just taking
+60:27
+carefully chain rule multiplications definitions of all our terms and so on.
+60:33
+And now basically, what we're gonna want to do is simplify this a little bit,
+60:38
+cuz we might want to reuse different parts.
+60:42
+And so we can define, this first term here actually happens to only use subindices i.
+60:50
+And it doesn't use any other subindex.
+60:52
+So we'll just define Uif prime of zi for
+60:57
+all the different is as delta i.
+61:00
+At first notational simplicity and xj is our local input signal.
+61:06
+And one thing that's very helpful for
+61:09
+you to do is actually look at also the derivative of the logistic function here.
+61:15
+Which can be very conveniently computed in terms of the original values.
+61:20
+And remember f of z here, or
+61:22
+f of zi of each element is always just a single number.
+61:27
+And we've already computed it during forward propagation.
+61:30
+So we wanna ideally use hidden activation functions that are very fast to compute.
+61:38
+And here, we don't need to compute another exponent or anything.
+61:41
+We're not gonna recompute f of zi cuz we already did that in the forward
+61:45
+propagation step.
+61:48
+All right,
+61:49
+now we have the partial derivative here with respect to one element of W.
+61:54
+But of course, we wanna have the whole gradient for the whole matrix.
+61:58
+So now the question is, with the definitions of this delta i for
+62:04
+all the different elements of i of this matrix and xj for
+62:08
+all the different elements of the input.
+62:12
+What would be a good way of trying to combine all of these different elements
+62:17
+to get a single gradient for the whole matrix W, if we have two vectors.
+62:29
+That's right.
+62:30
+So essentially, we can use delta times x transpose, namely the outer
+62:35
+product to get all the combinations of all elements i and all elements j.
+62:41
+And so this again might seem like a little bit like magic.
+62:44
+But if you just think again of the definition of the outer product here.
+62:48
+And you write it out in terms of all the indices, you'll see that turns out
+62:53
+to be exactly what we would want in one very nice, very simple equation.
+63:00
+So we can kind of think of this delta term actually as the responsibility of
+63:06
+the error signal that's now arriving from our overall loss into this layer of W.
+63:11
+And that will eventually lead us to flow graphs.
+63:15
+And that will eventually lead us to you not having to actually go through all this
+63:19
+misery of taking all these derivatives.
+63:20
+And being able to abstract it away with software packages.
+63:23
+But this is really the nuts and bolts of how this works, yeah?
+63:37
+Yeah, the question is, this outer product will get all the elements of i and j?
+63:42
+And that's right.
+63:43
+So when we have delta times x transposed.
+63:47
+Then now we have basically here, x is usually this vector.
+63:53
+So now let's take the right notation.
+63:57
+So we wanna have derivative with respect to W.
+64:03
+W was a, 2x3 dimension matrix for example, 2x3.
+64:19
+We should be very careful of our notation.
+64:24
+2x3.
+64:25
+So now, the derivative of j with respect to our w
+64:31
+has to, in the end, also be a 2x3 matrix.
+64:34
+And if we have delta times x transposed, then that means we'll have
+64:41
+to have a two-dimensional delta, which is exactly the dimensions that are coming in.
+64:45
+[INAUDIBLE] Signal that I mentions that we have for
+64:49
+the number of hidden units that we have.
+64:51
+Times this one dimensional, basically row vector times
+64:56
+xt which is a 1 x 3 dimensional vector that we transpose.
+65:02
+And so, what does that mean?
+65:05
+Well, that's basically multiplying now, standard matrix multiplication.
+65:10
+You should write that.
+65:14
+So now the last term that we haven't taken derivatives of off the [INAUDIBLE],
+65:20
+is our bi and it'll eventually be very similar.
+65:24
+We're going to go through it.
+65:26
+We can pull Ui out, we're going to take f prime, assume that's the same.
+65:30
+So now, this is our delta i.
+65:33
+We'll observe something very similar.
+65:35
+These are very similar steps for bi.
+65:37
+But in the end, we're going to just end up with this term and
+65:40
+that's just going to be one.
+65:41
+And so, the derivative of our bi element here,
+65:45
+is just delta i and we can again use all the elements of delta,
+65:50
+to have the entire gradient for the update of b.
+65:58
+Any questions?
+66:04
+Excellent, so this is essentially, almost back-propagation.
+66:10
+We¡¯ve so far only taken derivatives and using the chain rule.
+66:13
+And first thing, when I went through this,
+66:15
+this is like a lot of the magic of deep learning, is just becoming a lot clear.
+66:20
+We¡¯ve just taken derivatives, we have an objective function and then we update
+66:24
+based on our derivatives, all the parameters of these large functions.
+66:28
+Now the main remaining trick, is to re-use derivatives that we've computed for
+66:32
+the higher layers in computing derivatives for the lower layers.
+66:36
+It's very much an efficiency trick.
+66:39
+You could not use it and it would just be very, very inefficient to do.
+66:43
+But this is the main insight
+66:46
+of why we re-named taking derivatives as back propagation.
+66:51
+So what is the last derivatives that we need to take?
+66:55
+For this model, well again, it's in terms of our word vectors.
+66:59
+So let's go through all of those.
+67:01
+Basically, we'll have to take the derivative of the score with respect to
+67:06
+every single element of our word vectors.
+67:09
+Where again, we concatenated all of them into a single window.
+67:14
+And now, the problem here is that
+67:16
+each word vector actually appears in both of these terms.
+67:21
+And both hidden units use all of the elements of the input here.
+67:27
+So we can't just look at a single element.
+67:30
+We'll really have to sum over, both of the activation units in the simple case here,
+67:37
+where we just have two hidden units and three dimensional inputs.
+67:41
+Keeps it a little simpler, and there's less notation.
+67:44
+So then, we basically start with this.
+67:47
+I have to take derivatives with respect to both of the activations.
+67:52
+And now, we're just going to go through similar kinds of steps.
+67:55
+We have s.
+67:56
+We defined s as u transpose times our activation.
+67:59
+That was just Ui then ai was just f of w and so on.
+68:08
+Now, what we'll observe as we're going through all these similar steps again is
+68:12
+that, we'll actually see the same term here reused from before.
+68:19
+It's Ui x F prime of Zi.
+68:25
+This is exactly the same.
+68:27
+That we've seen here.
+68:28
+F prime of Zi.
+68:32
+And what that means is, we can reuse that same delta.
+68:35
+And that's really one of the big insights.
+68:38
+Fairly trivial but very exciting, cuz it makes it a lot faster.
+68:42
+But, what's still different now,
+68:43
+is that of course we have to take the the derivative with respect.
+68:46
+To each of these, to this inner product here in Xj, where we basically dumped
+68:50
+the bias term, cuz that's just a constant, when we were taking this derivative.
+68:55
+And so, this one here again, Xj is just inner product,
+68:59
+it's the jth element of this matrix W that's the relevant one for
+69:03
+this inner product, let me take the derivative.
+69:07
+So now we have this sum here, and now comes again this tricky bit of trying
+69:12
+to simplify this sum into something simpler in terms of matrix products.
+69:17
+And again, the reason we're getting towards back propagation is that we're
+69:22
+reusing here these previous error signals, and elements of the derivative.
+69:29
+Now, the simplest, the first thing we'll observe here as we're doing this sum, is
+69:33
+that sum is actually also a simple inner product, where we now take the jth column.
+69:39
+So this again, this dot notation when the dot is after the first, and
+69:43
+next we take the row, here we take the column.
+69:46
+So it's a column vector.
+69:47
+But then of course we transpose it, so
+69:48
+it's a simple inner product for getting us a single number.
+69:52
+Just the derivative of this element of the word vectors and the word window.
+69:58
+Yes.
+70:13
+Great question.
+70:13
+So once we have the derivatives for
+70:16
+all these different variables, what's the sequence in which we update them, and
+70:19
+there's really no sequence we update them all in parallel.
+70:22
+We just take one step in all the elements that we now had a variable in or
+70:26
+have seen that parameter in.
+70:29
+And the complexity there, is in standard machine learning you'll see
+70:33
+in many models just like standard logistic regression,
+70:35
+you see all your parameters like your W in all the examples.
+70:38
+And ours, it's a little more complex, because most words you won't see in
+70:42
+a specific window and so, you only update the words that you see in that window.
+70:47
+And if you assumed all the other ones, you'd just have very, very large,
+70:51
+quite sparse updates, and that's not very RAM efficient, great question.
+70:57
+So now we have this simple multiplication here and
+71:00
+the sum is just is just inner product.
+71:03
+So far so simple, and we have our D dimension vector which I mentioned,
+71:06
+is two dimensions.
+71:07
+We have the sum over two elements.
+71:10
+So, so far so good.
+71:11
+Now, really, we would like to get the full gradient here with respect to all
+71:18
+XJs for J equals one to three and its simple case, or
+71:23
+five D if we have a five word large window.
+71:28
+So now the question is, how do we combine this single element here.
+71:34
+Into a vector that eventually gives us all the different gradients for all the xij.
+71:41
+And j equals 1 to however long our window is Is anybody follow along this closely?
+71:54
+That's right.
+71:55
+W transposed delta.
+71:56
+Well done.
+71:58
+So basically our final derivative and final gradient here for.
+72:04
+Our score s with respect to the entire window, is just W transpose times delta.
+72:10
+Super simple very fast to implement, I can easily think about how to vectorize
+72:15
+this again by concatenating multiple deltas from multiple Windows and so on.
+72:19
+And it can be very efficiently, like implemented and derived.
+72:24
+All right, now the error message is delta that arrives at this hidden layer,
+72:27
+has of course the same dimensionality as its hidden layer because we're updating
+72:31
+all the windows.
+72:32
+And now from the previous slides we also know that when we update a window,
+72:36
+it really means we now cut up that final
+72:40
+gradient here into the different chunks for each specific word in that window,
+72:44
+and that's how we update our first large neural network.
+72:48
+So let's put all of this together again.
+72:52
+So, our full objective function here was this max and I started
+72:58
+out with saying let's assume it's larger than zero so you have this identity here.
+73:02
+So this is simple indicator function if.
+73:05
+The indication is true, then it's one and if not, it's zero.
+73:09
+And then you can essentially ignore that pair of correct
+73:15
+and corrupt windows x and xc, respectively.
+73:18
+So our final gradient when we have
+73:21
+these kinds of max margin functions is essentially implemented this way.
+73:26
+And we can very efficiently multiply all of this stuff.
+73:35
+All right.
+73:41
+So this is just that, this is not right.
+73:43
+This is our [INAUDIBLE] But you still have to take the derivative here,
+73:46
+but basically this indicator function is the main novelty that we haven't seen yet.
+73:50
+All right.
+73:54
+Yeah.
+74:00
+>> [INAUDIBLE]
+74:35
+>> Yeah, it's a long question.
+74:36
+The gist of the question is how to we make sure we don't get stuck in local optima.
+74:42
+And you've kinda answered it a little bit already which is indeed because of
+74:46
+the stochasticity you keep making updates anyway it's very hard to get stuck.
+74:50
+In fact, the smaller your, the more stochastic you are,
+74:55
+as in the fewer windows you look at each time you want to make an update,
+74:59
+the less likely you're getting stuck.
+75:00
+If you had tried to get through all the windows and then make one gigantic update,
+75:04
+so it's actually very inefficient and much more likely to get you stuck.
+75:08
+And then the other observation that it's just slowly coming
+75:11
+through some of the theory that we couldn't get into this class.
+75:15
+Is that it turns out a lot of the local optima are actually pretty good.
+75:19
+And in many cases,
+75:20
+not even that far away from what you might think the global optima would be.
+75:24
+Also, you'll observe a lot of times, and we'll go through this in some
+75:29
+of the project advice in many cases, you can actually perfectly fit.
+75:32
+We have a powerful enough neural network model.
+75:34
+You can often perfectly fit your input and your training dataset.
+75:39
+And you'll actually, eventually spend most of your time thinking about how to
+75:42
+regularize your models better and often, at least, even more stochasticity.
+75:47
+We'll get through some of those.
+75:49
+But yeah, good question.
+75:50
+Yeah, in the end, we just have all these updates and it's all very simple.
+75:55
+All right, so let's summarize.
+75:56
+This was a pretty epic lecture.
+75:58
+Well done for sticking through it.
+76:01
+Congrats again, this was our super useful basic components lecture.
+76:06
+And now this window model is actually really the first one that you
+76:09
+might observe and practice and you might actually want to implement.
+76:12
+In a real life setting.
+76:13
+So to recap,
+76:14
+we've learned word vector training, we learned how to combine Windows.
+76:18
+We have the softmax and the cross entropy error and
+76:21
+we went through some of the details there.
+76:23
+Have the scores and the max margin loss, and we have the neural network, and it's
+76:26
+really these two steps here that you have to combine differently for problem set.
+76:31
+Number one and especially number two in that.
+76:33
+So, we just have one more math heavy lecture and
+76:36
+after that we can have fun and combine all these things together.
+76:39
+Thanks.

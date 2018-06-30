@@ -1,0 +1,3682 @@
+00:04
+Stanford University okay hi everyone
+00:10
+yeah it's exciting right we're in week
+00:14
+ten everyone's really excited for the
+00:16
+end of the class but thank you so much
+00:18
+the people who did turn up in person to
+00:21
+see this last week's lecture I guess
+00:23
+rich and me both have one lecture each
+00:26
+at me during the Tuesday and the
+00:28
+Thursday I suspect that there are
+00:30
+probably a few people who we won't be
+00:33
+seeing today who are trying to catch up
+00:35
+on their final projects I'm sure every
+00:37
+one of them will watch the video and
+00:39
+catch up on what they miss during spring
+00:41
+break but for those of you are here or
+00:45
+watching here's what we're going to have
+00:47
+today so I wanted to sort of try and you
+00:52
+try and say a little bit about sort of
+00:55
+bigger picture solving needs of language
+00:58
+and where things might be heading or
+01:00
+should be heading I wanted to kind of
+01:02
+come back and say a bit more about some
+01:05
+of the tree structured model ideas and
+01:07
+how those might be we interpreted in a
+01:10
+different context at the high level of
+01:12
+language and then something that's in
+01:14
+the same vein as that is for our
+01:16
+research highlight today she is then
+01:18
+going to be talking about this kind of
+01:19
+interesting model out of Berkeley for
+01:22
+learning to compose for question
+01:23
+answering and then you know for the end
+01:26
+part of it there are kind of a couple of
+01:30
+things that we haven't said very much
+01:31
+about in the class which I thought I
+01:33
+should just say a bit more about before
+01:36
+the class ends so we'll talk about
+01:38
+character based models okay quickly the
+01:42
+reminders or best of luck and finishing
+01:45
+your assignment for or your final
+01:47
+project so I mean there's sort of a
+01:51
+subtle balance that you know in terms of
+01:53
+what you are doing I mean you should be
+01:55
+making sure you kind of have solid
+01:57
+baselines and well-trained models you
+01:59
+know it's obviously good to be
+02:00
+investigating fancy architectures but
+02:03
+you know if it's sort of if they're sort
+02:07
+of not working at all or it seems like
+02:08
+they're working very badly that's sort
+02:10
+of always hard and I still kind of work
+02:12
+out where things are
+02:13
+so you know especially if the different
+02:15
+problem well you sort of want to know
+02:17
+well how much would you get if you just
+02:18
+ran a bigram logistic regression on this
+02:20
+and then is there we use the weapons
+02:23
+that this newer model was well trained
+02:24
+so it's not that you have to sort of
+02:26
+infinitely tune your hyper parameters
+02:28
+but we sort of hope that you have sort
+02:29
+of reasonably solid models if you're
+02:33
+having any problems do try and get some
+02:35
+help I know there are a lot of people
+02:37
+going to office hours today so tonight
+02:40
+Richard is again having infinite project
+02:43
+office hours so feel free to come by
+02:46
+depending you can either go home and
+02:48
+have dinner and come back at 10 p.m.
+02:50
+probably and he'll still be there
+02:56
+make sure you in the queue and then sort
+02:59
+of finally for Microsoft Azure so I mean
+03:04
+Microsoft has really been super generous
+03:05
+at giving us more GPU hours and so we've
+03:08
+got a fresh new allotment of GPU hours
+03:11
+and I guess this afternoon I was trying
+03:13
+to top up various people's accounts but
+03:16
+you know in general it's kind of easiest
+03:18
+for everybody if your account doesn't
+03:21
+run out of credits because you know then
+03:22
+it gets cancelled and you get locked out
+03:24
+and we have to reactivate and involve
+03:26
+all of us so you know really if you sort
+03:29
+of know you want to do something that
+03:31
+takes more credits than you have feel
+03:34
+free to get in contact on Piazza
+03:35
+beforehand preferably don't just email
+03:39
+me because in the good case one of the
+03:42
+TAS James or nish do it rather than me
+03:46
+okay
+03:47
+so a kind of interesting thing that's
+03:50
+happened in the last couple of years is
+03:53
+that a lot of the key deep learning
+03:55
+people have really sort of redirected
+03:58
+their mission with this idea that they
+04:00
+could sort of solve language so
+04:02
+historically most of deep learning came
+04:06
+out of vision and vision really
+04:08
+dominated in deep learning but for for a
+04:12
+couple of interesting reasons there's
+04:14
+sort of the same people that were the
+04:16
+sort of most key deep learning people
+04:18
+such as yarn Laocoon and the others of
+04:21
+jet engine yoshua bengio really they've
+04:23
+all reckon siddur ibly redirected their
+04:26
+research programs towards language and
+04:28
+so here's just sort of one random sort
+04:30
+of business made quote from Business
+04:33
+Insider calm which shows us how this is
+04:35
+sort of panning out in practice so young
+04:38
+McCune is quoted as saying the role of
+04:40
+fair facebook' I research is to advance
+04:43
+the science and the technology of AI and
+04:46
+do experiments that demonstrate that
+04:48
+technology for new applications like
+04:50
+computer vision dialogue systems Virtual
+04:52
+Assistants speech recognition natural
+04:55
+language understanding translation
+04:57
+things like that and the thing is sort
+05:00
+of really surprising about that list is
+05:02
+a well okay
+05:04
+the first application he mentioned this
+05:06
+computer vision
+05:07
+he's a 20-year computer vision guys that
+05:10
+maybe not too surprising but if you keep
+05:12
+on reading after the first application
+05:14
+every other application he mentions is a
+05:18
+natural language application dialog
+05:20
+systems Virtual Assistants speech
+05:23
+recognition natural language
+05:24
+understanding translation at all
+05:27
+language applications and I think coming
+05:32
+off of that that sort of many people who
+05:35
+haven't been long-term language people
+05:38
+kind of feel that language will have a
+05:41
+kind of an image net moment where
+05:43
+somehow someone builds a big enough
+05:46
+complex enough neural network that kind
+05:50
+of the tasks will just be sort of
+05:52
+measurably solved in one step I kind of
+05:56
+think actually that's probably not going
+05:58
+to happen because I kind of think there
+05:59
+are so many different language phenomena
+06:02
+and tasks that they're sort of just no
+06:04
+one task that can really sort of have
+06:07
+the same kind of seminal okay we solve
+06:09
+natural language understanding and so I
+06:13
+wanted to with respect to that sort of
+06:15
+mention a couple of things of what has
+06:18
+been lost from old NLP work so I think
+06:21
+that's actually kind of an interesting
+06:23
+contrast if you go back to the sort of
+06:26
+good old-fashioned day I work in natural
+06:28
+language processing versus a lot of what
+06:31
+you see more recently and that is that
+06:34
+if you so look back in sort of 1870s
+06:38
+natural language processing work that
+06:40
+these people had really lofty goals that
+06:43
+their goal was so I really have human
+06:46
+level language understanding now
+06:49
+actually what they could do was
+06:51
+extremely extremely modest but
+06:54
+nevertheless the contrast is it sort of
+06:56
+seems like here we are today we have
+06:58
+much better realities as the kind of
+07:01
+things we can do but it's not always
+07:03
+clear that everyone's reaching for the
+07:06
+stars as opposed to just thinking okay
+07:08
+well we can run an LST I'm on this
+07:09
+language data and that'll sort of work
+07:12
+reasonably well and not try to get
+07:14
+beyond that so I thought it might be
+07:16
+good to serve a few slides at the
+07:17
+beginning sort of looking at a bit of
+07:19
+older NLP work and
+07:21
+seeing if there are things that we could
+07:22
+kind of see and learn from that and so I
+07:25
+chose as my example Peter Norvig PhD
+07:29
+thesis so probably most of you have
+07:32
+vaguely at least know who Peter Norvig
+07:34
+is because of the textbook on yak one is
+07:38
+artificial intelligence a modern
+07:40
+approach Russell and Norvig book
+07:43
+he's now works and was worked for many
+07:45
+years as a director of research at
+07:47
+Google and so it's just past the 30th
+07:49
+anniversary of Peters PhD thesis which
+07:52
+was in natural language understanding
+07:54
+and was called a unified theory of
+07:56
+inference to text understanding ok well
+08:01
+what do you find if you look in his
+08:03
+thesis I mean in terms of the actual
+08:06
+language processing and language
+08:09
+understanding that's in the thesis I
+08:11
+mean in some sense there's shockingly
+08:15
+little of it so in his entire for the
+08:18
+work for his entire thesis there's only
+08:20
+one piece of real natural language
+08:25
+that's analyzed in the entire
+08:27
+dissertation all the rest of it is sort
+08:31
+of toy examples like Bill had a bicycle
+08:33
+John wanted it he gave it to him and
+08:36
+trying to analyze stuff like that
+08:38
+actually a bit reminiscent of the kind
+08:40
+of baby sentences at Facebook AI
+08:42
+research lately came out with but this
+08:45
+is the one piece of real natural
+08:47
+language that's analyzed in the
+08:49
+dissertation which comes from a
+08:51
+children's story in a poor fishing
+08:54
+village built on an island not far from
+08:56
+the coast of China a young boy named
+08:58
+Cheng Li lived with his widowed mother
+09:00
+every day little Chung bravely set off
+09:03
+with his net hoping to catch a few fish
+09:05
+from the sea which they could sell and
+09:07
+have a little money to buy bread but the
+09:10
+interesting thing is these are sort of
+09:12
+some of the things that northing said we
+09:16
+should be able to get out of this text
+09:18
+and I think many of these at least half
+09:21
+of these are things that we're still not
+09:23
+very good at and that's actually the
+09:25
+first half so he's hoping to get out
+09:28
+there is a sea which surrounds the
+09:31
+island is used by the villagers for
+09:33
+fishing and
+09:34
+forms part of the coast of China so
+09:37
+there's a sort of interpretive
+09:39
+understanding of the relations that are
+09:42
+involved that and in particular you know
+09:46
+the relationship between the sea and
+09:48
+China is quite distant in the text and
+09:52
+it sort of mediated by the existence of
+09:53
+the coast you know that's the kind of
+09:55
+stuff we're still not very good at Chang
+09:58
+intends to trap fish in his net which is
+10:00
+a fishing net again that's sort of
+10:03
+interpretive stuff right so you're there
+10:07
+sort of this leap of he set off with his
+10:09
+net hoping to catch a few fish from the
+10:12
+sea so it never actually says that he's
+10:14
+going to catch the fish with the net
+10:17
+that any human being would interpret it
+10:19
+that way and again that's sort of the
+10:22
+kind of interpretive language that we
+10:25
+are still aren't very good at dealing
+10:26
+with the other two are actually much
+10:29
+easier the word which refers to the fish
+10:32
+the word they refers to Chang and his
+10:35
+mother we talked about things like that
+10:38
+so in terms of how he's going to do
+10:41
+about do this
+10:42
+I mean interestingly they're kind of
+10:45
+perspective in the 80s was just
+10:46
+completely diametrically opposed to what
+10:49
+it is these days I mean in the 1980s it
+10:52
+was sort of believed sort of you know
+10:55
+just as an assumption there was beyond
+10:57
+question that the only way that you're
+10:59
+going to do any kind of natural language
+11:01
+understanding was to have a knowledge
+11:03
+base that you could work with and reason
+11:05
+on so you know on page four of the
+11:07
+thesis he takes it as established as we
+11:11
+have just seen a suitable knowledge
+11:13
+basis of prerequisite for making proper
+11:15
+inferences and that was sort of just no
+11:18
+more of an argument than look we need to
+11:19
+make inferences between these facts to
+11:21
+understand that the net is going to be
+11:25
+used to catch the fish therefore we need
+11:27
+a knowledge base to do it over
+11:30
+whereas sort of what's happened in the
+11:31
+last two decades is the sort of show
+11:34
+that there's actually a lot of natural
+11:35
+language understanding that you can do
+11:38
+without having any knowledge base and
+11:40
+just working on fairly surface forms so
+11:43
+in his thesis he outlined six forms of
+11:46
+inference and tries to build and that
+11:48
+language understanding system and
+11:50
+embodies them and will be able to make
+11:52
+inferences over that passage two of them
+11:55
+common pairs so there are four basic
+11:57
+types so one is elaboration and so
+12:00
+that's working out how to connect to
+12:03
+entities so that you know this example
+12:07
+is John got a piggy bank for the reason
+12:10
+of having money for the reason of buying
+12:12
+a present but the example from the
+12:14
+previous slide was he had the net with
+12:16
+him for the reason of helping catch the
+12:19
+fish and so you have to sort of do this
+12:21
+contextual elaboration the second one is
+12:25
+reference resolution that's really the
+12:27
+only one of these that we've talked
+12:29
+about and you know we know how to do
+12:30
+that one we can do that one pretty well
+12:32
+today the third one is related to sort
+12:37
+of the interpretation of metaphor and
+12:40
+abstract forms from language so that if
+12:44
+you have a sentence like the Red Sox
+12:46
+killed the Yankees that doesn't doesn't
+12:48
+mean that they went out murdering them
+12:51
+with knives and guns it means that they
+12:54
+can defeated them convincingly and so
+12:57
+language is full of that kind of
+12:59
+metaphor that all the time we're sort of
+13:00
+using physical metaphors which are
+13:04
+having these sort of abstract
+13:05
+interpretations and so another part of
+13:07
+its dissertation was so trying to work
+13:10
+out how you derived those abstract
+13:12
+interpretations and then the third one
+13:15
+is sort of an interesting one that a lot
+13:17
+of the time that we think we don't think
+13:19
+of as much but it's actually I think
+13:21
+quite important and that's
+13:23
+concretization
+13:25
+and so that this is how you sort of go
+13:29
+from a general description to a much
+13:31
+more specific form of it so if you know
+13:34
+someone is traveling in an automobile
+13:37
+then you know that the kind of traveling
+13:40
+of at least one of the people is doing
+13:41
+is driving the automobile at least until
+13:44
+our autonomous cars get a bit better and
+13:46
+so there's that kind of concretization
+13:48
+that you'll need to sort of be able to
+13:50
+do more fine grained inferences in the
+13:52
+state of knowledge okay so so that's
+13:57
+kind of interesting you know the ways in
+13:59
+which we've made in the
+14:01
+almost progress I mean so in Norvig
+14:04
+thesis he's a sick descent is the
+14:07
+situation is essentially that they don't
+14:09
+have syntactic passes that's good enough
+14:11
+that they can actually pass sentence as
+14:13
+they'd like to pass like that story so
+14:16
+he describes how well Lensky that's his
+14:18
+dissertation advisors friend program was
+14:21
+used where possible to pass sentences
+14:24
+but to some import friend was not up to
+14:26
+the task so we constructed the
+14:28
+representation of the sentence by hand
+14:30
+instead well you know we're actually
+14:32
+better than that we can actually pass
+14:34
+sentence was pretty well now but once
+14:37
+you're starting to do the kind of
+14:38
+elaborations to do the sort of things
+14:42
+that were being talked about as other
+14:44
+goals these are kind of things that most
+14:46
+of NLP still hasn't gotten to and maybe
+14:49
+should be starting to get to so I think
+14:52
+they're still sort of big things that we
+14:54
+still need to do in NLP you know on the
+14:57
+one hand I mean it's just true that in
+15:00
+the last few years you know there's been
+15:02
+these exciting times and a lot of
+15:04
+systems have gone a lot better and
+15:05
+there's sort of this sense that BIOS TMS
+15:09
+with attention are sort of taking over
+15:10
+the field of natural language processing
+15:12
+because you can try them on any task and
+15:14
+they work better than what people use to
+15:16
+do and you know you can even use them
+15:19
+for surprising things you know you can
+15:21
+just use a bio stem for attention as
+15:23
+that's going to be your natural language
+15:25
+parser works surprisingly well
+15:27
+right so they seem good another thing
+15:31
+that's really exciting that's happened
+15:33
+is these newer methods have just clearly
+15:35
+led to our nissan's in language
+15:37
+generation tasks so any task where you
+15:40
+actually have to generate pieces of
+15:42
+natural language whether that's a sort
+15:44
+of generation side and machine
+15:45
+translation the generation side of
+15:47
+dialogue answering a question doing
+15:51
+summarization that all of those fields
+15:54
+the generation side of things were sort
+15:57
+of fairly more abandoned in the first
+15:59
+decade of the 2000s where now it just
+16:02
+seems like we have these fantastically
+16:04
+good neural language models that we can
+16:06
+configure in different ways and we can
+16:08
+do really exciting a nice language
+16:10
+generation all those fields that sort of
+16:12
+been springing to life lately
+16:15
+and it's also a sort of super
+16:17
+interesting time scientifically because
+16:19
+I think sort of for most of natural
+16:22
+language processing has just sort of
+16:24
+been this assumption that we need to be
+16:27
+building particular kinds of
+16:28
+representations of language and working
+16:31
+with them so we want to have sort of
+16:33
+syntactic representations and often we
+16:35
+won't have above those things like
+16:37
+semantic frames to represent events and
+16:40
+relations and language and so we're sort
+16:42
+of building explicit local earth
+16:44
+language knowledge representations where
+16:47
+it's what some of the recent work such
+16:49
+as the stuff that Richard was talking
+16:51
+about last week was showing is that it
+16:54
+now seems there are a lot of situations
+16:56
+in which we can build these end-to-end
+16:59
+deep learning systems that don't have
+17:01
+any of these kind of explicit localized
+17:03
+knowledge representations but actually
+17:05
+work very nicely but on the other hand
+17:08
+you know there are a lot of things that
+17:10
+we still I think have barely scratched
+17:13
+the surface of so one of those is we
+17:16
+still kind of have very primitive means
+17:19
+for building and accessing memories or
+17:22
+knowledge so yes there's been a lot of
+17:24
+work with LST M s where the M is memory
+17:27
+and memory networks and other things
+17:29
+like that but really all of those are
+17:32
+models of sort of very recent short-term
+17:35
+memory as the s T in the LSP M so
+17:38
+they're not really models of how like
+17:41
+human beings that we can have years of
+17:43
+experience of our lives stored in our
+17:46
+heads and we can flexibly sort of bring
+17:48
+forth relevant facts at the right time
+17:52
+that you know the all they're doing is a
+17:53
+sort of linear scan of what's happened
+17:56
+in the last 100 words or something like
+17:58
+that so that's pretty poor another thing
+18:01
+that's pretty poor is we don't really
+18:03
+have much in the way of models that let
+18:05
+us formulate goals or formulate plans
+18:08
+and really if you're going to do a lot
+18:11
+of things in conversation like have a
+18:13
+meaningful dialogue you sort of have to
+18:15
+have some goals and plans that yes you
+18:18
+can just be shooting the breeze but a
+18:20
+lot of the time you want to accomplish
+18:21
+things which leads to subtasks and
+18:23
+things like that another area where
+18:26
+we're still really bad
+18:28
+it's just sort of pretty bad at Inter
+18:31
+central relationship so once we're
+18:33
+inside one sentence the structure is
+18:36
+usually pretty clear and we can work
+18:38
+with that
+18:39
+but once we sort of try to reason
+18:41
+between sentences or between clauses and
+18:44
+understand the relationships we're
+18:46
+usually pretty poor at that still and
+18:49
+you know we still can't do many of those
+18:51
+things that Peter Norvig was talking
+18:53
+about right but if we want to do
+18:55
+elaborations in a situation using common
+18:58
+sense knowledge that's not really the
+19:00
+kind of thing that we've now to build
+19:01
+deep learning systems to do so far okay
+19:06
+that's the end of part one so for part
+19:09
+two of the day I wanted to sort of say a
+19:12
+bit more about tree structured models
+19:15
+and then sort of talk about a bit of
+19:17
+recent work that was done by a recent
+19:20
+student of mine Sam Bowman along with
+19:22
+John Gautier on sort of having more
+19:24
+efficient ways of doing tree structured
+19:26
+models so for my linguistic self
+19:30
+I still think sort of having these sort
+19:33
+of constituent pieces that you can build
+19:35
+representations of which gives you a
+19:38
+kind of tree structure is roughly the
+19:40
+right kind of model and so up until now
+19:43
+I've sort of shown some examples of bits
+19:46
+of syntax and looking inside the
+19:49
+sentiment of causes here's another nice
+19:51
+example that was some work that was done
+19:54
+at Maryland by Mohit Iyer and his fellow
+19:56
+students and so what they were wanting
+19:59
+to do is be learning models of the
+20:02
+political ideology of pieces of language
+20:05
+and so pieces of language could either
+20:07
+be neutral which is shown in gray or
+20:10
+they could have liberal or conservative
+20:13
+pieces of political ideology and you
+20:17
+know that wasn't just done at a sort of
+20:18
+a whole paragraph or sentence level in
+20:22
+particular they were able to sort of
+20:25
+build this kind of hierarchical
+20:26
+constituent model but you could label
+20:28
+pieces of rhetoric or ideology as
+20:31
+conservative or liberal inside sentences
+20:34
+so we have examples like this one they
+20:36
+dubbed it the death text and created a
+20:39
+big lie about us adverse effects on
+20:41
+small
+20:42
+mrs. and so the model is picking out
+20:46
+death tax of the term of conservative
+20:48
+ideology and its adverse effects on
+20:51
+small businesses so that's conservative
+20:54
+ideology language and but then when
+20:57
+you're sort of putting that together
+20:59
+interestingly it seems to have learned
+21:01
+that putting scare quotes around death
+21:03
+tax that then regards that as a piece of
+21:05
+liberal ideology but beyond that once
+21:09
+you get up to the whole sentence
+21:11
+representation when it's they dubbed at
+21:13
+the death tax that that's in being
+21:15
+regarded as a sort of a piece of liberal
+21:18
+ideology of representing the opposite
+21:20
+point of view here's one other example
+21:23
+that shows the same kind of thing but
+21:25
+but taxpayers do know already that tarp
+21:28
+that was a recovery program at the
+21:30
+beginning of the Obama administration
+21:32
+was designed in a way that allowed the
+21:34
+same corporations who are saved by huge
+21:36
+amounts of taxpayer money to continue to
+21:39
+show the same arrogant traits that
+21:41
+should have destroyed their companies so
+21:43
+this pit here that huge amounts of
+21:46
+taxpayer money is being identified as
+21:48
+conservative ideology and then it's
+21:50
+being embedded in this sentence which is
+21:52
+again showing liberal ideology yeah
+22:01
+I cannot explain that I mean it seems
+22:04
+like it should be in colored gray yeah I
+22:08
+these models aren't always perfect they
+22:11
+try some difference or something yeah I
+22:15
+don't know
+22:18
+and even saved it's not very clear
+22:20
+that's what we get out okay so those
+22:23
+were our kind of tree recursive neural
+22:25
+networks so I think that's theoretically
+22:27
+appealing they can be empirically
+22:29
+competitive especially if you don't have
+22:31
+a hundred million words of data to train
+22:34
+on but they in most circles they've sort
+22:37
+of fallen out of favor and that's
+22:39
+because they have some big disadvantages
+22:41
+so they're often prohibitively slow most
+22:45
+often they've been used with an external
+22:47
+parser although you can use them to
+22:49
+parse as you go but I guess that
+22:51
+contributes them to them being
+22:52
+prohibitively slow and you can also
+22:55
+think that although there's something
+22:57
+nice about these tree structured models
+23:00
+you might actually wonder if are they
+23:03
+missing out on something because even
+23:05
+though it makes sense that there's sort
+23:07
+of this tree structure of language
+23:09
+language does also have a linear
+23:11
+structure you do sort of say these
+23:13
+streams of words that go left to right
+23:16
+and something that people have often
+23:18
+observed is if you only have tree
+23:20
+structured models you then have words
+23:22
+that should be very close to each other
+23:24
+that end up very distant from each other
+23:27
+in any kind of tree structure and so
+23:29
+actually the model I'm about to talk of
+23:31
+ends up having both tree structure and
+23:33
+linear structure yeah so so this wire
+23:38
+the tree structure models so badly
+23:42
+performing and essentially the reason is
+23:45
+they're not well-suited to the kind of
+23:47
+batch computations on GPUs which is
+23:50
+really the sort of centerpiece of what's
+23:52
+allowed sort of efficient training of
+23:54
+large deep learning models so if you
+23:58
+have a sequence model a sequence model
+24:02
+can only have one structure you're going
+24:04
+from left to right and you're computing
+24:05
+hidden stuff above each word and turn
+24:08
+and because of that you can take a whole
+24:10
+bunch of sentences preferably of similar
+24:12
+lengths and run them through lockstep
+24:15
+in this sequence model and that's really
+24:17
+efficient and the problem is if you want
+24:20
+to do that with tree R and ends that you
+24:23
+get this input specific structure that
+24:26
+every sentence has a different structure
+24:28
+and so that undermines your ability to
+24:31
+do better computation because you're
+24:33
+sort of trying to construct different
+24:35
+structural units in the different
+24:37
+sentences and what happens with GPU code
+24:40
+if you've got a batch of sentences and
+24:42
+each one has different structure what it
+24:45
+does is sort of you're 32 threads one of
+24:49
+them is computing and the other one a 31
+24:51
+idle every time there's something
+24:53
+different being done on one thread
+24:55
+versus the other threads and so that
+24:57
+kills all your efficiency so Sam and
+25:01
+John and Co were sort of trying to then
+25:04
+work out well could we could we come up
+25:06
+with a different form of model which is
+25:09
+at least closer to the efficiency of a
+25:12
+sequence model while still giving us the
+25:15
+benefits of tree structured
+25:17
+representation and that led to the shift
+25:20
+reduce parser interpreter and your
+25:21
+network or spin model so the base model
+25:25
+is equivalent to a tree R and n but
+25:28
+because it's better for better
+25:29
+computation you can't completely get rid
+25:32
+of the fact that they're different
+25:33
+structures that's better for that
+25:34
+computation it can be sort of 25 times
+25:37
+faster or more depending on the kind of
+25:40
+data and it also provided an opportunity
+25:43
+to do a sort of a mixed linear and tree
+25:45
+structured model that can be used alone
+25:48
+without a parser so it's kind of a nice
+25:50
+integrative model I just want to show
+25:51
+you a bit of that and the starting point
+25:54
+of it is essentially exactly the same as
+25:57
+the dependency parsers that we saw in
+26:00
+assignment 2 and in class so for any
+26:03
+piece of tree structure you can describe
+26:06
+a tree structure as uniquely as a
+26:09
+sequence of shifts and reducers so for
+26:12
+this structure on the left right you're
+26:14
+going to take that and cat shift on
+26:16
+twice then you reduce them once to put
+26:18
+them together you shift shift to get set
+26:21
+down on the stack you reduce once you
+26:24
+reduce the second time and so this
+26:26
+sequence of shifts and reducers
+26:28
+corresponds to the
+26:29
+tree structure and every other sequence
+26:32
+of shifts and reducers well either
+26:34
+corresponds to a different tree
+26:35
+structure or is invalid right if you
+26:38
+start off trying to reduce before you've
+26:40
+got nothing on the stack you can't do it
+26:41
+and so what we can do is that we can
+26:46
+build a model that sort of acting like a
+26:48
+transition based parser in shifting and
+26:51
+reducing and so it's going to have a
+26:53
+sequence model in the middle of it but
+26:55
+that sequence model is then going to be
+26:58
+looking at a buffer of words yet to be
+26:59
+dealt with and maintaining a stack and
+27:02
+inside the stack there's going to be
+27:04
+composition kind of like a tree R and n
+27:07
+or not really kind of nice Mike exactly
+27:10
+like a tree R and n which will build
+27:13
+tree r NN representations so in each
+27:15
+point our lsdm model is tracking along
+27:18
+and it's predicting which thing to do
+27:21
+reduce or shift kind of just like the
+27:24
+dependency parsers that you build and so
+27:26
+depending on what it does when things
+27:28
+reduce you're then doing a composition
+27:31
+operation on the stack which is
+27:33
+reshaping the stack and well having this
+27:38
+tracking lsdm it's both a simple parser
+27:41
+and it gives us this kind of sequence
+27:43
+context that we can just sort of also
+27:47
+model the sequence of words so the
+27:50
+essence of getting this to work well is
+27:53
+how can you implement the stack
+27:55
+efficiently because if the stack was
+27:57
+just like this and you're sort of got a
+27:59
+stack for each time step and the stack
+28:02
+changes well then you'd use a vast
+28:06
+amount of memory in the stack because
+28:09
+you've got a different stack a different
+28:12
+complete stack at each time step and it
+28:14
+would also be bad for achieving this
+28:17
+lockstep advance that will make
+28:19
+computation efficient on a GPU so that's
+28:23
+sort of bad in various ways so the
+28:26
+secret of getting to work pretty well is
+28:28
+to say actually for each sentence were
+28:31
+only going to have one stack and we're
+28:33
+going to incremental e sort of build up
+28:35
+representations on the stack as we go
+28:37
+and so it's using an efficient kind of
+28:39
+data structure which is similar to data
+28:42
+structures you
+28:43
+elsewhere that sometimes called the
+28:44
+super data structures and things like
+28:46
+that they're also used in programming
+28:47
+language techniques so the idea is like
+28:50
+this so we want to build up the
+28:51
+structure of spot set down and so when
+28:54
+we start shifting we have this one stack
+28:57
+which we start shifting words onto spots
+29:00
+at down and so there's only ever one
+29:04
+stack but then on this side we maintain
+29:06
+some back pointers and these back
+29:09
+pointers read from right to left is sort
+29:12
+of telling us what's on top of the stack
+29:14
+so at the moment three is on top of the
+29:16
+stack followed by two so then when we do
+29:19
+a reduce operation we just can we don't
+29:22
+delete things off the stack we just
+29:25
+write a new thing onto the stack so we
+29:27
+compute using our composition operation
+29:30
+and up in the tree our NN style a
+29:33
+representation for sat down and we
+29:35
+simply change our back pointers and say
+29:37
+okay now we've got one four on the stack
+29:40
+so four is the top of the stack and one
+29:42
+is the other thing on the stack and so
+29:44
+then when we again do a reduce we
+29:47
+compute a representation for spots back
+29:50
+down and our back pointers say 5 is the
+29:52
+only active part of the stack and the
+29:55
+crucial thing is in these back pointers
+29:57
+allow us to know what's where on the
+29:59
+stack when we do operations but in terms
+30:02
+of our vectors that we're using inside
+30:05
+our forward pass and our backward pass
+30:07
+all of the vectors are in this array
+30:10
+here and that are so we only have sort
+30:12
+of one array per sentence that we're
+30:14
+sort of incrementally building up yes
+30:24
+yes it does yeah
+30:29
+and so so I mean it does see - I mean it
+30:34
+clearly needs to back propagate through
+30:37
+it by because it's wanting to learn
+30:39
+composition functions right so it's
+30:41
+going to be sort of learning matrix
+30:44
+representation as to how to combine
+30:46
+these two words and then your question
+30:49
+is how and at that point I have to give
+30:54
+a sort of an answer of G this was done
+30:57
+with supervision so the reason you'd
+31:00
+think it wouldn't be differentiable is
+31:02
+you'd think okay there's a choice of
+31:04
+different points that's where there's a
+31:05
+shift or reduce and if that's a hard
+31:07
+decision then that introduces a non
+31:11
+differentiability now the way we did
+31:14
+things in this was sort of to take an
+31:16
+inn run about round that so if we train
+31:19
+the model at training time on sentences
+31:21
+that had passes we could compute then
+31:24
+there's no non differentiability and we
+31:27
+could compute the composition functions
+31:29
+and we could learn to predict the
+31:32
+actions and so in some sense that's an
+31:34
+easy way to do it which avoids the non
+31:38
+differentiability if you didn't want to
+31:42
+do that and you actually saw wanted to
+31:43
+say let's have this uncertainty while
+31:45
+you're learning then you'd have to do
+31:47
+something more complex and that then
+31:50
+leads into ideas like reinforcement
+31:52
+learning or some of the other estimators
+31:55
+have been tried recently like a
+31:56
+straight-through estimator where
+31:58
+effectively although the model makes
+32:00
+hard decisions in the forward path
+32:02
+you're using a kind of a soft logistic
+32:06
+function the backward pass to do the
+32:08
+differentiation
+32:17
+you
+32:22
+okay but doing this kind of model
+32:25
+compared to a traditional lsdm okay as
+32:29
+compared to a traditional tree recurrent
+32:32
+neural network is actually sort of super
+32:34
+efficient so this sort of shows four
+32:38
+different batch sizes and obviously
+32:39
+that's going well out in the batch sizes
+32:41
+but sort of shows the general point that
+32:44
+traditionally sort of tree recursive
+32:46
+models and just sort of really
+32:48
+inefficient that you don't kind of get a
+32:50
+good batch speed-up effect because
+32:54
+you've got different operations at every
+32:55
+time whereas the dotted line is just an
+32:59
+LS TM which is super super efficient and
+33:02
+although this model starts to curve up
+33:05
+to and the blue and it has to curve up
+33:07
+because you are doing different
+33:09
+operations on the stack it's sort of
+33:11
+just way way more efficient out to quite
+33:14
+large batch sizes okay so so Sam was
+33:19
+then working to sort of use this model
+33:21
+on natural language in France and I
+33:24
+think we haven't talked much about
+33:25
+natural language inference but I know
+33:27
+it's come up for some of you that
+33:28
+looking at the fake news challenge and
+33:30
+things like that because my and others
+33:32
+have pointed people out of it so the
+33:34
+idea of the natural language inference
+33:35
+was you have a piece of text and then
+33:39
+you have a hypothesis following it and
+33:41
+you're wanting to say whether the
+33:43
+hypothesis follows from a piece of text
+33:45
+it's an entailment so if a man rides a
+33:48
+bike on a snow-covered Road then a man
+33:50
+is outside that's an entailment whether
+33:53
+it's a contradiction so if a man in an
+33:56
+apron is shopping at a market that
+33:57
+contradicts a man and an apron is
+34:00
+preparing dinner or whether it's neutral
+34:03
+which means that neither an entailment
+34:05
+or a contradiction so two female babies
+34:08
+eating chips is neutral with respect to
+34:12
+two female babies are enjoying chips
+34:14
+because they may or may not be enjoying
+34:16
+them even if they're eating them and so
+34:18
+we collected this large corpus SLI of
+34:21
+these kind of sentences and the way we
+34:24
+constructed it was we started off with
+34:27
+one of the vision and language databases
+34:29
+in this cocoa where there was a picture
+34:32
+and a sentence describing and a man
+34:34
+rides a bike on a snow-covered Road
+34:36
+and we wanted to sort of have something
+34:38
+where the scene was a description of the
+34:40
+picture because that meant there was
+34:42
+sort of a concrete thing that the
+34:44
+sentences were describing so that we
+34:46
+hoped to avoid there being uncertainty
+34:48
+of reference but then we collected the
+34:51
+sort of hypotheses from terkoz and the
+34:54
+Turkish weren't actually shown the photo
+34:56
+they were just shown the the passage and
+34:59
+then they were meant to generate
+35:01
+sentences or entailments neutrals or
+35:03
+contradictions and then we're trying to
+35:04
+build systems that do that and this has
+35:07
+been a quite good task with a whole
+35:09
+bunch of other groups have then tried to
+35:11
+do better on for what we were doing
+35:14
+we're kind of interested in this idea of
+35:16
+coming up with sentence representations
+35:19
+by building them as recursive neural
+35:21
+networks and so the models we were
+35:23
+building was using spin models to build
+35:27
+representation for each sentence and
+35:30
+then running it through comparison
+35:31
+neural network layers to find the whole
+35:34
+sentence meaning at the sentence
+35:36
+relationships so we have one spin model
+35:40
+for representation this sentence one for
+35:43
+that one and then we're sticking it
+35:45
+through a neural network which is then
+35:46
+giving a probability distribution over
+35:48
+the three actions so after having been
+35:51
+through the spin model we have a couple
+35:53
+of fully connected neural network layers
+35:55
+and then you've got a soft max over the
+35:57
+three decisions and so here a couple of
+36:01
+results from this so there's sort of
+36:04
+some previous results but the sort of
+36:07
+things that are kind of interesting here
+36:09
+is this is an lsdm RNN sequence model
+36:14
+that as accuracy of 80.6% somewhat
+36:18
+surprisingly and somewhat
+36:20
+disappointingly over this quite large
+36:22
+data set so it's over half a million
+36:24
+training examples the tree model
+36:27
+actually barely does better than that so
+36:28
+it's performance it was 80 point nine
+36:31
+percent and whereas you know relative my
+36:34
+argument should hope for more gains but
+36:36
+something was interesting as having both
+36:39
+at once the sequence model and the tree
+36:41
+structured model that actually seemed to
+36:43
+really be rather nice and give you a
+36:45
+kind of a nice gain on this model I
+36:47
+should mention that
+36:49
+this having a whole sentence
+36:51
+representation isn't the best way to do
+36:54
+tasks like the sort of SLI entailment
+36:58
+contradiction task I mean as comes up in
+37:01
+the whole bunch of these tasks and a lot
+37:03
+of recent work that if you want to do
+37:05
+even better at these tasks you just do
+37:07
+better using attention models to make
+37:10
+alignments of the word level between the
+37:12
+different sentences and if you do that
+37:14
+you can do several percent better as
+37:16
+people have shown in recent results but
+37:20
+nevertheless that you know I think I
+37:23
+still do believe in the so
+37:25
+tree-structured idea and you can sort of
+37:27
+see places where having the tree
+37:29
+representations allows you to get things
+37:32
+right that you just don't get right in
+37:34
+the LS TM model so when there are finer
+37:36
+grained semantic facts such as negation
+37:39
+Jim Ness completes the floor exercise
+37:42
+Jim Ness cannot finish her exercise well
+37:46
+then the tree structured model is better
+37:47
+it also turns out to be differentially
+37:50
+better when you just have very long
+37:51
+examples which the lsdm gets less good
+37:54
+at okay I finished part one and so we
+37:58
+now hand over to the research highlight
+38:01
+welcome to City so today we will discuss
+38:08
+how to compose neural networks for
+38:10
+question answering so as a high-level
+38:13
+overview the papers talked about a
+38:16
+compositional attentional model for
+38:18
+answering questions about a variety of
+38:20
+world representations including images
+38:23
+and also structured knowledge bases the
+38:26
+model has two components trained jointly
+38:29
+the first component is a collection of
+38:31
+neural modules that can be freely
+38:33
+composed the figure shows actually four
+38:36
+modules a look at module relate module
+38:39
+and module and also find module and the
+38:43
+second component is a network layout
+38:45
+prediction a predictor that assembles
+38:47
+modules into complete deep networks
+38:49
+tailored to each questions so our
+38:52
+current query is what cities are in
+38:54
+Georgia and the pker the features of the
+38:58
+figure shows the network layout for that
+38:59
+particular query essentially the model
+39:03
+has two distributions a layout model
+39:06
+that chooses a layout for sentence and
+39:09
+also an execution model that applies the
+39:12
+network specified by a particular layout
+39:14
+to a world representation we'll start
+39:18
+from the layout model so you order to
+39:20
+obtain a layout model there are three
+39:23
+steps to take first we want to represent
+39:26
+the input sentence as a dependency tree
+39:29
+so the figure shows the dependency tree
+39:31
+for the query will cease are in Georgia
+39:34
+the second step is to associate
+39:36
+fragments of the dependency parse with
+39:39
+appropriate modules so as you can see in
+39:41
+this fish in this figure the find module
+39:44
+is associated with city the relate
+39:46
+module is associated with in and the
+39:49
+look at module is associated with
+39:51
+Georgia and the last step is to assemble
+39:54
+fragments into four layouts and should
+39:57
+we notice that each sentence could have
+39:59
+multiple layouts so for our example one
+40:03
+candidate layout is shown there it's a
+40:06
+tree structure with the end module as
+40:08
+the root module and now we'll just don't
+40:13
+talk about how to score the candidate
+40:15
+layouts so we also score a candidate
+40:18
+layout we need to produce an OFDM
+40:20
+representation of the question a feature
+40:23
+based representation of the query and
+40:25
+pass both representations through a
+40:28
+multi-layer perceptron and then the
+40:30
+update to the layout scoring model at
+40:33
+each time stamp is simply the gradient
+40:35
+of the log probability of the chosen
+40:37
+layout skilled by the accuracy of that
+40:40
+layouts predictions and now we'll just
+40:44
+talk about talk about the execution
+40:46
+model so like given a layout as shown in
+40:49
+Figure P we could basically assemble the
+40:55
+corresponding modules into a four into a
+40:57
+full neural network as shown in Figure C
+41:00
+and then we'll just apply it to a
+41:03
+knowledge source as shown in Figure D
+41:05
+and basically we should note that
+41:07
+immediate results flow between modules
+41:10
+and Chua answer is produced at the root
+41:12
+so in this case Atlanta's produces the
+41:14
+root which is also the answer to our
+41:16
+query
+41:17
+we'll see sorry in Georgia
+41:20
+so essentially modules are just like
+41:23
+small neuron components that take inputs
+41:26
+or intermediate results the slide now is
+41:30
+showing a lookup module whose expression
+41:32
+is circled in red and the lookup module
+41:35
+basically just produces attention
+41:38
+focused entirely at the index FY where
+41:41
+you can just think of the relationship
+41:43
+as between words and positions in the
+41:46
+input map as some sort of string matches
+41:48
+on the database fields and we also have
+41:52
+a relate module so the relate module is
+41:55
+a softmax that directs focus from one
+41:58
+region of the input to another the fine
+42:02
+module is sort of similar to the relate
+42:04
+module it's also a self max but it
+42:07
+computes a distribution over indices by
+42:09
+concatenating the parameter argument
+42:11
+with each position of the input feature
+42:13
+map and passing the concatenated vector
+42:16
+through a multi-layer perceptron so the
+42:19
+last module is the end module typically
+42:22
+the end module is at the root of our
+42:25
+dependency parse tree and for the end
+42:28
+module is sort of similar to a set
+42:31
+intersection but it's used for
+42:33
+attentions and essentially probabilities
+42:36
+are multiplied together for the end
+42:38
+module the order to train an execution
+42:42
+model we need to maximize the sum of log
+42:45
+probabilities of answer labels given a
+42:48
+world representation over a particular
+42:50
+layout and so our model actually achieve
+42:55
+state-of-the-art performance on both
+42:58
+images and also structure knowledge
+43:00
+bases so we'll start from looking at how
+43:03
+it performs on a visual
+43:05
+question-answering data set so the model
+43:08
+is actually able to figure out what's in
+43:10
+the sheep's ear it's actually a tag it's
+43:13
+kind of small but it's actually a tag
+43:14
+and it's also able to figure out the
+43:16
+color of the robe the woman's wearing
+43:18
+and for the third image the model is not
+43:22
+able to figure out that a man is
+43:24
+dragging a boat but instead the man is
+43:27
+dragging a board which is fairly close
+43:30
+so it's
+43:31
+pretty amazing and in terms of the
+43:33
+numbers so we can see the model out of
+43:36
+all the approaches it has the highest
+43:38
+test set accuracy on the very question
+43:42
+answering to hazard and the model can
+43:45
+also do like general knowledge based
+43:48
+type of question answering so in this
+43:50
+case the model is actually able to
+43:53
+figure out what national parks are in
+43:56
+Florida and also whether Key Largo is an
+43:59
+island so also in terms of numbers the
+44:03
+model does really well it actually beats
+44:06
+every other approach by at least three
+44:08
+percent so this is a really amazing
+44:10
+model and I would definitely recommend
+44:12
+you to take a look at the paper and
+44:14
+that's it Thanks okay thanks Shanice
+44:23
+okay so then for my remaining time on
+44:27
+the stage this quarter I wanted to just
+44:30
+sort of say a bit more about a couple of
+44:33
+things that I think of you know vaguely
+44:35
+come up at some point or another but
+44:38
+haven't really very prominently come up
+44:41
+I mean the first one is just the sort of
+44:43
+a very brief cameo appearance but I just
+44:47
+so wanted to say a fraction more about
+44:50
+pointer copying models so that that's
+44:53
+ideas in your head so Richards sort of
+44:56
+talked about a version of these a long
+44:58
+time ago when he sort of told a bit
+45:01
+about his group's work on pointer
+45:03
+Sentinel mixture models I just want to
+45:05
+sort of repeat the sort of idea of this
+45:08
+as sort of one of the other ideas that
+45:10
+people have been using a bit in recent
+45:12
+neural networks so one of the central
+45:15
+papers is this one on pointing the
+45:17
+unknown words and this diagram is a
+45:21
+little bit confusing to read because for
+45:24
+some reason they sort of did it
+45:25
+backwards so the source is on the right
+45:29
+side and the target is on the left side
+45:31
+but the idea here is so that for the
+45:34
+source sequence right that we're
+45:36
+assuming that we've run a bi-directional
+45:39
+STM or something like that over the
+45:41
+source words and then when the kind of
+45:44
+you
+45:44
+kind of generation lsdm where what we've
+45:48
+done is sort of we've got some hidden
+45:51
+state and then we're going to be sort of
+45:53
+starting to generate the next word based
+45:57
+on it and then how is that going to be
+46:01
+done so you know we've had already the
+46:04
+ideas that you can just generate from
+46:07
+the hidden state based on the softmax
+46:10
+and we've had the idea that you can kind
+46:13
+of use an attention model to sort of
+46:15
+look back at the source encoding and
+46:18
+sort of use that as input to your
+46:20
+softmax
+46:21
+and those are both good ideas but in
+46:24
+both those cases at the end of the day
+46:26
+you're so doing a softmax over your
+46:29
+vocabulary based on some hidden state
+46:32
+over here and the suggestion has come up
+46:35
+is that at least in some applications
+46:38
+and those include machine translation
+46:41
+but also things like text summarization
+46:44
+another thing that might be a good idea
+46:46
+is if you could just decide that what
+46:50
+you want to do is copy some word that
+46:52
+came from the source sequence so rather
+46:55
+than having to sort of have a hidden
+46:56
+state from which you can generate it
+46:58
+from your soft necks you could just say
+47:00
+our good idea in this position would
+47:02
+just be to copy word 17 from the source
+47:04
+sequence and that might be appropriate
+47:06
+if it's something like a name that you
+47:08
+might have a rare name in the input or
+47:11
+some kind of loan word or anything like
+47:14
+that that just makes sense to copy
+47:16
+towards the output and so from the
+47:19
+hidden state you're sort of having a
+47:21
+binary binary logistic model which is
+47:24
+saying to what extent do you want to
+47:27
+generate from the vocabulary softmax do
+47:30
+versus do you want to point and copy and
+47:33
+so this choice here you could make it a
+47:36
+hard choice which would have the same
+47:38
+kind of computations but making it
+47:40
+differentiable but commonly the way it's
+47:43
+being done is just being made there's a
+47:44
+soft choice so with probability P you're
+47:47
+generating from the vocabulary softmax
+47:49
+and probability 1 minus P you're kind of
+47:52
+going to look in to do it another
+47:54
+attention distribution over the source
+47:56
+and
+47:57
+you're going to just sort of be copying
+47:59
+a word where you're placing attention
+48:01
+and so that's been kind of quite an
+48:03
+effective mechanism to sort of be able
+48:06
+to just sort of copy words from the
+48:07
+input to the output which is sort of
+48:10
+helped with several applications so in
+48:13
+their paper where they were using it for
+48:15
+machine translation having this kind of
+48:18
+pointer model was giving them about
+48:21
+three and a half blue points of improved
+48:23
+performance which is a ton right you
+48:26
+know a lot of the time an empty if you
+48:28
+can get a blue point you think you're
+48:29
+doing really well so that was sort of a
+48:31
+very big improvement another place where
+48:34
+it's very effective is in summarization
+48:37
+models because a lot of times
+48:38
+summarization models you are wanting to
+48:40
+sort of copy names of people and places
+48:42
+and things like that straight from the
+48:44
+input to the output but just to give a
+48:48
+cautionary note on the other side
+48:51
+interestingly in the sort of the Google
+48:54
+neural machine translation paper that
+48:56
+came out recently I'm going along with
+48:59
+their sort of recent release of their
+49:01
+big neural machine translation models on
+49:05
+the live servers servers that they sort
+49:07
+of state that they weren't having much
+49:10
+success from that so they say in
+49:12
+principle you can train a copy model
+49:15
+that this approach is both unreliable at
+49:17
+scale the attention mechanism is
+49:19
+unstable when the network is deep and
+49:21
+copying may not always be the best
+49:23
+strategy for rare words so they don't
+49:26
+seem to have found success with that
+49:27
+method so I guess like all things you
+49:30
+can try and see if it works for you okay
+49:34
+so then the final thing I wanted to talk
+49:36
+about was a bit about work that goes
+49:40
+below the word level so right from the
+49:43
+beginning of this course where we
+49:45
+started off with is that we had words
+49:48
+and we're going to want to build
+49:50
+distributed representations for words
+49:53
+and that then led into words avec and
+49:55
+all the stuff that we talked about there
+49:58
+and you know I think it's fair to say
+50:01
+that sort of for around the sort of
+50:04
+period of two thousand eleven twelve
+50:06
+thirteen fourteen that's what everybody
+50:09
+was doing and that's where we
+50:11
+we'll start for this course but in the
+50:13
+last couple of years there's now started
+50:15
+to be a lot of work where people are
+50:17
+going below the word level and so I just
+50:19
+wanted to show a bit more about that
+50:21
+before doing it just sort of a couple of
+50:24
+slides of sort of context of how
+50:26
+languages work so most of the time in
+50:29
+NLP we're sort of with deep learning
+50:32
+we're sort of working with language in
+50:34
+its written form
+50:35
+you know it's easily processed found
+50:37
+data and so something that at least sort
+50:40
+of vaguely have in your head then human
+50:42
+writing systems are all the same kind of
+50:45
+systems so that they sort of various to
+50:48
+their nature so that there are many
+50:50
+writing systems that are alphabetic and
+50:53
+basically phonemic which is so that you
+50:56
+see what the letter is you know how to
+50:58
+pronounce it so sort of something like
+51:02
+Italian is also a fairly phonemic
+51:05
+writing system this example here is from
+51:07
+an Australian language one buyer but
+51:09
+sort of it's just jia jia Wooyoung bulu
+51:12
+that it's sort of the sounds that just
+51:14
+read off the letters so that contrasts
+51:16
+with something like English which it's
+51:18
+an alphabetic writing system but as
+51:20
+anyone who's not is spent time learning
+51:23
+English knows that the correspondence
+51:25
+between letters and sounds is much more
+51:28
+convoluted in English so when you have a
+51:30
+word like Sura it's sort of not really
+51:33
+spelled out sounds that there's sort of
+51:35
+this complex historical stuff going on
+51:37
+but then there are other language
+51:39
+systems that sort of represent slightly
+51:41
+bigger unit so some languages represent
+51:44
+syllabic units or maury units they've
+51:47
+kind of got a syllable like Yan or gar
+51:50
+or something that's being represented by
+51:51
+one letter and this is a new platoon
+51:53
+from Canada and then there are sort of
+51:57
+of the syllabic kind of languages
+51:59
+there's sort of two kinds there are ones
+52:01
+where you're having a sort of a an
+52:04
+individual letter is being used still on
+52:07
+the basis of its sound like an
+52:09
+alphabetic form and then you have idea
+52:11
+graphic languages from which my father
+52:13
+Dominic Chan E's where you are having
+52:17
+the individual character representing a
+52:19
+semantic component so it also has a
+52:22
+pronunciation but there will be lots of
+52:24
+character
+52:24
+which have the same pronunciation but
+52:27
+have different meanings attached to them
+52:29
+and then you get writing systems that
+52:31
+are sort of a mixture of these so
+52:33
+something like modern Japanese you both
+52:36
+have characters like these two and that
+52:38
+one which well mouriak that they're sort
+52:41
+of being kind of either just a vowel or
+52:44
+just a slight bit consonant or a vowel
+52:48
+consonant vowel form but then you also
+52:50
+get the kind of idea graphic characters
+52:53
+that Japanese borrows from Chinese so
+52:55
+you get these so different forms of
+52:57
+writing systems and then this is
+53:00
+question of well do your writing systems
+53:04
+differentiate words so there's some
+53:07
+writing systems differentiate words
+53:09
+explicitly and some don't
+53:11
+so again Chinese is a famous example of
+53:15
+a language that does not have any word
+53:17
+boundaries marked in the text you just
+53:20
+get a string of characters interestingly
+53:23
+something that you know I think held
+53:26
+most people are less aware of is that if
+53:29
+you actually go back to ancient Greek as
+53:31
+I was written by ancient Greeks ancient
+53:34
+Greek was also a language that was
+53:36
+written with no word segmentation that
+53:39
+the letters were just a continuous
+53:40
+stream so so putting spaces between
+53:44
+words and ancient Greek was actually
+53:46
+something that was first done by
+53:47
+medieval monks and they gained some
+53:50
+greek easy to understand that what so it
+53:52
+was also a no word segmentation language
+54:01
+so the question was lesson segmented so
+54:03
+Latin so it actually sort of varied you
+54:07
+can certainly find unsegmented Latin but
+54:10
+it started they didn't use spaces but
+54:13
+they'd started to become common to sort
+54:15
+of chisel a little dot between words and
+54:18
+so then there was a representation of
+54:21
+word segmentation yeah okay and then
+54:26
+when you do have word segmentation
+54:28
+there's still sort of some variety as to
+54:30
+how much you segment things and so
+54:33
+they're kind of a couple of big
+54:34
+parameters a variation of that so a lot
+54:37
+of languages sort of have little words
+54:39
+that have sort of functional meaning and
+54:42
+languages very how much they separate
+54:45
+them or keep them together so a language
+54:48
+like French has these sort of little
+54:50
+clinics for exams
+54:54
+shavoo they but they sort of reppin that
+54:57
+the vu for you is represented with the
+55:00
+space even though it sort of joins on
+55:02
+fauna logically
+55:03
+whereas other languages such as Arabic
+55:05
+will sort of take the similar kinds of
+55:09
+clinic pronouns like we in it and sort
+55:12
+of just glom them all together and
+55:14
+produce a slightly larger word even
+55:16
+though sort of different content words
+55:18
+are spaced separated in Arabic and the
+55:21
+other big place where languages vary is
+55:23
+when you have compounds so all languages
+55:26
+pretty much have lots of compounds like
+55:27
+life insurance company employee but in
+55:30
+English we handily still have the spaces
+55:32
+between the words in life insurance
+55:34
+company employee whereas once you go to
+55:37
+German that's then being written as one
+55:40
+big unsegmented word like that okay so
+55:46
+that's the sort of context for then
+55:49
+going below the word level and so there
+55:52
+are lots of reasons to want to go below
+55:54
+the level so if you'd like to handle a
+55:56
+very large open vocabulary it's kind of
+55:59
+unappealing if you need a word vector
+56:01
+for every word and that's especially
+56:03
+true and a lot of languages where they
+56:06
+have a lot of different word forms that
+56:09
+represent different derivational
+56:11
+morphology so that's sort of
+56:13
+relationships
+56:14
+where you sort of have causative Zoar
+56:17
+possessives and other things that joined
+56:19
+onto words an inflectional relationship
+56:21
+so you have sort of different forms of
+56:23
+person number and agreement and things
+56:25
+like that so here's a very long Czech
+56:30
+word - the worst farmable one and which
+56:34
+has a lot of morphology joined together
+56:36
+so if you have languages like that it's
+56:38
+sort of unappealing that word vectors
+56:40
+for every word another place that you
+56:42
+find things happening everywhere over
+56:45
+modern social meaning is people use
+56:47
+creative spellings to express a little
+56:50
+bit more emotion and so then you have
+56:53
+words like good with a lot of O's in it
+56:56
+which probably isn't in the vocabulary
+56:58
+of your system and then when you want to
+57:02
+do other tasks like translation you
+57:05
+often would like to go below the word
+57:07
+level so if you'd like to translate
+57:09
+Kristopher into czech you might want it
+57:14
+to know it sort of translates into
+57:16
+something that's sort of related kristof
+57:18
+and that sort of makes sense if you're
+57:21
+at the character level but not if you
+57:23
+just have so these individual words and
+57:25
+so there's a question of how you can
+57:27
+start to deal with some of these
+57:29
+phenomena so on traditional linguistics
+57:33
+the smallest semantic units were
+57:35
+morpheme so big words would be divided
+57:38
+up into their individual morphine so if
+57:40
+you had a word like unfortunately you'd
+57:43
+have so it has a root of fortune and
+57:45
+then you add on a derivational ending 8
+57:48
+to get fortunate you add on another
+57:50
+derivational ending to get unfortunate
+57:52
+and then you add on a final derivational
+57:55
+ending lead to turn into an adverb and
+57:57
+you get unfortunately so this kind of
+58:00
+use of morphology has been very little
+58:03
+studied in deep learning though actually
+58:06
+which of me had a paper a tongue along a
+58:09
+few years back where we tried to use the
+58:11
+same kind of tree structured models to
+58:13
+build up representations and
+58:15
+morphologically complex words most of
+58:19
+the time people haven't done that but
+58:22
+have done simpler things so a common
+58:24
+alternative is to work with character
+58:26
+engrams
+58:27
+and that's something that actually has a
+58:29
+very long history so back in the earlier
+58:34
+age of neural networks rumelhart and
+58:36
+McClelland proposed a representation
+58:39
+that they humorously called wickel
+58:42
+phones and what wickel phones were were
+58:44
+sort of triples of letters and so they
+58:47
+proposed this model and some of their
+58:50
+language models like representing
+58:52
+inflections and learning inflectional
+58:55
+forms of verbs in English which was a
+58:57
+model that at the time linguists reacted
+59:00
+to very negatively as an ideas kind of
+59:04
+lived on so it's much more recent work
+59:06
+from Microsoft where essentially this so
+59:08
+using the same kind of letter triple so
+59:12
+the picture from the bottom is actually
+59:14
+from rumelhart McClellan's work and so
+59:16
+when you start off with a word they
+59:18
+represented internally as a set of
+59:21
+letter triples so effectively they're in
+59:25
+turn then intermediate layer in CUDA is
+59:28
+sort of turning any word into just the
+59:31
+set of letter triples that are contained
+59:34
+inside it and so it gives kind of a flat
+59:36
+representation without needing a
+59:38
+sequence that never less captures most
+59:41
+of the structure of the word and it sort
+59:43
+of works from there and can then
+59:44
+generate another word and this is so
+59:47
+doing it explicitly with character
+59:49
+trigrams which are then given a vector
+59:52
+encoding but in some sense the idea is
+59:55
+sort of related to when we looked at
+59:57
+convolutional layers briefly because
+59:59
+they were also kind of combining
+60:01
+together multiple letters but it was
+60:03
+sort of doing it after had been turned
+60:05
+into a continuous space rather than just
+60:08
+separately learning continuous vector
+60:10
+representation for each letter trigram
+60:13
+and it seems to have been shown that
+60:16
+using these kind of you know Engram I'd
+60:18
+character in Graham ideas whether like
+60:21
+these little phones or using
+60:23
+convolutions can practice give you a lot
+60:25
+of the gains and morphemes with perhaps
+60:28
+life suffering okay and so what people
+60:32
+have found is that you can generate word
+60:36
+embeddings by building them up from
+60:38
+character embeddings
+60:40
+and
+60:40
+so if you're able to do that you can
+60:43
+then generate an embedding for any new
+60:44
+words you see when someone sort of has
+60:47
+some weird sequence of letters and your
+60:49
+social media text you can just go letter
+60:52
+by letter and generate a word
+60:55
+representation for it and you know in a
+60:58
+way that should work better because it
+61:00
+has some of the gains of that in general
+61:04
+people argue for deep learning that
+61:07
+since you can then kind of have words
+61:08
+with similar spellings should have
+61:11
+similar embedding so that extent that
+61:13
+they're sort of different morphological
+61:15
+forms or related words by derivation you
+61:18
+should be able to capture that
+61:19
+commonality into your character
+61:22
+embeddings and if you're using these
+61:23
+kind of character level models then you
+61:26
+kind of don't have any problems ever
+61:27
+with unknown words because you can just
+61:30
+represent them all and so using
+61:33
+character level models in the last
+61:35
+couple of years has just proven to work
+61:38
+super super successfully if I make an
+61:41
+admission now I mean when the idea first
+61:44
+came up of using character level models
+61:46
+I was really pretty skeptical as to
+61:49
+whether it would work so from a from the
+61:52
+traditional linguistic perspective that
+61:55
+the idea had always been well yeah we
+61:57
+have sort of morphemes we had those
+61:59
+units like fortune and fortunate and
+62:02
+unfortunate
+62:03
+so those morphemes like unfortunate they
+62:06
+have meaning but if you just have sort
+62:08
+of rule letters like au or a F
+62:13
+they don't seem to have any meaning so
+62:15
+it's sort of seemed a little bit
+62:18
+difficult or to imagine that you could
+62:21
+learn a vector representation to F and a
+62:23
+vector representation of a U and a
+62:25
+vector representation to N and then you
+62:27
+could start composing them together and
+62:29
+getting useful semantic representations
+62:32
+for words but what people have found is
+62:35
+actually some of these modern models
+62:38
+like these lsdm models have sufficiently
+62:41
+powerful composition functions that
+62:44
+actually you can learn very good word
+62:46
+representations by building them up
+62:48
+letter by letter so here's a kind of a
+62:51
+clean version of this and so this was
+62:54
+some work that was done by a bunch of
+62:57
+people at CMU Christian colleagues and
+63:00
+so in some sense you're doing the
+63:04
+obvious thing so for our word what
+63:08
+you're doing is you're running a
+63:09
+bi-directional STM over the characters
+63:12
+of the words and so you're learning
+63:14
+character representations and then sort
+63:18
+of hidden representations using the OS
+63:20
+TM above those characters then you
+63:22
+append the two representations at the
+63:26
+end of those sequences and just say
+63:28
+that's your word representation for
+63:30
+unfortunately and then to sort of train
+63:33
+this whole model you're then embedding
+63:35
+it in another LS TM which is then going
+63:38
+to give you your sequence over words for
+63:40
+some task so we then have a word level
+63:43
+LSP M which is doing something like
+63:45
+predicting the sequence of words and the
+63:48
+bank was closed so you saw have these
+63:50
+doubly recurrent models that are nested
+63:53
+hierarchically inside each other's and
+63:55
+so they tested out this model for two
+63:58
+tasks one was just the language modeling
+64:00
+task and one was the part of speech
+64:02
+taking tasks and it just works super
+64:06
+successfully so in particular they were
+64:08
+able to show better results for part of
+64:11
+speech tagging than people had shown
+64:14
+with word level neural part of speech
+64:17
+taking models so that makes sense if
+64:20
+you're sort of say well this is because
+64:22
+we can share the similarities between
+64:23
+words and the character level model that
+64:26
+makes sense and it worked so you know
+64:29
+initially as I say I was kind of
+64:31
+surprised because it actually just sort
+64:32
+of surprised me you can learn effective
+64:34
+enough character level embeddings to be
+64:36
+able to do this I think that's a nice
+64:41
+clean version of this model that works
+64:43
+very nicely
+64:44
+I mean effectively different people have
+64:46
+put character level models in in all
+64:49
+sorts of ways so there was slightly
+64:52
+earlier work that was calculating
+64:54
+convolutions / characters to generate
+64:56
+word embeddings I think the paper the
+65:02
+character where new language models came
+65:04
+up earlier as a spotlight paper and
+65:08
+so this is a more recent and very
+65:11
+complex model where there first of all
+65:13
+doing convolutions and then they've got
+65:15
+a highway network and then they can lsdm
+65:17
+network it's sort of very complex but
+65:19
+again it's a character level model you
+65:22
+can also do simple things so just going
+65:26
+right back to the word to back beginning
+65:28
+z' that you can sort of start off with a
+65:30
+model that has exactly the same
+65:33
+objective and loss function as a word to
+65:36
+Veck and just say well I'm going to at
+65:38
+the top level train my word to Veck
+65:40
+model but rather than storing a vector
+65:44
+for each word and updating that I'm
+65:47
+going to kind of like the CMU work say
+65:50
+I'm generating the representation for
+65:53
+each word using a character level lsdm
+65:56
+and then I'm feeding that into my skip
+65:58
+gram-negative sampling algorithm and
+66:01
+that works very nicely as well so lots
+66:05
+of stuff of that sort and so yeah so
+66:09
+these days kind of there's just a lot of
+66:12
+action and use of these character level
+66:14
+models and sort of many people are
+66:16
+thinking it's sort of less necessary to
+66:18
+do word level stuff and so for my final
+66:21
+bits I just sort of thought I'd show you
+66:23
+again then back to a bit of your machine
+66:26
+translation of because of a couple of
+66:28
+the ways that people incorporating these
+66:30
+character level models or sub word level
+66:34
+models so there's sort of two trends
+66:36
+really one waiting is to sort of build
+66:40
+neural machine translation models which
+66:43
+have sub word units but the same
+66:46
+architecture and the other way is to
+66:48
+have sort of architectures that
+66:50
+explicitly put in characters and so I
+66:53
+just want to show you one example of
+66:54
+both of those so one of idea that's been
+66:59
+quite prominent which sort of gets back
+67:02
+more to having something like morphology
+67:05
+is this notion that's referred to as
+67:07
+byte pair encoding and the name byte
+67:10
+pair encoding is kind of a misnomer but
+67:13
+it sort of comes from the inspiration of
+67:15
+this algorithm so byte parent coding is
+67:17
+a compression algorithm that have been
+67:20
+developed quite
+67:21
+we just as a way to compress stuff and
+67:24
+the idea of bike parent coding is that
+67:26
+you're learning a code book for
+67:28
+compression by allocating codes to
+67:31
+common sequences so you look at for
+67:35
+common pairs of bytes and you allocate a
+67:38
+codebook place to them and so someone
+67:41
+had the idea maybe we could run this
+67:43
+algorithm but do it with character
+67:46
+engrams
+67:46
+rather than bytes and so this is how it
+67:49
+works so you start with a vocabulary of
+67:51
+characters and then you replace the most
+67:54
+frequent character in Graham with the
+67:55
+new Engram
+67:56
+so if our dictionary is like this we
+67:58
+have the words low lower newest wildest
+68:01
+and they occur that often we can then
+68:04
+say well we start with the basic
+68:06
+characters in the vocab that's them and
+68:09
+so now we can look the commonest
+68:11
+character by Graham and allocate it as a
+68:14
+new thing in our vocabulary so here the
+68:17
+common character by Graham's es that
+68:20
+occurs nine times so we add that to our
+68:23
+vocabulary and then we look again and
+68:25
+say est that also occurs nine times
+68:28
+let's add that to our vocabulary and
+68:31
+then we ask what still communist that's
+68:34
+lo7 times add that to our vocabulary and
+68:37
+so you keep on you keep on doing this up
+68:41
+to some limit so you sort of say okay
+68:43
+the size vocabulary I want to learn is
+68:45
+30,000 words and so some of the things
+68:50
+that's in your vocabulary will actually
+68:52
+end up as words because you will have
+68:54
+sort of vocabulary items like that and
+68:57
+in and of if you're doing English but
+68:59
+the other things that you're getting are
+69:02
+just letters and word pieces that are
+69:05
+kind of things that our pieces of
+69:07
+morphology so it's kind of an empirical
+69:09
+way to learn a vocab and again you have
+69:12
+no problem with unknown words because at
+69:15
+the end of the day you have these sort
+69:17
+of individual letters that are part of
+69:19
+your vocabulary and so you can always do
+69:21
+things just with the letters and so that
+69:24
+kind of automatically decides the vocab
+69:26
+which is sort of no longer kind of word
+69:29
+based in a conventional linguistic way
+69:32
+and so then when you want to translate a
+69:34
+piece of text
+69:35
+you just use that vocab and you kind of
+69:38
+greedily chop from the left that you
+69:41
+chop off pieces that you can find in
+69:43
+your vocab preferring the longest ones
+69:46
+first and so it's a very simple way to
+69:49
+maintain a small vocab but it was
+69:52
+actually employed very successfully by
+69:54
+these people at the University of
+69:55
+Edinburgh and so in the 2016 workshop on
+69:59
+machine translation a number of the
+70:01
+language pairs were won by the Umbra
+70:03
+team using this kind of bike parent
+70:05
+coding and actually it turns out that
+70:09
+again if we say gee what is Google doing
+70:12
+in their Newell machine translation
+70:14
+system that they're actually essentially
+70:17
+using a variant of bite pair encoding so
+70:20
+they've got a slightly different
+70:21
+criterion of when to join letter
+70:24
+sequences together that's more
+70:26
+probabilistic rather than just count
+70:27
+based but it's essentially the same kind
+70:30
+of bite pairing coding idea okay and so
+70:34
+then the final bit that I wanted to show
+70:36
+you is some work that I'm Tong Lu and me
+70:39
+did last year which was trying to get
+70:42
+the benefits of a character level system
+70:46
+while also still allowing you to
+70:48
+translate at the word level and so the
+70:52
+hope of this was to gain the best of
+70:56
+both worlds by having the performance of
+70:58
+a character level system while having
+71:00
+the efficiency of a word level system
+71:03
+because something I haven't mentioned so
+71:06
+far is that even though you can get very
+71:08
+good performance results by working
+71:10
+directly at the character level a
+71:12
+problem of it is it tends to make things
+71:14
+much much slower so if you sort of think
+71:17
+back to that example of saying when I
+71:19
+said all you can train a words of X
+71:21
+style model but instead of having word
+71:23
+vectors you'd have a little lsdm where
+71:27
+you build a word representations and
+71:29
+characters you can do that but the
+71:31
+difference is whereas if you're doing
+71:33
+standard words of egg training you're
+71:35
+just looking up a words representation
+71:38
+then computing with it if you have to
+71:40
+run a whole lsdm to calculate the words
+71:43
+representation that's a much more
+71:45
+computationally expensive thing so
+71:48
+purely character base
+71:49
+lab models tend to take well over an
+71:52
+order of magnitude longer to train and
+71:54
+well overheard and the similar kind of
+71:57
+slowdown at runtime as well because
+71:59
+she's sort of arguing character by
+72:01
+character and yeah
+72:12
+you
+72:26
+okay so the question is how can you
+72:27
+evaluate character based models can you
+72:31
+sort of do the equivalent of word
+72:32
+similarity I think there's nothing that
+72:36
+you can really do that directly does it
+72:40
+on the characters but I mean you don't
+72:42
+have to go all the way to say let's run
+72:45
+them in a new or machine translation
+72:48
+system see if it helps I mean the thing
+72:50
+that people have done and again has this
+72:53
+has proven that character based encoding
+72:55
+works pretty successfully is to do word
+72:58
+similarity based evaluation so you can
+73:00
+say okay let's go up representations of
+73:04
+words using the character lsdm and then
+73:07
+see how good the result is as a word
+73:09
+similarity measure using the kind of
+73:13
+word similarity metrics that we talked
+73:15
+about when we're doing things like words
+73:17
+deck and I think the results are that it
+73:20
+doesn't work quite as well as the best
+73:22
+result of people have gotten from word
+73:24
+level models but it actually works
+73:27
+pretty close and so that's again where
+73:29
+it sort of seems to be able to be done
+73:31
+successfully and gives you the
+73:33
+advantages of having this open vocab
+73:42
+so the question is how well does the
+73:44
+character vectors generalize across
+73:46
+tasks well I think they generalize as
+73:50
+well as the kind of word vectors that we
+73:53
+train by something like word Tyvek I
+73:55
+mean so many people have used them
+73:57
+across tasks for doing different things
+73:59
+like language modeling versus part of
+74:00
+speech tagging and that's work
+74:02
+completely fine
+74:05
+okay so so this hybrid model again it
+74:10
+was a kind of a hierarchical character
+74:12
+and word based model so the heart of it
+74:14
+in the middle is that there's a word
+74:18
+level neural machine translation system
+74:20
+and so it was working over a fixed
+74:23
+moderate sized vocabulary and so that's
+74:27
+going to have unknowns in it so when
+74:30
+you're you can sort of generate an
+74:32
+unknown vocabulary item and you can sort
+74:35
+of feed that through and the generation
+74:37
+time and an encoding time you can have
+74:39
+words for which there are no words that
+74:41
+goes which here we're having it be for
+74:44
+cute they may be cute would be in your
+74:45
+vocabulary so if you had a word not in
+74:47
+your word vocabulary then what you're
+74:50
+doing is then saying okay well we can do
+74:53
+that by having character level l STM's
+74:58
+and so there are two cases if a word is
+75:00
+not in your input vocabulary you can
+75:03
+just as a pre-processing set step run a
+75:06
+character LS TM that generates a word
+75:09
+representation for it and then you'll
+75:11
+just say that's its word representation
+75:13
+and you can run it through the encoder
+75:15
+the situation was slightly different on
+75:18
+the decoder side so on the decoder side
+75:21
+what would happen is the word level LS
+75:23
+TM could choose to generate an unknown
+75:26
+word and it's a generated an unknown
+75:29
+word you then sort of took the hidden
+75:31
+state representation and use that as a
+75:34
+starting point of another character
+75:36
+level lsdm which could then generate a
+75:39
+word character by character and
+75:42
+something that we didn't do for
+75:44
+efficiency is you might think you'd want
+75:46
+to take the resulting meaning here and
+75:48
+feed that back into the next time step
+75:51
+and that might have been a good idea but
+75:53
+we were interested in sort of trying to
+75:54
+make this
+75:55
+fast as possible so actually in this
+75:57
+model that representation was only used
+75:59
+to generate the word and it was still
+76:01
+the sort of UNK that was then being fed
+76:03
+back into the next time step okay so
+76:07
+standard kind of word level beam search
+76:10
+and then you're doing a character level
+76:13
+beam search for when you're spilling
+76:15
+that one out and so that's again sort of
+76:20
+showed the strength of character level
+76:22
+models so this shows some results from
+76:24
+English to check and if you're wanting
+76:26
+to do character level models checks a
+76:28
+really good language to look at because
+76:30
+of the fact that has a lot of morphology
+76:32
+and complex word forms so here are some
+76:35
+results from machine translation systems
+76:37
+on English check for the 2015 workshop
+76:41
+on machine translation so the system
+76:43
+that won the competition in 2015
+76:48
+it got eighteen point eight blue there
+76:51
+had been an entry that did sort of word
+76:53
+level new machine translation in WMT
+76:57
+2015 which didn't do quite as well
+77:00
+that's maybe not a condemnation of word
+77:04
+level neural machine translation because
+77:06
+it turns out the winning system had been
+77:08
+trained on thirty times as much data and
+77:10
+was an ensemble of three systems so you
+77:13
+know maybe the word level nmt was pretty
+77:15
+good compared by comparison but nicely
+77:18
+by putting in this sort of hybrid word
+77:21
+and character level system that was able
+77:23
+to sort of boost the performance of the
+77:25
+nmt system trained on the same amount of
+77:28
+data as this one by two and a half blue
+77:30
+points put in well above the performance
+77:33
+of the best system okay so this then is
+77:37
+just showing you one example of the kind
+77:39
+of places you can win in check so the
+77:41
+source sentence is her 11 year old
+77:43
+daughter Shawnee Bart said it felt a
+77:46
+little bit weird and so in check eleven
+77:49
+year old is turning into this one
+77:51
+morphologically complex word and so if
+77:55
+you're sort of running with a
+77:57
+medium-sized vocabulary and Ural MT
+77:59
+system well you're just going to get
+78:01
+Uncas full of this stuff and so that's
+78:03
+not very good well one solution to that
+78:05
+would be say hey maybe we can copy and
+78:08
+you know sometimes
+78:09
+that's useful because if you can copy
+78:10
+shani that's kind of good because then
+78:13
+you just get the right word copied
+78:15
+across but doing copying isn't a good
+78:18
+strategy if you're copying across
+78:21
+eleven-year-old because that sort of
+78:23
+fails badly generating what you want but
+78:27
+nicely if you're running this hybrid
+78:30
+word character model you could actually
+78:34
+get this word correct because because
+78:36
+actually just generated character by
+78:38
+character has an unknown word and gives
+78:40
+you the correct answer okay Donna that
+78:45
+is my central result for the day okay
+78:47
+and so so remember get help on projects
+78:51
+hope you have good luck finishing last
+78:53
+lecture which is on Thursday

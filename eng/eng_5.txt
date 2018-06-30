@@ -1,0 +1,2303 @@
+[MUSIC]
+00:04
+>> Stanford University.
+00:08
+>> About the full back propagation algorithm.
+00:11
+And I promise you as the last bit of super heavy math- After that you can have
+00:17
+a warm fuzzy feeling around most of the state of the art deep learning techniques.
+00:22
+Both for natural language processing and even a little bit for
+00:24
+computer vision a lot of other places.
+00:26
+So, I know this can be a lot if you're not super familiar with multivariate calculus.
+00:32
+And so, I'll actually describe backprop in four different ways today.
+00:36
+And hopefully bring most of you into the backprop
+00:41
+the group of people who know back propagation really well.
+00:46
+So 4 different descriptions of essentially the same thing.
+00:49
+But hopefully, some will resonate more with some folks than others.
+00:55
+And so to show you that afterwards we can have a lot more fun.
+00:58
+Well, actually then the second sort of, well, not quite half, but
+01:02
+maybe the last third, talk about the projects and
+01:05
+encourage you to get started on the project.
+01:07
+Give you some advice on what the projects
+01:10
+will likely entail if you choose to do a project instead of the last problem set.
+01:15
+Maybe one small hint for problem set one.
+01:19
+Again, it's super important to understand the math and dimensionality, and if you do
+01:23
+that on paper, and then you still have some trouble in the implementation.
+01:27
+It can be very helpful to essentially set break points and
+01:31
+then print out the shape of all the various derivatives you may be computing,
+01:36
+and that can help you in your debugging process a little bit.
+01:41
+All right, are there any questions around organization, problem sets, one, no?
+01:46
+All right, my project,
+01:49
+my office hours going to be a half hour after the class ends today.
+01:51
+So if you have project questions, I'll be there after the class.
+01:59
+All right, let's go to explanation number 1 for back propagation.
+02:02
+And again, just to motivate you of why we want to go through this.
+02:06
+Why do I torture some of you with all these derivatives?
+02:10
+It is really important to have an actual understanding of the math behind
+02:14
+most of deep learning.
+02:15
+And in many cases, in the future, you will kind of abstract the way backpropagation.
+02:20
+You'll just kind of assume it works based on a framework,
+02:23
+software package that you might use.
+02:25
+But that sometimes leads you to not understand why your model might not
+02:29
+be working, right?
+02:30
+In theory, you say it's just abstracted away,
+02:33
+I don't have to worry about it anymore.
+02:35
+But really in practice, in the optimization you might run into problems.
+02:41
+And if you don't understand the actual back propagation,
+02:43
+you don't know why you will have these problems.
+02:45
+And so in addition to that, we kinda wanna prepare you to not just be a user of
+02:50
+deep learning, but maybe even eventually do research.
+02:53
+In this field and maybe think of and implement and be very,
+02:57
+very good at debugging completely new kinds of models.
+03:00
+And you'll observe that depending on which software package you'll use in the future,
+03:04
+not everything is de facto supported in some of these frameworks.
+03:08
+So if you want to create a completely new model that's sort of outside the convex
+03:12
+Known things, you will need to implement, the forward and
+03:15
+the backward propagation for a new sub-module that you might have invented.
+03:20
+So, you just have to trust me a little bit in why it's useful.
+03:24
+Hopefully this helps.
+03:27
+So last time we ended with this kind of neural network,
+03:31
+where we had a single hidden layer.
+03:34
+And we derive all the gradients for
+03:38
+all the different parameters of this model, namely the word vectors here.
+03:41
+The W, the weight matrix for our single hidden layer and
+03:47
+the U for the simple linear layer here.
+03:51
+And we defined this objective function and we ended up writing,
+03:57
+for instance, one such derivative here fully out where we have the indicator
+04:01
+function whether we're in this regime or if it's zero.
+04:03
+And if it's above zero, then this was the derivative.
+04:07
+In here, I just rewrote the same derivative twice, essentially showing you
+04:11
+that instead of having to recompute, this if you had basically
+04:18
+stored during forward propagation the activations of this,
+04:21
+this is exactly the same thing, so f(Wx + b) we defined
+04:27
+as our hidden activation, a, then you could reuse those to compute derivatives.
+04:34
+Alright, now we're going to take it up a notch and add an additional hidden
+04:39
+layer to that exact same model, and it's the same kind of layer but in out that
+04:44
+we have 2, we have to be very careful here about our superscript which will indicate.
+04:48
+The layers that we're in.
+04:51
+So it's the same kind of window definition,
+04:52
+we'll go over corpus, we'll select samples for our positive class and
+04:57
+everything that doesn't for instance have an entity will be our negative class.
+05:02
+Everything else is the same, but we're adding one hidden layer to this.
+05:07
+And so, let's go through the definition.
+05:09
+We'll define x here, our Windows and our word vectors that we concatenated,
+05:15
+as our first activations, our first hidden layer.
+05:19
+And now to compute to intermediate representation for our second layer,
+05:23
+just a linear part of that, we basically have here W1.
+05:28
+A superscript matrix times x plus b1.
+05:30
+And then to compute the activations A, superscript two of that will apply
+05:35
+the element-wise nonlinearities, such as the sigmoid function.
+05:39
+All right, and then we'll define this here as z3,
+05:45
+same idea but this could potentially have different dimensionalities, w1, w2 for
+05:49
+instance don't have to have exactly the same dimensionality.
+05:53
+Do the same thing again, element wise nonlinearity and
+05:55
+we have the same linear layer at the top.
+05:57
+All right, are there any questions around the definition of this here?
+06:02
+>> [INAUDIBLE] >> The question is do those two element
+06:05
+wise functions here have to be the same?
+06:06
+And the answer is they do not.
+06:08
+And if fact this is something that you could cross-validate and
+06:12
+try as different hyper-parameters of the model.
+06:16
+We so far have only introduced to you the sigmoid.
+06:18
+So let's assume for now, it's the same.
+06:21
+But in a later lecture, I think next week, we'll describe a lot of other
+06:25
+kinds of non-linearities.
+06:30
+Yeah.
+06:35
+How do you choose which of these functions.
+06:37
+We'll go into all of that once we know that we have which or
+06:40
+what the options are.
+06:41
+The best answer usually is, you let your data speak for
+06:44
+yourself and you run experiments with a lot of different options.
+06:48
+Once you do that, after a while you gain, again, certain intuitions.
+06:51
+And you don't have to redo it every time.
+06:53
+Especially if you have ten layers, you don't wanna go through the cross-product
+06:56
+of five different nonlinearities.
+06:58
+And then all the different variations.
+07:00
+Usually, you get diminishing returns for some of those type of parameters.
+07:04
+>> Question.
+07:05
+>> Yeah? [INAUDIBLE]
+07:16
+>> Sorry, I didn't hear you.
+07:19
+Right.
+07:22
+So the question
+07:28
+is,could we put the b into the w?
+07:34
+And if that's confusing,
+07:35
+you could essentially assume that b is this biased term here.
+07:41
+Is another element of this W matrix,
+07:44
+if we add a single one to every activation that we have here.
+07:49
+So, if a two frame,
+07:54
+since we just added one here, then we could get rid of this bias term and
+07:56
+we'd have an additional Row or column depending on what we have in W.
+08:01
+So yes, we could fold b into W to simplify the notation, but
+08:05
+then as we're taking derivatives we want to keep everything separate and clear.
+08:09
+And you'll usually back propagate through these activations,
+08:12
+whereas you don't back propagate through b.
+08:14
+So for this math, it's better to keep them separate.
+08:17
+Yeah.
+08:22
+So U transpose is our last, the question is what's U transposed?
+08:26
+And U transpose is our last layer, if you will.
+08:29
+But there's no non-linearity with it, and it's just a single vector.
+08:34
+And so because by default here in the notation of the class we assume these
+08:39
+are column vectors.
+08:40
+We transpose it so that we have a simple inner product.
+08:43
+So it's just another set of parameters that will score
+08:46
+the final activations to be high if they're a named entity,
+08:50
+if there's a named entity of the center of this window.
+08:53
+And scored low if not.
+08:58
+That's correct.
+08:59
+It is just a score that we're trying to maximize and
+09:01
+we compute that final score with this inner product.
+09:04
+And so these activations are now something that we
+09:07
+compute in this pretty complex neural network function, yeah.
+09:20
+Here everything is a column vector, that's correct.
+09:22
+All the x's are column vectors.
+09:34
+So the question is,
+09:35
+is there a particular reason of why we chose a linear layer as the last layer?
+09:40
+And the answer here is to simplify the math a little bit.
+09:43
+And because and to introduce to you another kind of objective function,
+09:48
+not everything has to be normalized and basically summed to 1 as probabilities.
+09:54
+If you just care about finding one thing versus a lot of other things,
+09:58
+like I just want to find named entities that are locations as center words.
+10:02
+And if it's high, then that's likely one.
+10:05
+And if it's low, then it's likely not a center location.
+10:08
+Then that's all you need to do.
+10:10
+And in some sense, you could add here a sigmoid after this, and then call it
+10:15
+a probability, and then use standard cross entropy loss to, in your model.
+10:20
+There's no reason of why you shouldn't do it.
+10:23
+That's something you have to do in the problem sets, trying to combine, we derive
+10:28
+that, we help you derive the softmax and cross entropy pair optimization.
+10:33
+And then we going through this and hopefully you can combine the two and
+10:37
+you'll see how both work.
+10:39
+But it's essentially a modeling decision and
+10:42
+it's not wrong to apply a sigmoid here.
+10:44
+And then call this a probability, instead of a score.
+10:49
+All right, so now, we have this two layer neural network, and
+10:53
+we essentially did most of the work already to derive the final things here.
+10:59
+We already knew how to derive our U gradients.
+11:04
+And what used to be just W is not W superscript 2,
+11:08
+but just because we add the superscript all the math is the same.
+11:12
+So here, same derivation that we did for
+11:15
+W, it's just now sitting on a2 instead of on just a.
+11:20
+And so what we did here, basically, follows directly to what we now have.
+11:25
+It's the same thing, but we now have to be careful to add these superscripts
+11:30
+depending on where we are in the neural network.
+11:34
+And we'll have the same definition here when we multiply Ui and
+11:39
+f prime of zi superscript 3, we'll just call that delta superscript 3 and
+11:43
+subscript i, for the ith element.
+11:45
+And this is going to give us the partial derivative with respect to Wij,
+11:50
+the i jth element of the W matrix.
+11:53
+So this one we've already derived in all its glory.
+11:55
+I'm just putting here again with the right superscripts.
+12:03
+Now, the total function that we have is this one.
+12:07
+And, again, we have here this same derivative, I just copied it over.
+12:12
+And in matrix notation, we have to find this as the outer product here.
+12:16
+That would give us the cross product, all the pairs of i and
+12:20
+j to have the full gradient of the W2 matrix.
+12:25
+So this one was exactly as before, except that we now add the superscript a2 here.
+12:30
+Now, in terms of the notation,
+12:32
+we defined this delta i in terms of all these elements.
+12:35
+And these are basically, if you think about it, two vectors.
+12:39
+This Ui we could write as the full U.
+12:42
+All the elements of the u vector.
+12:44
+And f prime of zi we could write as f prime of z3 where
+12:48
+we basically drop the index and assume this is just one vector of a bunch of
+12:52
+element wise applications of this gradient function of this derivative here.
+12:57
+So we'll introduce now this notation which will come in very handy.
+13:01
+And we call the Hadamard product or element-wise product.
+13:05
+Sometimes you'll see it as little circles.
+13:07
+Sometimes it's a circle with a cross or with a dot inside.
+13:10
+Whenever you see these in backprop derivatives,
+13:12
+it's usually means the same thing.
+13:14
+Which we just element-wise multiply all the elements of the two vectors with one
+13:19
+another.
+13:21
+So this is how we'll define from now on this delta,
+13:25
+the air signal that's coming in at this layer.
+13:28
+So the last missing piece for back propagation and
+13:31
+to understand it is essentially the gradient with respect to W1,
+13:37
+the second layer now, that we're moving through.
+13:44
+Any questions around the Hadamard product, the outer product from the W?
+13:52
+Yeah?
+13:59
+It is no longer what?
+14:05
+Sorry it's.
+14:08
+Associated, so yes.
+14:10
+So the question is once you use the Hadamard product, how is this related to
+14:14
+the matrix multiplication here or the vector, outer product?
+14:18
+And so you basically first have to compute this.
+14:21
+And then you have the full delta definition.
+14:24
+And then you can multiply these and outer product to get the gradient.
+14:30
+Yeah.
+14:38
+Sure, so the question is, could you assume that these are diagonal matrices?
+14:42
+And yes, it's this kind of the same thing.
+14:45
+But in terms of the multiplication you have to then make sure your
+14:50
+diagonal matrix is efficiently implemented when it's multiplied with another vector.
+14:54
+And as you write this out, if this is confusing,
+14:58
+write out what it means to have a matrix times this.
+15:02
+And what if this is just a diagonal matrix?
+15:04
+And what do you get versus just multiplying each of these elements with
+15:09
+one another?
+15:10
+So just write out the definitions of the matrix product and
+15:13
+then you'll observe that you could think of it this way.
+15:15
+But then really this f prime here,
+15:19
+is just as a single vector why apply the derivative
+15:24
+function to a bunch of zeros, in this case, zero, two so.
+15:31
+All right, so the last missing piece, W1, the gradient for it.
+15:37
+And so the main thing we have to figure out now is what's the bottom layer's
+15:40
+error message delta 2 that's coming in?
+15:44
+And I'm not going to go through all the indices again.
+15:47
+It would take a while and it's kind of repetitive.
+15:49
+And it's very, very similar to what we've done in the last lecture.
+15:52
+But essentially, we had already arrived at this expression.
+15:56
+As the next lower update.
+15:59
+And in our previous model, we would just arrive,
+16:03
+that would be the signal that arrives at the word vectors.
+16:07
+So our final word vector update was defined this way.
+16:12
+And what we now basically have to do is once more,
+16:15
+just apply the chain rule because instead of having coming up at the word vectors.
+16:20
+Instead, we're actually coming up at another layer.
+16:25
+So basically, you can kind of call it a local gradient also, but
+16:29
+it's when you multiply whatever error signal comes from the top layer,
+16:35
+you multiply that with your local error signal, in this case, f prime here.
+16:40
+Then together, you'll get the update for either the weights that are at that layer,
+16:47
+or the intermediate term for the gradient for lower layers.
+16:51
+So that's what we mean by our signal.
+16:53
+And it might help in the next definition,
+16:57
+it might give you a better explanation of this in backprop number two.
+17:02
+All right, so almost there.
+17:04
+Basically, we apply the chain rule again.
+17:06
+And if the chain rule for such a complex function is maybe less intuitive,
+17:10
+so one thing that helped me many years ago,
+17:13
+is to essentially assume all of these are scalars, just single variable.
+17:18
+And then derive all this, assuming it just, U, W,
+17:23
+and x are all just single numbers.
+17:25
+And then derive it, that will help you gain some intuition.
+17:30
+And then you'll observe in the end that the final delta 2 is essentially similar
+17:35
+to what we had derived in a very detailed way, which is W2 transposed times delta 3,
+17:41
+and then Hadamard product times f prime of Z2 which is that layer here.
+17:49
+And this is basically it, if you understand these two equations, and
+17:53
+you feel you can derive them now, then you will know all the updates for
+17:58
+all standard multilayer neural networks.
+18:00
+You will, in the end, always arrive at these two equations.
+18:05
+And that is, if you wanna compute the error signal that's
+18:09
+coming into a new layer, then you'll have some form of W,
+18:14
+of the high layer transposed times the error signal that's coming in there.
+18:21
+Hadamard product with element y's derivatives here of f in the f prime.
+18:28
+And in the final update for each W, will always be this outer product
+18:33
+of delta error signal times the activation at that layer.
+18:39
+And here, I include also our standard regularization term.
+18:46
+And you can even describe the top and bottom layers this way.
+18:51
+And then lead to word vectors and the linear layer, but
+18:53
+they just have a very simple delta.
+18:57
+All right, now, for some of you, just like all right, now I understand everything,
+19:01
+and it's great that I fully understand back propagation.
+19:04
+But judging from Piazza and
+19:07
+just from previous years, it's also quite a lot to wrap your head around.
+19:12
+And so I will go through three additional explanations now,
+19:17
+of this exact same algorithm.
+19:19
+And there, we're going through much simpler functions not full neural
+19:24
+networks, but much simpler kinds of functions.
+19:27
+But maybe for some, it will help to wrap their heads around sort of the general
+19:31
+idea of these error signals through these simpler kinds of functions.
+19:36
+So instead of having a crazy neural network with lots of matrices and
+19:40
+hidden layers.
+19:42
+We'll just kinda look at a simple function like this, and
+19:45
+we'll arrive at a similar kind of idea.
+19:47
+Namely, recursively applying and computing these error signals or
+19:52
+local gradients as we move through a network.
+19:56
+Now, the networks in this idea seen function as circuits are going to be much,
+20:01
+much simpler.
+20:02
+And these are examples from another lecture on Git learning for
+20:08
+convolutional neural networks and
+20:09
+computer vision, and we're basically copying here some of their slides.
+20:15
+And so let's take, for example, this very simple function, f of three variables.
+20:22
+And this simple function is just x plus y times z.
+20:27
+And let's assume we start with some random initial values for
+20:32
+x, y, and z from which we start and wanna compute derivatives.
+20:37
+Now, just as before with a complex neural network, we can define intermediate
+20:41
+terms but now, the intermediate terms are very, very simple.
+20:45
+So we'll just take q, for instance, and we define q as x plus y,
+20:49
+this local computation.
+20:51
+And now, we can look at the partial derivatives
+20:56
+here of q with respect to x and with respect to y.
+21:01
+They're very simple, it's just addition, right, just one.
+21:05
+And we can also define f now, in terms of q times z,
+21:07
+where we use our intermediately defined function here.
+21:12
+And here, we're kind of simplifying q, it should be q is a function of x and y, but
+21:17
+we just drop that.
+21:20
+And we can also define our partials of f, our overall function with respect to q.
+21:25
+Now, again, to connect that to what we looked at before.
+21:29
+F could be our lost function, x, y, z could be parameters of this and we wanna,
+21:33
+for instance, minimize our lost function.
+21:37
+So now, what we want is, we want the final updates to update these variables.
+21:44
+So we'll start with at the very top.
+21:47
+Just a df by df which is just 1, so it's not much there.
+21:54
+We usually start with that.
+21:57
+And now, we want to update and learn how do we update our z vectors?
+22:02
+So we look at dfdz, and what is that?
+22:08
+Well, we wrote down here all our different derivatives, so df by dz is just q.
+22:16
+And we define q as x + y, and x and
+22:21
+y is minus 2 and 5.
+22:24
+And so the gradient or the partial derivative here is just 3.
+22:30
+All right, so far we're just very simple q times derivative z, that's it.
+22:36
+All right, now, we can move also through this circuit.
+22:41
+And are there questions around just the description of this circuit,
+22:44
+of this function in terms of the circuit?
+22:51
+All right, so now, let's look at the dfdq which is the element here of the circuit,
+22:59
+this node in the circuit description of this function.
+23:04
+Now, the dfdq is again, quite simple we already wrote it right here.
+23:10
+It's just z, and z is just minus 4.
+23:14
+But now, the chain rule, we have to multiply and
+23:18
+this is essentially a delta kind of error message.
+23:22
+We multiply what we have from the higher node in the circuit, but
+23:26
+that's in this case, is just 1.
+23:28
+And so the overall is just z times 1, and z is minus 4, z is minus 4.
+23:33
+And now, we're going to move through this plus
+23:38
+node to compute the next lower derivatives here.
+23:43
+And this is, we end up at the final nodes here, the final leaf nodes if you
+23:49
+will of this tree structure, and we wanna compute the dfdy.
+23:54
+Now dfdy, We basically wanna use the chain rule,
+24:00
+and we're going to multiply what we have in the previous one, dfdq,
+24:05
+which is the error signal coming from here times dqdy, which is the local error,
+24:11
+the local gradient, it's not really the full gradient right,
+24:16
+this is the local part of the gradient dqdy.
+24:19
+So we multiply these two terms, the dfdq we wrote down here,
+24:24
+that says z minus 4, times dqdy, as you wrote down here.
+24:28
+It's just one, so minus 4 times 1, we got minus 4.
+24:34
+And we can do the same thing for x, again, apply the chain rule.
+24:37
+All right, so in general, in this way of seeing all these functions as circuits,
+24:43
+we basically always have some kind of input so
+24:46
+each node in the circuit and we compute some kind of output.
+24:52
+And what's important is we can compute our local gradients here
+24:56
+directly during the forward propagation.
+24:59
+We don't need to know this local part of the gradient.
+25:03
+We don't need to know what's up before.
+25:04
+But in general, we will run this forward.
+25:07
+We'll around some of these values.
+25:10
+And then in back propagation, we get the gradient signals from any
+25:14
+element upstream from each of these nodes in the circuits.
+25:20
+And essentially then, use the chain rule and
+25:23
+multiply all of these to compute the updates.
+25:27
+All right, any questions around the definition of the circuits for
+25:32
+simple functions?
+25:33
+It's very hard to take this kind of abstraction, and
+25:35
+then get all the way to this full update.
+25:37
+Therefore, a full near layer neural network, but
+25:41
+it's very good to gain intuition of what's really going on, on a high level.
+25:56
+>> All right, so now,
+25:57
+let's go through a little more complex example of what this looks like.
+26:02
+And I think of at the end of that you kind of gain some good intuition of how
+26:07
+we basically do forward propagation, and
+26:10
+recursively call these kinds of circuits to compute the full update.
+26:15
+So here, we have a little bit more of a complex
+26:20
+function namely actually our sigmoid function that we had before.
+26:24
+Usually when we have our sigmoid function,
+26:26
+this was one activation of one hidden layer.
+26:30
+In most cases, x was our input and w were the weights.
+26:34
+So we defined this already, and now, let's assume we just want to compute
+26:39
+the partial derivatives with respect to all the elements, w and x.
+26:43
+And let's assume x and w are just, x is two-dimensional, and
+26:47
+w is three-dimensional.
+26:49
+And we have here the bias term as just an extra element of w.
+26:54
+So now, if you take this whole function, we're gonna now compute or
+26:59
+define this as a circuit.
+27:00
+That one description that's the most detailed description of this function
+27:05
+as a circuit would look like this, where you basically recursively
+27:10
+divide this function into all the separate actions that you might take.
+27:15
+And you can compute gradients and
+27:17
+the local gradients at each note in this kind of circuit.
+27:21
+So the last operation to compute the final output f here of this function,
+27:26
+is 1 over whatever is in here.
+27:29
+And so that's our last element of the circuit, and from the bottom it
+27:34
+starts with multiplying these two numbers, multiplying these two numbers,
+27:40
+and then adding to their summation this w2 install, all right?
+27:45
+Are there any questions around the description of the circuit?
+27:54
+All right, so now, let's assume we start with these simple numbers here,
+27:59
+so w2, w0 starts at 2, x0 starts at minus 1, minus 3, minus 2, and minus 3 here.
+28:06
+So we just move forward through the circuit to compute our forward
+28:10
+propagation, right?
+28:11
+So this is a relatively simple concatenation of functions.
+28:18
+And now, we wanna compute all our partial
+28:21
+derivatives with respect to all these different elements here.
+28:26
+So we'll now go backwards and recursively backwards through this circuit, and
+28:31
+apply the chain rule every time.
+28:34
+So let's start the final value to the forward propagation numbers here in green,
+28:39
+at the top the final value of this is 0.73.
+28:43
+And again, the first delta derivative of just the function with itself, is just 1.
+28:51
+And now, we hit this node in a circuit, and we want to now compute
+28:56
+the derivative of this function, and the function's 1 over x.
+28:59
+And so the derivative is just minus 1 over x squared.
+29:02
+x is 1.73, and so we basically compute
+29:07
+minus 1 divided by 1.37, sorry, 1.37 squared.
+29:15
+And then we multiply using a chain rule,
+29:19
+the gradient signal here from the top that goes into this node.
+29:26
+So now, you multiple these two, and you get the number minus 0.53.
+29:35
+Now, we're moved to the next node, so this node here,
+29:42
+we just sum up a constant with the value x,
+29:47
+and so the derivative of that is just 1.
+29:52
+So we multiply, use the chain rule, multiply these two elements,
+29:57
+the error signal or gradient signal from the top as it moves
+30:01
+through this element of the circuit, which is just minus 0.3 times 1 so
+30:07
+we get again minus 0.53, sorry.
+30:12
+Now, we move through the exponent.
+30:14
+It's a little more interesting.
+30:15
+So here, derivative of e to the x is just e to the x.
+30:19
+And we have the incoming value which is minus 1, so that's our x.
+30:26
+So we have e to the minus 1 times minus 0.53,
+30:30
+the gradient signal from the higher node in this circuit.
+30:39
+And we basically continue like this for a while, and
+30:43
+compute the same for plus, similar to this plus and so on.
+30:47
+And that the end, we arrive right here.
+30:50
+And our error signal is 0.2, and we have this multiplication here.
+30:55
+And we know in multiplication, the partial
+31:00
+of w0 times x0 partial with respect to x0 is just w0.
+31:06
+And so we multiply 0.2 times the value here which is 2 and we get 0.4.
+31:14
+And now, we have an update for this parameter after we've moved
+31:19
+recursively through the circuit all the way to where it was used.
+31:27
+And this is essentially the same thing that we've done for the very complex
+31:31
+neural network, but sort of one step at a time for a very simple function.
+31:41
+Any questions around this sort of circuit description
+31:45
+of the same back propagation at year.
+31:49
+Namely reusing the derivatives, multiplying local error signals
+31:54
+with the global error signals from higher Layers, where here, the layer
+31:59
+definition's a bit stretched, it's very, very simple kinds of operations.
+32:06
+Yeah?
+32:12
+That's right, so here, each time the sort of gradient,
+32:16
+the local gradient times the global or above higher layer gradient signal.
+32:22
+When you multiply them, you get an actual gradient.
+32:24
+So they're not really gradients, right,
+32:26
+they're sort of intermediate values of a gradient.
+32:32
+Yep.
+32:53
+So the question is we're using this kind of circuit
+32:57
+interpretation to compute derivatives and that's correct.
+33:04
+If you were to just do standard math on this equation
+33:08
+you would end up with something that looks exactly like this.
+33:11
+And you would also have similar kinds of numbers.
+33:14
+But we're making it a little more complicated, in some ways,
+33:18
+to compute the derivatives here, of each of the elements of this function.
+33:23
+We're kind of push the chain rule to its
+33:27
+maximum by defining every single operation as a separate function.
+33:32
+And then computing gradients at every single separate function.
+33:35
+And when you do that, even for this kind of simple function, you usually wouldn't
+33:40
+write out this complex thing and take a derivative with respect to this node,
+33:45
+which is just plus, cuz we all know how to do that.
+33:47
+And usually we just move through this very quickly but
+33:49
+the circuit definitions can help you understand the idea that at each node what
+33:54
+you end up getting is the local gradient times the gradient signal from the top.
+34:01
+So in the end you get the exact same updates as if you had just taken
+34:06
+the derivatives using the chain rule like this.
+34:09
+And in fact, the definition of the circuit can be arbitrary too and sometimes
+34:14
+it's a lot more work to write out all the different sub components of a function.
+34:21
+So for instance, we know if we just described
+34:24
+sigma of x as our sigmoid function, we could kind of combine all these different
+34:29
+elements of the circuit as just one node in the circuit.
+34:35
+And we know, with this one little trick here, the derivative
+34:40
+of sigma x with respect to x can actually be described in terms of sigma x.
+34:44
+So we don't need to do any extra computation like we did internally here,
+34:48
+take another exponent and so on.
+34:50
+We actually can just know, well if that was our value here of sigma x then
+34:55
+the derivative that will come out here is just 1- sigma x times sigma x.
+35:00
+And so we could, in theory, also define our circuit differently, and in fact
+35:04
+the circuits we eventually define are this whole thing is one neural network layer.
+35:09
+And internally we know exactly the kinds of messages that pass through such
+35:14
+a layer, or the error signals, or again, elements of the final gradients.
+35:20
+Yeah?
+35:26
+That's a good question, sorry, yes.
+35:28
+So the question is, we're talking about back propagation here, and
+35:30
+what is forward propagation?
+35:31
+Yeah, forward propagation just means computing the value of your overall
+35:34
+function.
+35:37
+The relationship between the two is forward propagation is what you compute,
+35:42
+what you do at test time, to compute the final output of your function.
+35:46
+So, you want the probability for this node to be a location, or for this
+35:52
+word to be a location, you'd do forward propagation to compute that probability.
+35:56
+And the you do backward propagation to compute the gradients if you wanna train
+36:00
+and update your model if you have a training data set and so on.
+36:07
+That's right, the red numbers here at the bottom are all the partial derivatives
+36:11
+with respect to each of these parameters.
+36:14
+And here all the intermediate values that we use as that gradient flows
+36:19
+through the circuit to the parameters that we might wanna update, great question.
+36:30
+All right, so
+36:31
+essentially we recursively applied the chain rule as we moved through this graph.
+36:37
+And we end up with a similar kind of intuition,
+36:42
+as we did with the same, with just using math and
+36:47
+multivariate calculus, to arrive at these final gradients, to update our parameters.
+36:53
+All right, any questions around the circuit?
+36:56
+Interpretation of back propagation, yeah.
+37:03
+So here w2 is our bias term, it doesn't depend on the values of x,
+37:09
+we just add it, and w2 down here in the circuit.
+37:13
+So that is the last element we add after adding these two multiplications.
+37:24
+All right, so, now if that was too simple and
+37:27
+you wanna get a little bit high level again,
+37:31
+you can essentially think of these circuits also as flow graphs.
+37:36
+And circuit is the terminology that Andrej Karpathy used in 231 and
+37:41
+Yoshua Bengio, for instance, another very famous researcher in
+37:46
+deep learning uses the terminology of flow graphs, but, again,
+37:51
+we have the very similar kind of idea.
+37:54
+You start with some input x,
+37:56
+you do forward propagation to compute some kind of value.
+37:59
+You go through some intermediate variables y, and then, in back propagation,
+38:04
+you compute your gradients going backwards in the reverse order to what you've
+38:09
+done during forward propagation.
+38:13
+And so this is if you just have one intermediate value now if x, and
+38:18
+this is something else important to know it for the circuits it's the same,
+38:23
+if x modifies two paths in your flow graph you end up,
+38:27
+based on the multiple variable Chain Rule.
+38:30
+You have to sum up the local air signals for both from both of the paths.
+38:37
+And in general, again you move backwards through them.
+38:40
+So usually as long as you have some kind of directed basically graph or
+38:46
+tree structure, you can always compute these flows and
+38:49
+these elements of your gradient.
+38:55
+And in general, if x goes through multiple different elements in your flow graph,
+39:00
+you just sum up all the partials this way.
+39:05
+And so this is another interpretation much more high level without defining exactly
+39:10
+what kinds of computation you have here at each node.
+39:13
+But in general you can define these kind of flow graphs and
+39:17
+each node is some kind of computational result.
+39:20
+And each arc here is some kind of dependency, so you need,
+39:23
+in order to compute this, you needed this.
+39:26
+And you can define more complex things where you have so
+39:29
+called short circuit connections, we'll define those much later in the class, but
+39:34
+in general, you move forward through your node.
+39:37
+So this is a more realistic example where we may have some input x,
+39:41
+we have some probability, or sorry some class y for our train data set.
+39:45
+And in forward propagation, we'll move these through a sigmoid neural
+39:50
+network layer here such as h is just sigma of Vx.
+39:54
+We dropped here The bias term.
+39:56
+And so, you can also describe your v as part of this flow graph.
+40:01
+You move through a next layer, and then you may have a softmax layer here,
+40:06
+similar to the one that you derived in problem set one.
+40:09
+And then you have your negative log likelihood, and
+40:12
+you compute that final cost function for this pair xy, for this training element.
+40:18
+And then back propagation again, you move backwards through the flow graph.
+40:21
+And you update your parameters as you move through the flow graph.
+40:35
+Now, before I go through the last and final explanation, the good news is you
+40:40
+won't actually have to do that for very complex neural networks.
+40:44
+It would be close to impossible for
+40:45
+the kinds of large complex neural networks to do this by hand.
+40:50
+Many years ago, when I had started my PhD,
+40:52
+there weren't any software packages with automatic differentiation.
+40:55
+So you did have to do that.
+40:57
+And it slowed us down a little bit.
+40:59
+But, nowadays, you can essentially automatically
+41:03
+infer your back propagation updates based on the forward propagation.
+41:07
+It's a completely deterministic process, and
+41:10
+so can use symbolic expressions for your forward prop.
+41:14
+And then have algorithms automatically determine your gradient, right?
+41:19
+The gradients always exist for these kinds of functions.
+41:22
+And so that will allow us to much faster prototyping.
+41:25
+And you'll get introduced next week to a tensor flow,
+41:29
+which is one such package that essentially takes all these headaches away from you.
+41:34
+But with this knowledge,
+41:35
+you'll actually know what's going on under the hood of these packages.
+41:40
+All right, any question around the flow graph interpretation of back propagation?
+41:45
+Yes?
+41:51
+It's actually in closed form.
+41:53
+Yeah, it's not numerically solved.
+41:54
+So sorry, the question was, the automatic differentiation, is it numeric or
+41:59
+symbolic?
+41:59
+It's usually symbolic.
+42:03
+All right, now, for the last and final explanation of the same idea.
+42:08
+But combining the idea of the flow graph with the math that you've seen before,
+42:14
+and hopefully that will help.
+42:17
+So, let's bring back this complex two layer neural network.
+42:21
+Now, how can we describe this at a much simplified kind of
+42:27
+flow graph or circuit where we can combine in a lot of different elements instead of
+42:32
+writing every multiplication, summation, exponent, negation, and so and out?
+42:37
+This is the kind of flow graph that kind of yeah,
+42:40
+kind of combines these two worlds.
+42:42
+So we assumed here we had our delta
+42:47
+error signal coming from the simple score that we have.
+42:52
+And let's say that our final, we want all the updates, essentially, to W(2) and
+42:57
+W(1).
+42:57
+Now W(2), as we move through this linear score, the delta doesn't change.
+43:04
+And so the update that we get for W(2) here is just this outer product again.
+43:11
+And that's kind of, as we move through this very high level flow graph,
+43:17
+we basically now update W(2) once we get the error message from the layer above.
+43:24
+Now, as we move through W(2),
+43:27
+this kind of circuit will essentially just multiply the affine,
+43:32
+like as we move through this simple affine transformation this matrix vector product,
+43:39
+we're just required to transpose the forward propagation matrix.
+43:45
+And we arrived why this is before, but this is kind of the interpretation
+43:50
+of this flow graph in terms of a complex and large realistic neural network.
+43:56
+And so notice also that the dimensions here line up perfectly.
+44:00
+So the output here, we multiply this delta that has the dimensionality of the output.
+44:07
+With the transpose, we get exactly the dimensionality of the input of this W.
+44:12
+So it's quite intuitive, right?
+44:14
+You have the linear transformation, affine transformation through this W
+44:19
+as you move backwards to this W, you just multiply it with its transpose.
+44:24
+And now, we are hitting this element wise nonlinearity.
+44:29
+And so as we update the next delta,
+44:33
+we essentially have also an element wise derivative
+44:38
+here of each of the elements of this activation.
+44:44
+So as we're moving our error vector, error signal, or
+44:47
+global parts of the gradient through these point-wise nonlinearities, we need
+44:53
+to apply point-wise multiplications with the local gradients of the non-linearity.
+45:01
+And now we have this delta that's arrived at W(1).
+45:04
+And so W1 we can now compute the final gradient with respect to
+45:08
+W(1) as just the delta again times the activation of the previous layer,
+45:13
+which is a(1) and we have this outer product.
+45:17
+So this is combining the different interpretations that we've learned.
+45:21
+We arrived through this through just multivariate calculus.
+45:26
+And now this is the flow graph or circuit interpretation of what's going on.
+45:32
+Yes?
+45:39
+>> If I mean point-wise non linearity, I mean coordinate wise, yes,
+45:42
+they are the same.
+45:43
+So, whenever we write f(z) here, and
+45:48
+z was a vector of z1, z2, for instance,
+45:53
+then we meant f(z1) and f(z2).
+45:57
+And the same is true if we write it like this.
+46:02
+And look at the partial derivatives.
+46:05
+Yeah? >> I know.
+46:16
+>> That's just, from matrix [INAUDIBLE].
+46:28
+It is, yes, so the question is the delta here the same as in the definition of
+46:32
+the two layer neural network?
+46:34
+And it is, yeah.
+46:35
+So this delta here is this and
+46:37
+you notice here that it's the same thing that we wrote before.
+46:41
+We have W(2) transpose times delta(3).
+46:44
+And then you have the Hadamard product with the element-wise derivatives here.
+46:56
+All right, congratulations!
+46:59
+You've done it. So
+47:00
+now, understand the inner workings of most deep learning models out there.
+47:05
+And this was literally the hardest part of the class.
+47:06
+I think it's gonna go all uphill from here for many of you.
+47:10
+And everything from now on is really just more matrix multiplications and
+47:15
+this kind of back propagation.
+47:17
+It's really 90% of the state of the art models out there right now and
+47:21
+top new papers that are coming out this year.
+47:23
+You now can have a warm, fuzzy feeling,
+47:26
+as you look through the forward propagation definitions.
+47:30
+All right, with that, let's have a little intermission and look at a paper.
+47:37
+Take it away. >> Hi everyone.
+47:40
+So yeah, so let's take a break from neural networks, and let's talk about this
+47:44
+paper which came out from Facebook ARV search just this past summer.
+47:48
+So text classification is a really important topic in NLP.
+47:53
+Given a piece of text, we may wanna say, is this a positive sentiment or
+47:57
+does it have negative sentiment?
+48:00
+Is this spam or ham, or did JK Rowling actually write this?
+48:03
+And so this one's particular from a website and
+48:07
+it's basing [COUGH] an example of sentiment analysis.
+48:11
+And so if you recall from your problem set in problem four.
+48:16
+An easy way to featurize a sentence is to just average out all the word
+48:21
+vectors in a sentence.
+48:23
+And that's basically what the model from this paper does.
+48:27
+And so they use really low dimensional word vectors.
+48:30
+Take the average of them, kind of you know you lose the ordering of it and
+48:34
+then you get this low dimensional text vector which represents the sentence.
+48:39
+In order to kind of get some of the ordering back, they also use n-grams.
+48:44
+And so now that we have the text vector that's kind of like in the hidden layer.
+48:49
+We then feed it through a linear classifier which uses softmax compute
+48:52
+the probability over all the predictive classes.
+48:56
+The hidden representation is also shared by all the classifiers for
+48:59
+all the different categories.
+49:00
+Which helps the classifier use information about words learned from one category for
+49:05
+another category.
+49:09
+And so will look a little bit more familiar
+49:12
+to you now that you guys have gone through all the costs and whatnot.
+49:15
+So we minimize the negative flaws likelihood over all the classes, and
+49:19
+the model's trying to using stochastic gradient descent and
+49:22
+a linear decaying learning rate.
+49:26
+Another thing that makes it really fast is the use of the hierarchical softmax.
+49:29
+And so by using this, the classes are organized in like this tree kind of
+49:32
+fashion instead of just like in a list.
+49:34
+And so this also helps with the timing, so
+49:39
+we go from linear time to logarithmic time.
+49:43
+Because also the costs are organized in terms of how frequent they are.
+49:47
+So in case, we have maybe like a lot of class, but less of one class.
+49:50
+This helps kind of balance that out so NLP is really hot right now.
+49:54
+So in here the depth is much smaller, so we can access that cost a lot faster.
+49:59
+But maybe for some less popular topics, I just made some up here,
+50:02
+that's not actually my opinion.
+50:04
+But they have a much deeper depth because they are much more infrequent.
+50:10
+And so especially in this day and age when we're really crazy about neural networks,
+50:13
+the question is like how well does this stack up against them?
+50:15
+Because it uses a linear classifier, it doesn't really have all those layers for
+50:18
+neural network.
+50:20
+And as it turns out, this actually performs really well.
+50:23
+It's not only really fast, but it performs just as well if not sometimes better than
+50:28
+neural networks which is pretty crazy.
+50:31
+And so just a quick summary.
+50:32
+FastText, which is what they call their model is often on par with deep learning
+50:36
+classifiers.
+50:37
+It takes seconds to train, instead of days,
+50:40
+thanks to their use of low dimensional word vectors in the hierarchical softmax.
+50:43
+And another side bit, is that it can also learn vector representations of words in
+50:48
+different languages, with performs even better than word2vec.
+50:51
+Thank you.
+50:52
+>> [APPLAUSE] >> All right, and you know what's awesome?
+50:59
+Like this kind of equation you could totally derive all the gradients now too.
+51:02
+>> [LAUGH] >> Just another day in the office.
+51:07
+All right, so class project.
+51:11
+This is for many, the most lasting and fun part of the class.
+51:18
+But some people also don't have a research agenda or
+51:22
+some kind of interesting data set, so you don't have to do the project.
+51:28
+If you do a project, we want you to have a mandatory mentor.
+51:33
+The mentors that are pre-approved are all the PhD students, and Chris and me.
+51:39
+So we wanna really give you good advice and
+51:43
+we want you to meet your mentors frequently.
+51:46
+So think I'll have 25, Chris has 25, and
+51:50
+then I guess each of the PhD TAs also has at most 25 groups.
+51:54
+It's a very large class.
+51:56
+But yeah, so basically your class projects,
+52:00
+if you do decide to do it, is 30% of your final grade.
+52:04
+And sometimes real paper submissions come out from these.
+52:09
+It's really exciting, you get to travel.
+52:11
+You get probably paid, depending on who you're working with.
+52:14
+If you're a grad student and you write a paper,
+52:17
+to go to some fun places in the world.
+52:20
+And something that's really helpful for people's careers.
+52:24
+Sometimes these papers,
+52:25
+people get contacted from various companies once we put these papers up.
+52:30
+If you do a really good job,
+52:31
+it can have really lasting impact on the kinda work that you do.
+52:35
+So on the choice of doing assignment four, the final project.
+52:39
+We don't wanna force you to do the final project,
+52:41
+cuz some people just wanna learn the concepts and then move on with life.
+52:45
+And it can be a little painful to try to come up with something.
+52:49
+So there is a final project, and
+52:51
+we will ask you to sort of define your project with your mentor.
+52:56
+And then we might encourage you or
+52:57
+discourage you from moving forward with that project.
+53:00
+Some projects might be too large in scope or too small in scope, and so on.
+53:04
+And so do check with the TAs of whether the project is the right thing for you.
+53:10
+If you do a project, and if you decide to do it you really have to start early.
+53:15
+Ideally you will start meeting me today, or
+53:20
+latest like next week or two weeks and or the other TAs.
+53:26
+We write out a lot of the sort of organizational things on the website.
+53:32
+So let's look at the website really quick.
+53:35
+It's now linked from our main page.
+53:37
+So you can get a couple of different ideas from these top conferences.
+53:41
+So one project idea and we'll go into that a little bit later,
+53:45
+is to take one of these newest papers from the various groups or
+53:49
+various conferences and just try to replicate the results.
+53:53
+You will notice that despite having in theory, everything written in the paper,
+53:57
+if it's a nontrivial model there's a lot of subtle detail.
+54:01
+And it's hard to squeeze all of those details in eight pages.
+54:04
+So usually the maximum page them in so replicating sometimes,
+54:08
+this paper is sufficient enough for most papers in most projects.
+54:16
+So here, here's some very concrete papers that you can look at and
+54:21
+to get adheres from others.
+54:23
+And what's kind of interesting and new these days, this is by no means and
+54:29
+exclusive list, there a lot more other interesting papers.
+54:35
+So again here there sort of pre proofed mentors for projects.
+54:39
+You'll have to contact us through office hours.
+54:42
+And if you do a project in your project proposal,
+54:47
+you have to write out who the mentor is.
+54:51
+A lot of other mentors, we'll actually list probably next week now.
+54:55
+A list of potential projects that are coming from people who spend all their
+54:59
+time thinking about deep learning and NLP.
+55:02
+So if you don't have an idea, but you really do wanna do some interesting novel
+55:06
+research project, we'll post that link internally.
+55:09
+So that not the whole world sees it, but only the students in this class.
+55:13
+Cuz sometimes, the PhD students have some interesting novel idea.
+55:16
+They don't want it to get scooped and have some other researchers do that idea,
+55:20
+but they do wanna collaborate with students and youths.
+55:22
+So we'll keep those ideas under wraps here.
+55:27
+So yeah, this is your project proposal.
+55:29
+You have to define all these things, and
+55:32
+we'll go through that now in some of the details here.
+55:36
+And then you have a final submission, you have to write a report.
+55:39
+And then we'll also have a poster presentation,
+55:42
+where all the projects are basically being described.
+55:45
+You'll have to print a little poster, and we'll walk around.
+55:49
+It's usually quite fun.
+55:50
+Maybe we'll even come up with a prize for best poster, and best paper, and so on.
+55:55
+All right, so these are the organizational, Tips.
+55:59
+Posters and projects by the way I have maximum of three people.
+56:04
+If you have some insanely, well thought out plan,
+56:08
+we may make an exception and go to four.
+56:10
+But the standard default is three.
+56:12
+So the exception kind of has to be mailed to the TAs or Aston Piazza.
+56:20
+Any questions around the organizational aspects of the project?
+56:24
+Groups.
+56:25
+You can do groups of one, two, or three.
+56:28
+So it doesn't have to be three.
+56:29
+The bigger your group, the more we expect from the project.
+56:33
+And you have to also write out exactly what each person in the project has done.
+56:38
+You can actually use any kind of open source library and code that you want.
+56:47
+It's just a realistic research project.
+56:49
+But if you just take Kaldi, which is a speech recognition system, and
+56:54
+you say I did speech recognition.
+56:55
+And then really all you did was download the package and
+56:57
+run it, then that's not very impressive.
+57:00
+So the more you use, the more you also have to be careful and
+57:05
+say exactly what parts you actually implemented.
+57:11
+And in the code, you also have to submit your code, so
+57:14
+that we understand what you've done and the results are real.
+57:30
+So this year we do want some language in there.
+57:34
+Some natural human language.
+57:38
+Last year I was a little more open.
+57:39
+It could be the language of music and so on now.
+57:41
+But this year it's [INAUDIBLE].
+57:42
+So we've got to have some natural language in there, yeah.
+57:48
+But other than that, that can be done quite easily so
+57:51
+we'll go through the types of projects you might want to do.
+57:55
+And if you have a more theoretically inclined project where you
+57:59
+really are just faking out some clever way of doing a sarcastic ready to sent or
+58:04
+using different kinds of optimization functions.
+58:07
+An optimizers that we'll talk about leading the class to
+58:10
+then as long as you at least applied it in one experiment
+58:13
+to a natural language processing data set that would still be a pretty cool project.
+58:18
+So you can also apply it to genomics data and
+58:21
+to text data if you wanna have a little bit of that flavor.
+58:24
+But there is gonna be at least one experiment where you apply it to a text
+58:28
+data set.
+58:32
+All right, so now let's walk through the different kinds of projects that you might
+58:37
+wanna consider, and what might be entailed in such project to give you an idea.
+58:45
+Unless there are any other questions around the organization of the projects,
+58:48
+deadlines and so on.
+58:51
+So, let's start with the kind of simplest and
+58:54
+all the other ones are sort of bonuses on top of that simple kind of project.
+58:59
+And this is actually, I think generally, good advice, not just for a class project,
+59:05
+but in general, how to apply a deep learning algorithm to any kind of problem,
+59:10
+whether in academia or in industry, or elsewhere.
+59:13
+So, let's assume you want to
+59:17
+apply an existing neural network to an existing task.
+59:22
+So in our case, for instance, let's take summarization.
+59:26
+So you want to be able to take a long document and
+59:29
+summarize into a short paragraph.
+59:32
+Let's say that was your goal.
+59:34
+Now step one, after you define your task, is you have to define your dataset.
+59:39
+And that is actually, sadly, in many cases in both industry and
+59:44
+in academia, an incredibly time intensive problem.
+59:48
+And so, the simplest solution to that is you just search for
+59:52
+an existing academic dataset.
+59:54
+There's some people who've worked in summarization before.
+59:58
+The nice thing is if you use an existing data set, for instance,
+60:01
+from the Document Understanding Conference, DUC here, then other people
+60:05
+have already applied some algorithms to it, you'll have some base lines,
+60:08
+you know what kind of metric or evaluation is reasonable versus close to random.
+60:13
+And so on, cuz sometimes that's not always obvious.
+60:16
+We don't always us just accuracy for instance.
+60:19
+So in that case, using an existing academic data set gets rid
+60:24
+of a lot of complexity.
+60:28
+However, it is really fun if you actually come up with your own kind of dataset too.
+60:34
+So maybe you're really excited about food, and you want to prowl Yelp, or
+60:38
+use a Yelp dataset for restaurant review, or something like that.
+60:43
+So, however, when you do decide to do that,
+60:46
+you definitely have to check in with your mentor, or with Chris and me, and others.
+60:52
+Because I sadly have seen several projects
+60:56
+in the last couple of years where people have this amazing idea.
+60:58
+I'm excited, they're excited.
+61:00
+And then they spent 80% of the time on their project on a web crawler
+61:05
+getting not blocked from IP addresses,
+61:08
+writing multiple IP addresses, having multiple machines, and crawling.
+61:13
+And so on, then they realize, all right, it's super noisy.
+61:16
+Sometimes it's just the document they were hoping to get and
+61:19
+crawl, it's just a 404 page.
+61:20
+And now they've filtered that.
+61:21
+And then they realize HTML, and they filter that.
+61:25
+And before you know it,
+61:25
+it's like, they have like three more days left to do any deep learning for NLP.
+61:31
+And so, it has happened before so don't fall into that trap.
+61:35
+If you do decide to do that, check with us and try to, before the milestone deadline.
+61:41
+For sure have the data set ready so you can actually do deep learning for NLP,
+61:45
+cuz sadly we just can't give you a good grade for a deep learning for NLP class if
+61:50
+you spend 95% of your time writing a web crawler and explaining your data set.
+61:54
+So in this case, for instance, you might say all right, I want to use Wikipedia.
+61:59
+Wikipedia slightly easier to crawl.
+62:01
+You can actually download sort of already pre-crawled versions of it.
+62:05
+Maybe you want to say my intro paragraph
+62:08
+is the summary of the whole rest of the article.
+62:11
+Not completely crazy to make that assumption, but
+62:15
+really you can be creative in this part.
+62:17
+You can try to connect it to your own research or your own job if your
+62:21
+a [INAUDIBLE] student, or just any kind of interest that you have.
+62:25
+Song lyrics come up from time to time it's really fun NLP
+62:29
+combine with language of music with natural language and so on.
+62:32
+So you can be creative here, and we kind of value a little bit of
+62:36
+the creativity this is like a task of data set we had never seen before and
+62:39
+you actually gain some interesting Linguistic insights or something.
+62:44
+That is the cool part of the project, right.
+62:47
+Any questions around defining a data set?
+62:53
+All right, so then you wanna define your metric.
+62:59
+This is also super important.
+63:02
+For instance, you have maybe have crawled your dataset and
+63:05
+let's say you did something simpler like restaurant star rating classification.
+63:10
+This is a review and I want to classify if this a four star review or
+63:14
+a one star review or a two or three.
+63:17
+And now you may have a class distribution where this is one star,
+63:24
+this is two stars, three and four, and now the majority are three.
+63:31
+Maybe that you troll kind of funny and
+63:33
+so really most of the reviews are three star reviews.
+63:37
+So this is just like number of reviews per star category.
+63:42
+And maybe 90% of the things you called are in the third class.
+63:49
+And then you write your report, you're super excited, it was a new data set,
+63:52
+you did well, you crawled it quickly.
+63:54
+And then all you give us is an accuracy metric, so
+63:57
+accuracy is total correct divided by total.
+64:00
+And now, let's say your accuracy is 90%.
+64:02
+It's 90% accurate, 90% of the cases gives you the ride star rating.
+64:08
+Sadly, it just always gives three.
+64:11
+It never gives any other result.
+64:14
+You're essentially overfit to your dataset and
+64:18
+your evaluation metric was completely bogus.
+64:21
+It's hard to know whether they basically could have implemented a one line
+64:24
+algorithm that's just as accurate as yours which is just, no matter what the input,
+64:27
+return three.
+64:29
+So hard to give a good grade on that and it's a very tricky trap to fall into.
+64:33
+I see it all the time in industry and for young researchers and so on.
+64:38
+So in this case, you should've used,
+64:41
+does anybody know what kind of metric you should've used?
+64:45
+F1, that's right.
+64:46
+So, and we'll go through some of these as we go through the class but
+64:49
+it's very important to define your metric well.
+64:53
+Now, for something as tricky as summarization, this isn't where you're
+64:56
+really just like, this is the class, this is the final answer.
+64:58
+You have to actually either extract or generate a longer sequence.
+65:04
+And there are a lot of different kinds of metrics you can use.
+65:07
+BLEU's n-gram overlap or Rouge share which is a Recall-Oriented Understudy for
+65:12
+Gisting Evaluation which essentially is just a metric to weigh differently
+65:18
+how many n-grams are correctly overlapping between a human generated summary.
+65:23
+For instance, your Wikipedia paragraph number one, and
+65:26
+whatever output your algorithm gives.
+65:30
+So, Rouge is the official metric for
+65:32
+summarization in different sub-communities and NOP have their own metrics and
+65:36
+it's important that you know what you're optimizing.
+65:39
+So, the machine translation, for instance, you might use BLEU scores,
+65:44
+BLEU scores are essentially also a type of n-gram overlap metric.
+65:48
+If you have a skewed data set, you wanna use F1.
+65:50
+And in some cases, you can just use accuracy.
+65:54
+And this is generally useful even if you're in industry and
+65:57
+later in life, you always wanna know what metric you're optimizing.
+65:59
+It's hard to do well if you don't know the metric that you're optimizing for,
+66:04
+both in life and deep learning projects.
+66:05
+All right so, let's say you defined your metric now,
+66:10
+you need to split your dataset.
+66:11
+And it's also very important step and
+66:14
+it's also something that you can easily make sort of honest mistakes.
+66:20
+Again, in advantage of taking pre-existing academic dataset is that in many cases,
+66:25
+it's already pre-split but not always.
+66:29
+And you don't wanna look at your
+66:32
+final test split until around 1 week before the deadline.
+66:36
+So, let's say you have downloaded a lot of different articles and
+66:41
+now you basically have 100% of some articles you wanna summarize.
+66:45
+And normal split would be take 80% for training,
+66:49
+you take 10% for your validation and your development.
+66:53
+So, oftentimes this is called the validation split, or
+66:57
+the development split, or dev split, or various other terms.
+67:00
+And 10% for your final test split.
+67:02
+And so, the final one, you ideally get a sense of how your algorithm would work in
+67:08
+real life, on data you've never seen before, you didn't try to chew
+67:13
+on your model like, how many layers should I use, how wide should each layer be?
+67:18
+You'll try a lot of these things, we'll describe these in the future.
+67:22
+But it's very important to correctly split and why do I make such a fuss about that?
+67:30
+Well, there too, you might make mistakes.
+67:33
+So let's say, you have unused text and let's say,
+67:36
+you crawled it in such a way there's a lot of mistakes that you can make if you try
+67:40
+to predict the soft market for instance, don't do that, it doesn't work.
+67:45
+But in many cases, you might say, or there some temporal sequence.
+67:51
+And now, you basically have all your dataset and the perfect thing to do
+67:56
+is actually do it like this, you take 80% of let's say, month January to May or
+68:02
+something and then, your final test split is from November.
+68:06
+That way you know there's no overlap.
+68:09
+But maybe you made a mistake and you said well, I crawled it this way, but
+68:13
+now I'm just randomly sample.
+68:15
+So, as sample an article from here, and one from here, and one from here.
+68:18
+And then the random sample goes to the 80% of my training data.
+68:22
+And now, the test data and the development data might actually have some overlap.
+68:26
+Cuz if you're depending on how you chose your dataset maybe the another
+68:32
+article which just like a slight addition, like some update to an emerging story.
+68:37
+And now the summary is almost exact same but
+68:40
+the input document just changed a tiny bit.
+68:43
+And you have one article in your training set and another one in your test set.
+68:50
+But the test set article is really only one extra paragraph on an emerging story
+68:53
+and the rest is exactly the same.
+68:55
+So now you have an overlap of your training and your testing data.
+68:59
+And so in general,
+69:01
+if this is your training data and this should be your test data.
+69:07
+It should be not overlapping at all.
+69:10
+And whenever you do really well, you run your first experiment and you get 90 F1.
+69:14
+And things look just too good to be true sadly in many cases they are and
+69:19
+you made some mistake where maybe your test set had some overlap for instance,
+69:23
+with your training data.
+69:27
+It's very important to be a little paranoid about that when your first couple
+69:31
+of experiments turn out just to be too good to be true.
+69:34
+That can mean either your training, your task is too simple,
+69:39
+or you made a mistake in splitting and defining your dataset.
+69:46
+All right, any questions around defining a metric or your dataset, yeah?
+70:00
+So, if we split it temporally, wouldn't we learn a different distribution?
+70:04
+That is correct, we would learn a different distribution,
+70:08
+these are non-stationary.
+70:09
+And that is kinda true for a lot of texts, but if you, ideally, when you built
+70:14
+a deep learning system for an LP you want it to built it so that it's robust.
+70:18
+It's robust to sum such changes over time.
+70:21
+And you wanna make sure that when you run it in a real world setting,
+70:25
+on something you've never seen before, you've shipped your software,
+70:29
+it's doing something, it will still work.
+70:32
+And this was the most realistic way
+70:35
+to capture how well it would work in real life.
+70:44
+Would it be appropriate to run both experiments as in both where you subsample
+70:47
+randomly, and then you subsample temporally for your?
+70:51
+You could do that, and the intuitive thing that is likely going to happen
+70:56
+is if you sample randomly from all over the place, then you will probably
+71:01
+do better than if you have this sort of more strict kind of split.
+71:05
+But running an additional experiment will rarely ever get you points subtracted.
+71:11
+You can always run more experiments, and we're trying really
+71:16
+hard to help you get computing infrastructure and Cloud compute.
+71:21
+So you don't feel restricted with the number of experiments you run.
+71:30
+All right, now, number 5, establish a baseline.
+71:34
+So, you basically wanna implement the simplest model first.
+71:37
+This could just be a very simple logistic regression on unigrams or bigrams.
+71:41
+Then, compute your metrics on your train data and your development data, so
+71:45
+you understand whether you're overfitting or underfitting.
+71:49
+If, for instance, you're training Metric.
+71:54
+Let's say your loss is very, very low on training.
+71:57
+You do very well on training, but you don't do very well on testing,
+72:01
+then you're in an over fitting regime.
+72:03
+If you do very well on training and well on testing, you're done, you're happy.
+72:07
+But if your training loss can't be lower, so you're not even doing well on your
+72:11
+training, that often means your model is not powerful enough.
+72:16
+So it's very important to compute both the metrics on your training and
+72:19
+your development split.
+72:20
+And then, and this is something we value a lot in this class too.
+72:24
+And it's something very important for you in both research and
+72:27
+industries like you wanna analyze your errors carefully for that baseline.
+72:32
+And if the metrics are amazing and there are no errors, you're done,.
+72:36
+Probably a problem was too easy and
+72:37
+you may wanna restart unless it's really a valuable problem for the world.
+72:41
+And then maybe you can just really describe it carefully and you're done too.
+72:45
+All right, now, any questions around establishing your baseline?
+72:50
+It is very important to not just go in and add lots of bells and
+72:52
+whistles that you'll learn about in the next couple of weeks in this class and
+72:56
+create this monster of a model.
+72:58
+You want to start with something simple,
+73:00
+sanity check, make sure you didn't make mistakes in splitting your data.
+73:04
+You have the right kind of metric.
+73:06
+And in many cases, it's a good indicator for how successful your final project
+73:11
+is if you can get this baseline In the first half of the quarter.
+73:17
+Cuz that means you figured out a lot of these potential issues here.
+73:22
+And you kind of have your right data set.
+73:24
+You know what the metric is, you know what you're optimizing, and everything is good.
+73:28
+So try to get to this point as quickly as possible.
+73:30
+Cuz that is also not as interesting, and
+73:33
+you can't really use that much knowledge from the class.
+73:36
+Now then it gets more interesting.
+73:39
+And now you can implement some existing neural network model that
+73:42
+we taught you in class.
+73:44
+For instance, this Window-based model if your task is named entity recognition.
+73:48
+You can compute your metric again on your train AND dev set.
+73:51
+Hopefully you'll see some interesting patterns such as usually train
+73:56
+neural nets is quite easy in a sense that we lower the loss very well.
+74:02
+And then we might not generalize as well in the development set.
+74:05
+And then you'll play around with regularization techniques.
+74:10
+And don't worry if some of the stuff I'm saying now is kind of confusing.
+74:13
+If you want to do this,
+74:14
+we'll walk you through that as we're mentoring you through the project.
+74:17
+And that's why each project has to have an assigned mentor that we trust.
+74:23
+All right, then you analyze your output and your errors again.
+74:26
+Very important, be close to your data.
+74:27
+You can't give too many examples usually ever.
+74:32
+And this is kind of the minimum bar for this class.
+74:34
+So if you've done this well and
+74:35
+there's an interesting dataset, then your project is kind of in a safe haven.
+74:40
+Now again it's very important to be close to your data.
+74:44
+Once you have a metric and everything looks good,
+74:46
+we still want you to visualize the kind of data, even if it's a known data set.
+74:51
+We wanted you to visualize it, collect summary statistics.
+74:54
+It's always good to know the distribution if you have different kinds of classes.
+74:58
+You want to, again very important, look at the errors that your model is making.
+75:02
+Cuz that can also give you intuitions of what kinds of
+75:05
+patterns can your deep learning algorithm not capture.
+75:08
+Maybe you need to add a memory component or
+75:11
+maybe you need to have longer temporal kind of dependencies and so on.
+75:16
+Those things you can only figure out if you're close to your data and
+75:19
+you look at the errors that your baseline models are making.
+75:23
+And then we want you to analyze also different hyperparameters.
+75:26
+A lot of these models have lots of choices.
+75:28
+Did we add the sigmoid to that score or not?
+75:30
+Is the second layer 100 dimensional or 200 dimensional?
+75:34
+Should we use 50 dimensional word vectors or 1,000 dimensional word vectors?
+75:38
+There are a lot of choices that you make.
+75:40
+And it's really good in your first couple projects to try more and
+75:44
+gain that intuition yourself.
+75:46
+And sometimes, if you're running out of time, and only so much, so
+75:50
+many experiments you can run, we can help you, and use our intuition to guide you,.
+75:54
+But it's best if you do that a little bit yourself.
+75:57
+And once you've done all of that, now you can try different model variants, and
+76:01
+you'll soon see a lot of these kinds of options.
+76:04
+We'll talk through all of them in the class.
+76:08
+So now another
+76:11
+kind of class project is you actually wanna implement a new fancy model.
+76:15
+Those are the kinds of things that will put you into potentially writing
+76:19
+an academic paper, peer review, and at a conference, and so on.
+76:23
+The tricky bit of that is you kinda have to do all the other steps that I just
+76:27
+described first.
+76:28
+And then, on top of that, you know the errors that you're making.
+76:32
+And now you can gain some intuition of why the existing models are flawed.
+76:36
+And you come up with your own new model.
+76:40
+If you do that, you really wanna be in close contact with your mentor and some
+76:45
+researchers, unless you're a researcher yourself, and you earned your PhD.
+76:50
+But even then, you should chat with us from the class.
+76:53
+You want to basically try to set up
+76:56
+an infrastructure such that you can iterate quickly.
+76:58
+You're like, maybe I should add this new layer type to this part of my model.
+77:04
+You want to be able to quickly iterate and see if that helps or not.
+77:07
+So it's important and
+77:09
+actually require a fair amount of software engineering skills to set up efficient
+77:13
+experimental frameworks that allow you to collect results.
+77:17
+And again you want to start with simple models and then go to more and
+77:21
+more complex ones.
+77:21
+So for instance, in summarization you might start with something super simple
+77:25
+like just average all your word vectors in the paragraph.
+77:27
+And then do a greedy search of generating one word at a time.
+77:31
+Or even greedily searching for just snippets from the existing
+77:38
+article in Wikipedia and you're just copying certain snippets over.
+77:44
+And then stretch goal is something more advanced would be lets you actually
+77:47
+generate that whole summary.
+77:48
+And so here are a couple of project ideas.
+77:51
+But, again, we'll post the whole list of them with potential mentors
+77:56
+from the NOP group and the vision group and various other groups inside Stanford.
+78:01
+Sentiment is also a fun data set.
+78:03
+You can look at this URL here for
+78:06
+one of the preexisting data sets that a lot of people have worked on.
+78:09
+All right, so next week we'll look at some fun and
+78:12
+fundamental linguistic tasks like syntactic parsing.
+78:15
+And then you'll learn TensorFlow and have some great tools under your belt.
+78:18
+Thank you

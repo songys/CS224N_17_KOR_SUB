@@ -1,0 +1,2464 @@
+00:00
+[MUSIC]
+00:04
+Stanford University.
+00:05
+>> All right, hello, everybody.
+00:09
+And welcome to lecture number nine.
+00:11
+Today, we'll do a brief recap, some organizational stuff, and
+00:14
+then we'll talk about, I love when we call them fancy, recurrent neural networks.
+00:18
+But those are the most important deep learning models of the day,
+00:23
+LSTMs and GRU type models.
+00:26
+They're very exciting and really form the base model for pretty much every
+00:31
+deep learning paper or almost all the deep learning papers you see out there.
+00:34
+So after today, you'll really have in your hands the kind of tool that is the default
+00:40
+tool for a lot of different deep learning final P applications, so super exciting.
+00:45
+And the best part is, you kind of know most of the important math already of it,
+00:49
+so we can just define the model.
+00:50
+And everything else will kind of follow through with these basic, and
+00:54
+sometimes painful building blocks that we went through before.
+00:58
+All right, before we jump in, some organizational stuff.
+01:00
+We have a new office hour schedule and places.
+01:02
+Today, we're continuously trying to optimize the whole process based on
+01:07
+your feedback.
+01:08
+Thanks for that.
+01:09
+So I'll have office hours every day, multiple times.
+01:14
+I hope that will allow us to kind of distribute the load a little bit,
+01:19
+cuz I know sometimes lots of people come to one office hour, and
+01:23
+then there's a long wait there.
+01:26
+Also, it's important that you register for
+01:28
+your GPU teams by the end of today, or ideally before.
+01:32
+So that we can make sure you all get a GPU.
+01:36
+Ideally, we also encourage people to have pairs for Problem set 3 and
+01:42
+4 the project, at least pairs, cuz we only have 300 or
+01:47
+so GPUs and almost 700 students in the class.
+01:52
+So try to form teams, but do make sure that you don't just have your partner or
+01:55
+work on and
+01:56
+implement all the GPU stuff, and you do all the other parts of the problem set.
+02:00
+Cuz then you really miss out on a very important valuable skill for
+02:04
+both research and applied deep learning, if you don't know how to use a GPU.
+02:10
+And sadly, I have to get back to some work event.
+02:14
+So I'll have a pretty short office hour today.
+02:16
+But then I know we have the deadline for project proposals on Thursdays.
+02:21
+So on Thursday, I'm gonna have an unlimited office hour.
+02:25
+I'm gonna start after class, and will end when queue status is empty.
+02:28
+So if you come half an hour late, prepare to talk to me three hours later.
+02:33
+So [LAUGH] the project is the coolest part, so I don't wanna discourage
+02:38
+people from doing the project because we don't have enough.
+02:42
+So it's gonna be great.
+02:45
+I'll bring food. You should bring food too,
+02:48
+and- >> [LAUGH]
+02:48
+>> [LAUGH]
+02:49
+>> It's kind of good fun, all right.
+02:52
+If by any chance even after midnight, people, we still have the queue status
+02:57
+is still full, which I doubt at that point, I think, I hope,
+03:00
+then we can push the proposals out for those, or you can submit the proposal.
+03:05
+And then we'll figure out the mentor situation, very soon thereafter.
+03:09
+So all right, any questions around any class organization?
+03:21
+All right, then lets dive right in.
+03:23
+So basically today, we'll have a a very advanced,
+03:26
+cutting edge blast from the past, because while pedagogically, it'll make sense for
+03:32
+us to first talk about a model from 2014, from just three years ago.
+03:37
+The main model we'll end up with, the long-short-term-memories is actually
+03:41
+a very old model, from 97, and has kind of been dormant for a while.
+03:45
+As very powerful model, you need a lot of training data for it,
+03:48
+you need fast machines for it.
+03:50
+But now, that we have those two things, this is a very powerful model for NLP.
+03:54
+And if you ask one of the inventors,
+03:57
+the second model is really just a special case of the LSTM.
+04:00
+But I think, pedagogically, it makes sense to sort of first talk about
+04:03
+the so-called Gated Recurrent Unit, which is slightly simpler version.
+04:06
+>> And we'll use machine translation which is one of the sort of most useful tasks
+04:11
+you might argue of NLP, sort of a real life task.
+04:15
+Something that actual people outside academia, outside research,
+04:18
+outside linguistics really care about.
+04:21
+And by the end, you'll actually have the skills to build one of the best machine
+04:27
+translation models out there, modulo a lot of time and some extra effort.
+04:32
+But the biggest parts of 90% of the top MT systems out there,
+04:36
+you'll be able to understand at least and probably build also,
+04:40
+if you have the GPU skills after this class.
+04:43
+All right, so I'm not gonna go through too many of the details, but in just in
+04:46
+preparation to mentally make you also think about the midterm that's coming up.
+04:51
+Next lecture, we'll have midterm review.
+04:53
+But ideally, these kinds of equations that I'm throwing up here,
+04:57
+you're pretty familiar with.
+04:58
+At this point, you're like yeah,
+05:00
+I just do some negative sampling here from my Word2Vec.
+05:04
+And I have my inside and my outside vectors in the window.
+05:06
+And similarly for glove, I have two sets of vectors, you optimize this.
+05:12
+You have a function here, dead limits,
+05:14
+how important very frequent pairs are in your concurrence matrix.
+05:17
+You understand the max-margin objective function.
+05:22
+You have scores of good windows from the large training corpus and
+05:25
+corrupted windows.
+05:26
+So all of these should be familiar.
+05:28
+And if not, then you really should also start thinking about sort of studying
+05:33
+again for the midterm.
+05:36
+The most basic definition of neural net,
+05:39
+where we just have some score at the end or some soft max.
+05:42
+And really being comfortable with these two final equations,
+05:46
+that if you understand those, all the rest of the models will basically be,
+05:51
+in many cases, sort of fancy versions or adapted versions of these two equations.
+05:56
+So that's important.
+05:59
+And then we'll have our standard recurrent neural network that we already went
+06:03
+through, and we kind of assume you should know for the midterm as well.
+06:07
+And our grade of Cross Entropy Error, as one of the main loss or
+06:12
+objective functions that we optimize.
+06:16
+And when we optimize, we usually use the Mini-batched SGD.
+06:20
+We don't go through single example.
+06:21
+We don't go through the entire batch of our trained data, but
+06:25
+we take 100 or so of examples each time we train.
+06:28
+So all those concepts, you should feel reasonably comfortable now.
+06:33
+And if not, then definitely come back to the office hours, and
+06:37
+start sort of studying for the midterm.
+06:39
+All right, and we'll go over more midterm details in the next lecture.
+06:44
+All right, now, onto the main topic of today, machine translation.
+06:48
+So you might think for some NLP tasks that you can get away with thinking of
+06:53
+all the rules that, for instance, sentiment analysis.
+06:57
+A sentence might come up positive or negative, right?
+07:00
+You say, I have a list of all the positive words, most of all the negative words.
+07:03
+And I can think of the ways you can negate positive words and things like that.
+07:06
+And you could maybe conceive of creating a sentiment analysis system
+07:10
+of just all your intuitions about linguistics and sentiment.
+07:15
+That kind of approach is completely ridiculous for machine translation.
+07:18
+There's no way you would ever,
+07:20
+nobody will ever be able to think of all the different rules and exceptions for
+07:24
+translating all possible sentences of one language to another.
+07:28
+So basically, the baseline that's pretty well established is that
+07:32
+all machine translation systems are somewhat statistical in nature.
+07:36
+We will always try to take a very large corpus.
+07:38
+In fact, we'll have so called parallel copra,
+07:41
+where we have a lot of the sentences or paragraphs in one language.
+07:44
+And we know that this paragraph in this language translates to that paragraph
+07:48
+in another language.
+07:50
+One of the popular parallel copra of All of, for a long time,
+07:55
+for the last couple thousand years is the Bible, for instance.
+07:57
+You'll have Bible translated.
+07:58
+It has nice paragraphs.
+07:59
+And each paragraph is translated in different languages.
+08:02
+That would be one of the first parallel corpora.
+08:05
+The very first is actually the Rosetta Stone.
+08:07
+Which allowed people to have at least some understanding
+08:12
+of ancient Egyptian hieroglyphs.
+08:15
+And it's pretty exciting if you're into historical linguistics.
+08:22
+And it allows basically to translate those to the Demotic script and
+08:27
+the ancient Greek also, which we still know.
+08:31
+And so we can gain some intuition about what's going on in the other two.
+08:35
+Now, in the next couple of slides,
+08:37
+I will basically try to bring across to you that traditional statistical
+08:42
+machine translation systems are very, very complex beasts.
+08:46
+And it wouldn't have been impossible for me to say at the end of the lecture,
+08:50
+all right, now you could implement this whole thing yourself,
+08:52
+after just one lecture, going over MT cuz there are a lot of different moving parts.
+08:57
+So let's walk through this.
+08:59
+You won't have to actually implement traditional statistical MT system in
+09:04
+this class.
+09:05
+But I want you to appreciate a little bit the history.
+09:07
+And why deep learning is so impactful and amazing for machine translation.
+09:13
+Cuz it's replacing a lot of different submodules in these very complex models.
+09:20
+And sometimes it uses still ideas from this, but not very.
+09:24
+Most of them we don't need any more for neural machine translation systems.
+09:27
+All right, so let's set the stage.
+09:30
+We have generally a source language.
+09:32
+Let's call that f, such as French.
+09:35
+And we have a target language, e, in our case, let's say it's English.
+09:38
+So we wanna translate from the source French to the target language of English.
+09:44
+And we'll usually describe this here with a simple Bayes
+09:49
+rule where we basically try to find the, Target sentence,
+09:56
+usually e here we assume is the whole sentence in the target language.
+10:00
+That gives us the largest conditional probability conditioned on f.
+10:04
+So this is an abstract formulation.
+10:07
+We'll try to fill in how to actually compute these probabilities
+10:10
+in traditional and then later in neural machine translation systems.
+10:13
+So now we can use Bayes rule.
+10:15
+Posterior equals its prior times likelihood divided by marginal evidence.
+10:19
+Marginal evidence here would just be for the source language.
+10:21
+So that doesn't change.
+10:22
+So we can drop that, argmax would not change from that.
+10:25
+So basically, we'll try to compute these two factors here.
+10:31
+The probability of the French sentence given, or
+10:36
+the source language given the target, times the probability of just the target.
+10:44
+And now, we'll basically call these two elements here.
+10:47
+One is our translation model.
+10:49
+And the other one is our language model.
+10:51
+Remember language modeling where we tried to get the probability of a longer
+10:54
+sequence.
+10:54
+This is a great use case for it.
+10:58
+Basically, you can think of this as you get some French sentence.
+11:02
+Your translation model will try to find.
+11:04
+Maybe this phrase, I can translate into that.
+11:06
+And this phrase, I can translate into this.
+11:09
+And then you have a bunch of pieces of English.
+11:11
+And then your language model will essentially in the decoder be combined
+11:16
+to try to get a single, smooth sentence in the target language.
+11:21
+So it'll help us to take all these pieces that we have from the translation model.
+11:26
+And make it into one sentence that actually sounds reasonable and flows and
+11:30
+is grammatical and all that.
+11:31
+So the language model helps us to weight grammatical sentences better.
+11:36
+So, for instance, I go home will sound better than I go house, right?
+11:40
+Because I go home will have a more likely higher probability, so
+11:44
+more likely English sentence to be uttered.
+11:47
+Now, how do we actually train all these different pieces?
+11:51
+And how would you go about doing this?
+11:53
+Well, if you wanted to translate, do this translation model here.
+11:56
+Then the first thing you'd have to do is you'd find so called alignments.
+12:01
+Which is basically, the goal of the alignment step is to know which word or
+12:05
+phrase in the source language would translate to the other word or
+12:08
+phrase in the target language.
+12:10
+And that sub problem already.
+12:13
+And now, again, we have these three different systems.
+12:18
+And now we're zooming in to the step one of that system.
+12:21
+Now that one is already hard because alignment is non-trivial.
+12:27
+These are actually some cool examples from previous incarnation from Chris's class,
+12:31
+224, and from previous years.
+12:33
+Here are some examples of why alignment is already hard.
+12:37
+And this is for a language pair that is actually quite similar.
+12:43
+English and French share a lot of common history, and so on,
+12:47
+and they're more similar.
+12:49
+But even if we have these two sentences here, like Japan shaken by two new quakes.
+12:54
+Or Le Japon secoue par deux nouveaux seismes.
+12:58
+Then we'll basically have here a spurious word.
+13:03
+So Le was actually not translated to anything.
+13:06
+And we would skip it in our alignment.
+13:10
+So you see here this alignment matrix.
+13:13
+And you'll notice that Le just wasn't translated.
+13:16
+We don't say the Japan, or a Japan, or something like that.
+13:23
+So it gets trickier, though.
+13:24
+Cuz there are also so
+13:25
+called zero fertility words that are not translated at all.
+13:29
+So we start in a source and we just drop them.
+13:31
+And, for some reason, the translators, or for grammatical reasons and
+13:36
+so on, they don't actually have any equivalent in the target language.
+13:42
+And to make it even more complex, we can also have one-to-many alignments.
+13:46
+So implemented in English is actually mis en application in French.
+13:51
+So made into an application of sorts is just the word and
+13:57
+the verb implemented here.
+13:58
+So then we'll have to try to find.
+13:59
+And now, as you try to think through algorithms that might do this
+14:02
+alignment for you.
+14:03
+You'll have to think, so this word could go to either this one word or no word.
+14:08
+Or these three words together.
+14:09
+Or maybe these two words together.
+14:11
+And you can see how that would create, if you tried to go through all the statistics
+14:14
+and collect all of these probabilities, of which phrase would go to what phrase.
+14:18
+It'll get pretty hard to actually combine them all.
+14:22
+And language is just incredible and very complex.
+14:27
+And you also have many-to-one alignments.
+14:28
+So aboriginal people are just autochtones in French.
+14:35
+So similar actually in German, [FOREIGN].
+14:38
+So you'd have two words in German.
+14:40
+And so, you have many-to-one alignments making the combinatorial
+14:45
+explosion even harder if you try to find good alignments.
+14:49
+And lastly, you'll also have many-to-many alignments.
+14:52
+You have certain phrases like don't have any money.
+14:56
+This just goes to sont demunis in French.
+15:00
+And so it's a very, very complex problem that has combinatorial
+15:04
+explosion of all potential combinations and it's tricky.
+15:08
+All right, so now, really, if you were to take a traditional class,
+15:14
+you could have several lectures, or at least an entire lecture,
+15:19
+just on the various ways you could implement cleverly an alignment model.
+15:26
+And sometimes, people use just single words.
+15:30
+And other times, they actually use parses like the one you're now familiar,
+15:33
+syntactic parses.
+15:34
+And try to find which, no, not just words, but
+15:37
+phrases from a parse would map to the other language.
+15:43
+And then, of course, it's not just that.
+15:45
+And not usually are sentences and languages nicely aligned, but
+15:50
+you can also have complete reorderings.
+15:53
+So German sometimes, for sub Clauses actually has the verb at the end,
+15:58
+so you flip a lot of the words, and you can't just have this vocality assumption
+16:03
+that words rough in this area will translate to roughly a similar area,
+16:07
+in terms of the sequence of words in the other language.
+16:13
+So yeah, ja nicht here, ja is technically just yes in German,
+16:17
+also not translated at all.
+16:19
+And then actually going over there and going, moving also.
+16:24
+All right, now let's say we have all these potential alignments, and
+16:28
+now as we start from the source language we say, all right.
+16:31
+Let's say the source here is this German sentence, geht ja nicht nach hause.
+16:37
+Now could be translated into many different words.
+16:42
+So German it's technically just the he of he, she, it, as the es in German.
+16:48
+But sometimes English as you do your alignment
+16:53
+when not unreasonable one is just it or comma he or
+16:57
+he will be, cuz those were dropped before in the alignment and so on.
+17:01
+So you now have lots of candidates for each possible word and for
+17:05
+each possible phrase that you might want to combine now in
+17:10
+some principled way to the final target translation.
+17:16
+So you have again here a combinatorial explosion of lots of potential ways you
+17:20
+could translate each of the words or phrases of various lengths.
+17:24
+And so basically what that means is you'll have a very hard search problem
+17:29
+that also includes having to have a good language model.
+17:33
+So that as you put all these pieces together, you essentially try to keep
+17:37
+saying or combining phrases that are grammatically plausible or
+17:42
+sound reasonable to native speakers.
+17:45
+And this often ends up being so-called beam search,
+17:48
+where you try to keep around a couple of candidates as you go from left to right
+17:52
+and you try to put all of these different pieces together.
+17:56
+Now again, this is totally not doing traditional MT justice.
+17:59
+Right, we just went in five minutes over what could have been an entire lecture on
+18:04
+statistical machine translation, or maybe even many multiple lectures.
+18:07
+So there are lots of important details we skipped over.
+18:11
+But the main gist here is that there's a lot of
+18:14
+human feature engineering that's required and involved in all of these different
+18:18
+pieces that used to require building a machine translation system.
+18:21
+And it also meant that there were whole companies that you could form just for
+18:26
+machine translation because nobody could go through all that work and
+18:29
+really build out a good system.
+18:31
+Whereas now you have companies that have worked for decades in this and they start
+18:36
+using an open-source machine translation system that anybody can download.
+18:40
+And now a normal student, a PhD student can spend a couple months and
+18:43
+then he has like one of the best MT systems.
+18:45
+Which just completely would have been completely impossible in their large
+18:50
+groups that all work together in very large systems before, in academia.
+18:54
+So one of the main problems of this kind of approach,
+18:57
+is actually that not only is it a very complex system, but
+19:00
+it's also a system of independently trained machine learning models.
+19:04
+And, if there's one thing that I think that I like most, when property of deep
+19:09
+learning models, not just for MT, but in all of NLP and maybe in all of AI.
+19:14
+Is that we're usually in deep learning try to have end to end trainable models
+19:18
+where you have your final objective function that you care about and
+19:22
+everything is learned jointly in one model.
+19:25
+And this MT system is kind of the opposite of that.
+19:27
+You have an alignment model you optimize for that, and
+19:30
+then you have a reordering model maybe, and then you have the language model.
+19:35
+And they're all separate systems and you couldn't jointly train all of it together.
+19:41
+So that's kind of the very quick summary for traditional machine transaction.
+19:46
+Any high level questions around traditional MT?
+19:49
+All right, so now deep learning to
+19:55
+the rescue, maybe, probably.
+20:00
+So let's go through a sequence of models and see if they would suffice.
+20:07
+So the simplest one that we could possibly do is kind of an encoder and
+20:12
+decoder model that looks like this.
+20:16
+Where we literally just have a single recurrent neural network,
+20:20
+where we have our word vectors so let's say here
+20:22
+we translate from German to English Echt Kiste is awesome sauce in English.
+20:28
+And we now have our word vectors here we learned them in German, and
+20:32
+we have our soft max classifier here.
+20:35
+And we just have a single recurrent neural network and once it sees the end of German
+20:38
+sentence and there's no input left we'll just try to output the translation.
+20:46
+Not totally unreasonable, it's an end-to-end trainable model.
+20:50
+We'll have our standard cross entry pair here that tries to just predict
+20:53
+the next word.
+20:54
+But the next word actually has to be in a different language.
+20:59
+Now, basically this last vector here, if this was our main model,
+21:02
+this last vector would have to capture the entirety of the phrase.
+21:06
+And sadly, I've already told you that usually five or six words or so
+21:10
+can be captured and after that, we don't really,
+21:13
+we can't memorize the entire context of the sentence before.
+21:17
+So this might work for like, very short sentenced but maybe not.
+21:23
+But let's define what this model would be in its most basic form,
+21:27
+cuz we'll work on top of this afterwards.
+21:30
+So we have here our standard recurrent neural network from the last lecture.
+21:34
+Where we have our next hidden state, it's just basically a linear
+21:40
+network here followed by non-element wise linearities.
+21:43
+And we sum here the matrix vector product with the vector,
+21:46
+the previous hidden state in our current word vector xt.
+21:49
+And that's our encoder and then in our decoder in the simplest form,
+21:55
+again not the final model, in the simplest form we could just
+21:58
+drop this cuz the decoder doesn't have an input at that time.
+22:01
+Right, it's just we wanna now translate and just generate an output.
+22:05
+So during the decoder we drop this matrix vector product and
+22:09
+we just go each time step.
+22:10
+It's just basically moving along based on the previous hidden time step.
+22:15
+And we'll have our final softmax output here at each time step of the decoder.
+22:22
+Now I also introduced this phi notation here, and basically whenever you have,
+22:26
+we'll see this only in the next couple of slides.
+22:29
+But whenever I write phi of two vectors,
+22:32
+that means we'll have two separate W matrices for each of these vectors.
+22:37
+This is the little, shorter notation, and then the default here would be well, just
+22:42
+like I said, minimize the cross entropy error for all the target words conditioned
+22:46
+on all the source words that we hoped would be captured in that hidden state.
+22:51
+All right, any questions, concerns, thoughts about how this model would do?
+23:14
+So, the comment or question is that neither are the traditional model or
+23:19
+this model account for grammar.
+23:21
+And in some ways, that's not true.
+23:23
+So there are actually a lot of traditional models that work on top of syntactic
+23:28
+grammatical tree structures.
+23:30
+And they do this alignment based on the syntactic structure of
+23:34
+prefer potentially the alignment step.
+23:37
+But also for the generation and the encoding step and
+23:39
+all these different steps.
+23:40
+So there are several ways you can infuse grammar and chromatical sort of priors
+23:45
+into neuro machine translation systems or so syntactic machine translation systems.
+23:52
+It turns out it's questionable if that actually helps.
+23:54
+In many cases for machine translation, you have such a broad range of sentences.
+23:58
+You actually might have un-grammatical sentences sometimes, and
+24:01
+you still want them to be translated.
+24:03
+You have very short,
+24:05
+complex ambiguous kinds of sentences like headlines and so on.
+24:08
+So it's tricky, the jury was sort of out.
+24:12
+And some tactic models were battling it out with non-tactic models until
+24:16
+neural machine translation came.
+24:17
+And now, it's not as important of a question anymore.
+24:21
+Now, for neural systems, we would assume and hope that our hidden state actually
+24:26
+captures some grammatical structures and some grammatical intuitions that we have.
+24:31
+But we don't explicitly give that to the algorithm anymore.
+24:34
+Which some people who are very good at giving those kinds of features,
+24:40
+your algorithms might think is sad.
+24:43
+But at the same time, it's good if we don't have to, right?
+24:46
+It's less work for us, putting more artificial back into artificial
+24:49
+intelligence, less human intelligence on designing grammars.
+24:55
+Anyways, so any other questions?
+24:57
+Yeah.
+25:08
+Good question, so sometimes, the number of input words is different to the numbers
+25:12
+of output words, and that's very true.
+25:15
+So one modification we would have to make to this kind of model for sure,
+25:19
+is actually say, have the last output word here, BA, stop out putting up words work.
+25:27
+Like a special token that says, I'm done.
+25:29
+And one, you add that to your softmax classifier sort of the last row.
+25:35
+And then you hope that when it predicts that token, it just stops.
+25:40
+And that is good enough and not uncommon actually for
+25:45
+all these neural machine translations.
+25:49
+The superscript S is just again,
+25:52
+to distinguish the different W matrices that we have for
+25:57
+hidden connections, visible or hidden inputs, and softmax W.
+26:04
+All right, now sadly, while neural MT is pretty cool, and
+26:07
+it is simpler than traditional systems, it's not quite that simple.
+26:11
+So we'll have to be a little more clever.
+26:14
+And so let's go through a series of extensions to this model where in the end,
+26:19
+we'll have a very big powerful LSTM type model.
+26:23
+So step one, is we'll actually have different recurrent neural network weights
+26:27
+for encoding and decoding.
+26:28
+So instead of having the same W here, we actually should have a different set
+26:33
+of parameters, a different W for the decoding step.
+26:37
+That's still relatively similar.
+26:40
+All right, so again, remember this notation here of fi where every
+26:45
+input has its own matrix W associated with it.
+26:48
+The second modification is that the previous hidden state
+26:53
+is kind of the standard that you have as input for during decoding.
+26:59
+But instead of just having the previous hidden state,
+27:02
+we'll actually also add the last hidden vector of the encoding.
+27:06
+So we call this c here, but it's essentially ht.
+27:10
+So at this input here, we don't just have the previous hidden state,
+27:16
+but we always take the last hidden state from the encoding step.
+27:21
+And we have, again, a separate matrix for that.
+27:25
+And then on top of that, we will also add, and that's actually, if you think about
+27:28
+it, it's a lot of parameters, we'll add the previous predicted output word.
+27:33
+So as we translate,
+27:35
+we have three inputs for each hidden state during the decoding step.
+27:40
+We'll have the previous hidden state as a standard recurrent neural network.
+27:43
+We have the last hidden state of the encoder.
+27:46
+And we have the actual output word we predicted just before that.
+27:50
+And this will essentially help the model to know that it just output a word, and
+27:55
+it'll prevent it from outputting that word again.
+27:58
+Cuz it'll learn to transform the hidden state,
+28:02
+based on having just upload a specific word before.
+28:05
+Yeah?
+28:14
+That's right, that's right, yeah.
+28:15
+So whenever you have fi of xyz here,
+28:19
+it'll just f of w times x + u of y + v of z.
+28:25
+So you just, I don't wanna define all the matrices.
+28:39
+That's a great question.
+28:40
+So why do we need to make y, t minus one a parameter,
+28:45
+if we actually had computed yt minus one from ht minus one, right?
+28:51
+So two answers, one, it will allow us to have the softmax weights
+28:56
+also modify a little bit how that hidden state behaves at test time.
+29:02
+And two, we actually can choose usually yt, and
+29:05
+there are different ways you can do this.
+29:07
+You could take the actual probability, the multinomial distribution from the softmax.
+29:13
+But here, we'll actually make a hard choice, and
+29:15
+we'll actually tell the model we chose exactly this one.
+29:19
+So instead of having the distribution, we'll make a hard choice.
+29:21
+And we say, this is the one word, the highest probability that had the highest
+29:25
+probability, we predicted that one, and that's the one we give us input.
+29:28
+So it turns out in practice,
+29:30
+that helps to prevent the model from repeating words many times.
+29:35
+And again, it incorporates the softmax weights in that computation indirectly.
+29:40
+Yeah.
+29:53
+That is a good catch.
+29:55
+That is not how we define the model.
+29:57
+Ignore those errors.
+29:58
+Yeah, well done.
+30:00
+In theory, again, so I didn't define it but you can also, you can do
+30:05
+the same thing with the softmax, and this is what the picture actually shows.
+30:09
+So instead of having a softmax of just W,
+30:14
+ht for the probability of yt.
+30:17
+You can also concatenate here your c, and that's what the picture said.
+30:22
+But I wanted to skip over the details so you caught it, well done.
+30:40
+So this model usually,
+30:41
+so the question is, do we have kind of a look ahead type thing?
+30:44
+Or does the model output blanks?
+30:46
+And the model basically has to output the words in the right order.
+30:52
+And it doesn't not have the ability to do this whole reordering step or
+30:57
+look ahead kind of thing.
+30:59
+Or there's no sort of post processing of reordering at the end, so
+31:03
+this model isn't able to output the verb at the right time stamp.
+31:08
+It's over, okay, here we go.
+31:11
+Now, of course,
+31:12
+once it works well, everybody will try to see if they can kind of improve it, and
+31:16
+eventually you can do beam searches too for these kinds of models.
+31:19
+But surprisingly, in many cases, you don't have to get a reasonable MT system.
+31:28
+All right, now, I want you to become more and more familiar,
+31:31
+to be able to read the literature.
+31:33
+So the same picture that we had here and
+31:36
+the same equations we defined, here's another way off looking at this.
+31:42
+So with the exception that this one doesn't have the c connection
+31:46
+that you caught.
+31:47
+So, Yeah, it's similar.
+31:48
+It's the same exact model, just a different way to look at it, and
+31:53
+it's kind of good to see.
+31:54
+Sometimes people explicitly write
+31:58
+that you start out with a discreet one of k and coding of the words.
+32:03
+It's just like you want one-hot vectors that we defined, and
+32:05
+then you embed it into continuous word vector space.
+32:09
+You give those as input, you compute your recurrent neural network, ht steps.
+32:13
+And now, you give those as input to the decoder.
+32:17
+And that each time stamp of decoder, you get the one word sample that you actually
+32:22
+took as input, the previous hidden state and to see vector, we defined before.
+32:28
+So all these three already are the inputs for
+32:30
+each node in this recurrent neural network.
+32:33
+So just a different picture for
+32:37
+the same model we just defined, so
+32:41
+you learn picture in variances first, model semantics.
+32:49
+Now, it gets more powerful.
+32:50
+It needs to get more powerful cuz even with those two assumptions here,
+32:53
+we have a very simple recurrent neural network with just one layer,
+32:56
+that's not going to cut it.
+32:58
+So we'll use some of the extensions we discussed in the last lecture,
+33:03
+we'll actually have stacked deep recurrent neural networks
+33:07
+where we have multiple layers.
+33:09
+And then we'll also have, in some cases, this is not as common,
+33:15
+but sometimes it's used, we have a bidirectional encoder.
+33:19
+Where you go from left to right, and then we give both of,
+33:23
+last hidden states of both directions as input to every step of the decoder.
+33:31
+And then this is kind of almost an XOR here.
+33:34
+If you don't do this, than another way to improve your system slightly is by
+33:38
+training the input sequence in reverse order,
+33:41
+because then you have a simpler optimization problem.
+33:45
+So especially for languages that align reasonably well like English and French.
+33:51
+You might instead of saying A, B, C, the other word's A,
+33:55
+the word B, or C goes to in the different language the words X and Y.
+34:00
+You'll say, C B A goes to X Y, because as they align,
+34:04
+A is more likely to translate to X, and B is more like to Y.
+34:08
+And as you have longer sequences,
+34:10
+you basically bring the words that are actually being translated closer together.
+34:15
+And hence, you have less of a vanishing gradient problems and so on, because where
+34:20
+you want the work to be predicted, it's closer to where it came in to the encoder.
+34:25
+Yeah?
+34:31
+That's right, but yeah, it's still an average force.
+34:44
+So how does reversing not mess it up?
+34:46
+Cuz this sentence doesn't make grammatical sense.
+34:48
+So we never gave this model an explicit grammar for
+34:54
+the source language, or the target language, right?
+34:56
+It's essentially trying, in some really deep, clever, continuous function,
+35:01
+general function approximation kind of way, just correlation, basically, right?
+35:07
+And it doesn't have to know the grammar, but as long as you're consistent and
+35:12
+you just reverse every sequence, the same way.
+35:15
+It's still grammatical if you read it from the other side.
+35:17
+And the model reads it from potentially both sides, and so on.
+35:21
+So it doesn't really matter to these learning models,
+35:24
+as long as your transformation of the input is consistent across training and
+35:29
+testing times, and so on.
+35:42
+So the question is, he understands the argument, but
+35:44
+it could still change the meaning.
+35:47
+And it doesn't change the meaning if you assume the model will always go
+35:51
+from one direction to the other.
+35:53
+If you start to sometimes do it and sometimes not,
+35:55
+then it will totally mess up the system.
+35:57
+But as long as it's a consistent transformation,
+36:00
+it is still the same order and so you're good.
+36:08
+So why is reversing the order a simpler optimization problem?
+36:11
+Imagine, you had a very long sequence here.
+36:14
+And again, this is only the case if the languages align well.
+36:18
+As in usually, the first capital words in one
+36:21
+of the source language translated to first capital words in the target language.
+36:24
+Now, If you have a long sequence and you try to translate
+36:29
+it to another long sequence, and say there are a lot of them here.
+36:35
+Now, what that would mean is that this word here is very far away from that word,
+36:41
+cuz it has to go through this entire transformation.
+36:45
+And likewise, these words are also very far away.
+36:47
+So everything is far away from everything in terms of the number
+36:54
+of non-linear function applications before you get to the actual output.
+37:01
+Now, if you just reverse this one, then this word, so
+37:06
+let's call this a, b, c, d, e, f.
+37:09
+Now, this is now f,
+37:14
+e, d, c, b, a.
+37:19
+Now, this word, it's here now.
+37:21
+And now, this word translates directly to that word, right?
+37:24
+So in your decoder.
+37:25
+So now, these two are very, very close to one another.
+37:29
+And so as you do back propagation and we learn about the vanishing creating problem
+37:33
+in the last lecture you have much less of a vanishing creating problem.
+37:37
+So at least in the beginning, it'll be much better at translating those.
+37:51
+So, how does this check work for languages with different morphology?
+37:56
+It doesn't actually matter, but the sad truth is also that very few
+38:00
+MT researchers work on languages with super complex morphology.
+38:04
+So like Finnish doesn't have very large parallel corpora
+38:08
+of tons of other languages.
+38:10
+And so you don't sadly see as many people work on that.
+38:13
+German does work.
+38:14
+And for German actually, a lot of other tricks that we'll get to.
+38:17
+And really these tricks are not as important as the one as trick number six.
+38:22
+But before that, we'll have a research highlight.
+38:24
+>> [LAUGH] >> Give you a bit of a break, all right.
+38:30
+Allen, take it away.
+38:33
+>> This? >> Yes.
+38:34
+>> Okay. Hi, everyone.
+38:35
+My name is Allen.
+38:36
+So I'm gonna talk about Building Towards a Better Language Modeling.
+38:41
+So as we've learned last week,
+38:43
+language modeling is one of the most canonical task in NLP.
+38:46
+And there are three different ways we can make it a little bit better.
+38:49
+We can have better input representation.
+38:51
+We can have better regularization or preprocessing.
+38:54
+And eventually, we can have a better model.
+38:57
+So for input, I know you guys have all played with Glove, and
+39:01
+that's a word level representation.
+39:03
+And I heard morphemes.
+39:05
+From you guys who are down there.
+39:06
+So in fact, you can code the word at a subword level.
+39:09
+You can do morpheme encoding.
+39:11
+You can do BPE.
+39:13
+You can eventually do character level embedding.
+39:14
+What it does is that it drastically reduce the size of your vocabulary,
+39:18
+make the model prediction much easier.
+39:22
+So as you can see, Tomas Mikolov in 2012, and Yoon Kim in 2015,
+39:26
+explored this route and got better results compared to just plain word-based models.
+39:33
+So another way to improve your model is that one of the bigger problems for
+39:38
+language modelling is over-fitting.
+39:40
+And we know that we need to apply regularization techniques when the model
+39:44
+is over-fitting.
+39:45
+So there are a bunch of them, but today,
+39:46
+I'm gonna focus on preprocessing because it's a little bit newer.
+39:50
+What preprocessing does is that we know that we're
+39:54
+never gonna have unlimited training data.
+39:57
+So in order to have our corpus look more like the true distribution
+40:02
+of the English language, what we can do is quite similar to computer vision we can
+40:07
+do this type of data augmentation technique where we try to replace
+40:12
+some words in our corpus with some other words.
+40:15
+So for example,
+40:16
+your model during the first pass you can see a word called New York,
+40:19
+the next pass you can see New Zealand, the next pass you can see New England.
+40:23
+So by doing that, you're basically generating this data by yourself and
+40:28
+eventually you achieve a smoothed out distribution.
+40:32
+The reason this happens is that more frequent word by
+40:35
+replacing by dropping them.
+40:37
+They appear less often and rarer words by making them appear.
+40:41
+They appear more often.
+40:43
+So a smooth distribution allow us to learn a better language model and
+40:47
+the result is on the, I think is on the right hand side of you guys.
+40:51
+And the left hand side is what happen when we apply better regularization techniques.
+40:58
+So at last we can, wait, that's it okay, awesome thank you guys.
+41:09
+>> All right, now what you'll also see in these tables is that the default for
+41:14
+all these models is an LSTM and that's exactly what we'll end up very soon with.
+41:21
+Which is basically a better type of recurrent unit.
+41:25
+And so, we'll start with gated recurrent units that were introduced
+41:30
+by Cho just three years ago.
+41:33
+And the main idea is that, we wanna basically keep around
+41:37
+memories that capture long distance dependencies and
+41:40
+you wanna have the model learn when and how to do that.
+41:44
+And with that, you also allow your error messages to flow
+41:48
+differently at different strengths, depending on the input.
+41:51
+So, how does this work?
+41:52
+What is a GRU as our step to the LSDM?
+41:56
+And sometimes you don't need to go all the way to the LSDM.
+41:58
+The GRU is a really good model by itself.
+42:00
+In many cases already in its simpler.
+42:03
+So let's start with our standard recurrent neural network,
+42:06
+which basically computes our hidden layer at the next time step directly.
+42:11
+So we just have again previous hidden state recurring to our vector that's it.
+42:16
+Now instead what we'll do for
+42:19
+gated recurring units or GRUs, is we'll compute to gates first.
+42:24
+These gates are also just like ht, continuous vectors of the same
+42:30
+length as the hidden state, and they are computed exactly the same way.
+42:36
+And here, it's important to note that the superscripts that's just basically
+42:40
+are lined with the kind of gate that you're computing.
+42:44
+So we'll compute a so called update gate and a reset gate.
+42:49
+Now the inside here is the exact same thing but
+42:52
+is important to note that we have here a sigmoid function.
+42:55
+So we'll have elements of this vector are exactly between zero and one.
+42:59
+And we could interpret them as probabilities if we want to.
+43:04
+And it's also important to note that the super scripts here are different.
+43:07
+So the update gate of course,
+43:09
+uses a different set of weights to the reset gate.
+43:13
+Now why are they called update and reset gates, and how do we use them?
+43:16
+It's relatively straight forward.
+43:18
+We just introduced one new function here just the element wise product.
+43:25
+We've remember it from back propagation.
+43:27
+We also call it the Hadamard product sometimes.
+43:29
+Where we just element wise multiply this vector here from the reset
+43:33
+gate with this, which would be our new memory content.
+43:39
+We call it ht, this is our intermediate memory content,
+43:43
+it has the standard tanh that we also know as a [INAUDIBLE].
+43:46
+This part here is exactly the same, we just have to input our word vector and
+43:51
+then transformed with a W.
+43:54
+But what's going on in here?
+43:56
+So intuitively right, this is just a long vector of numbers between zero and one.
+44:02
+Now intuitively, if this reset gate at a certain unit,
+44:07
+is around zero, then we essentially ignore all the past.
+44:12
+We ignore that entire computation of the past, and we're just going
+44:17
+to define that element where our zero, with the current word vector.
+44:22
+Now why would we want to do that?
+44:23
+What's the intuition here?
+44:25
+Let's take the task of sentiment analysis cuz it's very simple and intuitive.
+44:30
+If you were to say, you're talking about a plot of a movie review.
+44:35
+And you talk about the plot and you know some girl falls in love for
+44:38
+some guy who falls in love with her but then they can't meet, blah, blah, blah.
+44:41
+That's a long plot and in the end you say, but the movie was really boring.
+44:47
+Then really doesn't matter that you keep around that whole plot.
+44:51
+You wanna say boring as a really negative strong word for sentiments, and
+44:55
+you wanna basically be able to allow the model to ignore the previous plot summary.
+45:02
+Cuz for the task of sentiments analysis it's irrelevant.
+45:06
+Now this is essentially what the reset gate will let you do, but
+45:10
+of course not in this global fashion,
+45:11
+where you update the entire hidden state, but in a more subtle way, where you learn
+45:17
+which of the units you actually will reset and which ones you will keep around.
+45:22
+So this will allow some of the units to say,
+45:25
+well maybe I want to be a plot unit and I will keep around the plot.
+45:28
+But other units learn, well if I see one of the sentiment words, I will definitely
+45:33
+set that reset gate to zero and I will now make sure that I don't wash out,
+45:37
+the content with previous stuff by summing these two, right?
+45:44
+You're sort of like, not quite averaging but you're summing the two.
+45:47
+So you wash out the content from this word and
+45:50
+instead it will set that to zero and take only the content from that current word.
+45:57
+Now the final memory it will compute, we'll combine this with the update gate.
+46:03
+And the update gate now, there's something similar but
+46:08
+basically allows us to keep around only the past and not the future.
+46:13
+Or not the current time steps.
+46:14
+So intuitively here when you look at Z, if Z is a vector of all ones,
+46:20
+then what we would do is essentially do ht = ht-1
+46:25
++ 1-1 is 0, so this term just falls away.
+46:30
+Basically if zt was all ones we could just copy over our previous time step.
+46:37
+Super powerful, if you copied over the previous time step
+46:40
+you have no vanishing gradient problem, right.
+46:42
+Your vector just gets a bunch of ones.
+46:45
+Nothing changes in your gradient computation.
+46:47
+So that's very powerful and intuitively you can use that same sentiment example.
+46:52
+But you say in the beginning man, I love this movie so much,
+46:55
+here's this beautiful love story.
+46:57
+And now you go through the love story, and really what's important for
+47:01
+sentiment is not about the love story, but it's about the person saying,
+47:05
+I love this movie a lot.
+47:06
+And you wanna make sure you don't lose that information.
+47:09
+And with the standard recurring neural network,
+47:11
+we update our hidden state, every time, every word.
+47:14
+No matter how unimportant a word is, we're gonna sum up those two vectors,
+47:18
+washing out the content as we move further and further along.
+47:21
+Here we can decide, and what's even more amazing, you don't have to decide.
+47:25
+You can say, this word is positive, so I'm gonna set my reset gate manually.
+47:28
+No, the model will learn when to reset and when to update.
+47:33
+So this is a very simple kind of modification but extremely powerful.
+47:41
+Now, we're gonna go through it and explain it a couple more times.
+47:44
+And we'll try to.
+47:46
+Have an attempt here at a clean illustration.
+47:49
+Honestly, personally, I feel the equations here are still straight forward, and
+47:52
+very intuitive, that I don't know if these illustrations always help,
+47:55
+but some people like them more than others.
+47:59
+So intuitively here, you basically see that only the final memory,
+48:05
+that you computed is the one that's actually used as input to the next step.
+48:08
+So all of these are only modifying through the final state.
+48:14
+And now this one gets as input to our reset gate or update gate,
+48:18
+the intermediate state and the final state of the memory.
+48:22
+And so does our x vector the word vector here also gets its input through the reset
+48:27
+gate, the update gate, and our intermediate memory state.
+48:30
+And then, I tried to use this, so the dotted line here,
+48:35
+as basically gates that modify how these two interact.
+48:43
+All right, so I've said, I think, most of these things already, but
+48:48
+again, reset gate here is close to 0.
+48:51
+We ignore our previous state.
+48:53
+And that again, allows the model, in general, to drop information that is
+48:57
+irrelevant for the future predictions that it wants to make.
+49:01
+And if we update the gate z controls,
+49:04
+how much of the past state should matter at the current time stamp?
+49:09
+And again, this is a huge improvement for the vanishing gradient problem,
+49:12
+which allows us to actually train these models on nontrivial, long sequences.
+49:19
+Any questions around the GRU?
+49:21
+Yep?
+49:25
+Does it matter if you reset first or update first?
+49:27
+Well, so you can't compute h until you have h tilled.
+49:31
+So the order of these two doesn't matter.
+49:34
+You can compute that in peril, but you first have to compute h tilled
+49:39
+with the reset gate before you can compute that one.
+49:54
+So the question is, does it matter to switch and
+49:57
+use an equation like this first, and then an equation like that?
+50:01
+I guess it's just a different model.
+50:06
+It's not one that I know of people having tried.
+50:10
+It's not super unreasonable, I don't see a sort of reason why
+50:15
+it would be illogical to ever to that, but yeah, just not the GRU model.
+50:22
+You will actually see,
+50:24
+in [INAUDIBLE] she has a paper on a Search Space Odyssey type paper where there
+50:28
+are a thousand modifications you can make to the next model, the LSTM.
+50:33
+And people have tried a lot of them, and it's not trivial.
+50:36
+There are a lot of modifications.
+50:37
+And a lot of times they seem kind of intuitive, but
+50:41
+don't actually change performance that much across a bunch of different tasks.
+50:46
+But sometimes, one modification improves things a tiny bit on one of the tasks.
+50:50
+It turns out the final model of GRU here and the LSTM, are actually incredibly
+50:54
+stable, they give good performance across a lot of different tasks.
+51:00
+But it can't ever hurt to, if you have some intuition of why you want to have,
+51:04
+make something different, it can't hurt to try.
+51:20
+So the question is, is it important of how they're computed?
+51:24
+I think there are some people who have tried once to have a two layer neural
+51:26
+network to compute.
+51:28
+These a z and update, z and r.
+51:30
+In general, it matters of course a lot of how they're computed, but
+51:34
+not in the sense that you have to modify them manually or something.
+51:37
+It just the model learns when to update and when not to update.
+52:01
+That's a good question.
+52:03
+So what do I mean when I say unit.
+52:05
+So in general, what you'll observe in a slide that's coming up very soon is
+52:10
+that we will kind of abstract away from the details of what these equations are.
+52:16
+And we're going to write that just ht
+52:22
+equals GRU of xt and ht minus 1.
+52:27
+And then we'll just say that GRU abbreviation means all these other things,
+52:32
+all these equations, and we're going to abstract away from that.
+52:35
+And that's something that you'll see even more in subsequent lectures where you
+52:40
+just say a whole recurrent network with a five layer GRU and
+52:44
+combine lots of different ways is just one block.
+52:48
+We often see this in computer vision too where CNNs are now just like the CNN
+52:51
+block, and you assume you've got a feature vector out at the end.
+52:54
+And people will start abstracting away more and more from that.
+52:58
+But yeah, you'll always have to remember that, yes,
+53:00
+there's a lot of complexity inside that unit.
+53:04
+Here's another attempt at an illustration which I'm even less of a fan of,
+53:09
+then the one I tried to come up with.
+53:12
+Basically, how you have your z gate that kind of can jump back and forth.
+53:17
+But of course, it's usually a continuous type thing.
+53:19
+It's not a zero one type thing, so I'm not a big fan of this kind of illustration.
+53:27
+And so in terms of derivatives,
+53:28
+we couldn't theory asks you to derive all the details of the GRU.
+53:33
+And the only change here is that we now have the derivative of these element
+53:38
+wise multiplications, both of which I have parameters or inside.
+53:43
+And we all should know what derivative of this is, and
+53:47
+the rest is again, the same kind of chain rule.
+53:51
+But again, now you're sort of realizing why we wanna modularized this more and
+53:55
+more, and abstract a way from actually manually taking these instead having
+54:00
+error messages and deltas sent around.
+54:03
+Yeah?
+54:08
+Explain why we have both update and reset.
+54:12
+So basically, it helps the model to have different mechanisms for
+54:17
+when to memorize something and keep it around, versus when to update it.
+54:22
+You're right, in theory, you could try to put both of those into one thing, right?
+54:27
+In theory, you'd say, well, if this was just my previous ht here,
+54:35
+then this could say, well, I wanna keep it around, or I wanna update it here.
+54:40
+But now, this update here,
+54:42
+if you just had an equation like this it would be still be a sum of two things.
+54:46
+So that means that xt here does not have complete control
+54:52
+over modifying the current hidden state in its entirety.
+54:57
+It would still be summed up with something else,
+54:59
+and that happens at every single time stamp.
+55:01
+So its only once you have this reset gates are here.
+55:04
+These reset gates are here, that you would allow h
+55:09
+to be completely dominated by the current word vector, if the model so chooses.
+55:21
+If the reset gates are all, Okay, so if these are all ones,
+55:29
+then you have here basically a standard recurrent neural network type equation.
+55:36
+And then if you just have zs, all 0s,
+55:39
+then you take that exact equation and you're right.
+55:41
+Then you just have a standard RNN.
+55:43
+It's also beautiful, it's always nice to say my model
+55:46
+Is a more general form of your model or- >> [LAUGH]
+55:48
+>> An opposite,
+55:49
+you're model's a special case of my model.
+55:51
+It was actually a couple years ago that you could by and say that.
+55:56
+>> [LAUGH] >> It's good machine learning banter.
+56:01
+So yeah, it's always good.
+56:02
+And likewise, the inventor of this model made exactly that statement about the GRU.
+56:08
+Not knowing why anybody had to publish a new paper
+56:12
+about this instead of just referring to this and the special cases of the LSTM.
+56:17
+So if we have one more question about the GRU, yeah?
+56:19
+>> Is there a reason.
+56:25
+>> Good question.
+56:26
+Why tanh and sigmoid?
+56:27
+So in theory, you could say the tan h here could be a rectified linear unit or
+56:32
+other kind of unit.
+56:33
+In practice, you do want sigmoids here because you have this plus 1 minus that.
+56:39
+And so if they're all over the place then everything will kind of be modified and
+56:43
+it's less intuitive that you kind of have a hard reset in sort of a hard sort of,
+56:47
+yeah, hard reset or a hard update.
+56:50
+And if this wasn't 10h and
+56:53
+was rectified linear unit then these two might be all over the place too and
+56:58
+it might be kind of easy to potentially have the sum also the not very synthecal.
+57:05
+But at the same time,
+57:06
+it's not unreasonable to try having a rectified learning unit here.
+57:11
+And maybe, if you combine it with proper regularization and so on,
+57:13
+you could get away with other kinds of other kinds of linearities.
+57:17
+That's unlike probabilistic graphical models for
+57:20
+certain things just make no sense.
+57:21
+And you can't do them, deep learning you can often try some things and
+57:25
+sometimes even nonsensical things surprisingly work.
+57:29
+And then other people try to analyse why that was the case in the first place.
+57:34
+But yeah, there's no mathematical reasons why you couldn't at all have a rectified
+57:37
+linear unit here.
+57:42
+All right, now on to a even more complex sort of overall recurrent unit.
+57:48
+Namely the long-short-term-memories or LSTMs.
+57:53
+So now this is the hippest model of the day, and
+57:56
+it's pretty important to know it well.
+58:00
+Fortunately, it's again very similar to the kinds of basic building blocks.
+58:03
+But now we allow each of the different steps to have again,
+58:08
+we separate them out even more.
+58:11
+So how do we separate them out?
+58:13
+Basically, this is what's going on at each time step.
+58:15
+We will have an input gate, forget gate, output gate, memory cell,
+58:20
+final memory, and a final hidden state.
+58:22
+Now let's gain a little bit of intuition and
+58:24
+there is good intuition of why we want any of them.
+58:27
+So the input gate will basically determine how much we
+58:31
+will care about the current vector at all.
+58:35
+So how much does the current cell or the current input word vector matter?
+58:39
+The forget gate is a separate mechanism that just says maybe I should forget,
+58:44
+maybe I don't.
+58:45
+In this case here, just kind of counterintuitive sometimes and
+58:48
+they're actually different models in the literatures.
+58:51
+Some have the one minus there and others don't.
+58:53
+But in general here, we'll define our forget gate.
+58:55
+If it's 0 then we're forgetting the past.
+59:00
+Then we have an output gate, basically when you have this output gate,
+59:04
+you will separate out what matters to a certain prediction
+59:09
+versus what matters to being kept around over the current recurrent time steps.
+59:16
+So you might say at this current time step,
+59:19
+this particular cell is not important, but it will become important later.
+59:24
+And so I'm not going to output it, to my final softmax for instance, but
+59:28
+I'm still gonna keep it around.
+59:31
+So it's yet another separate mechanism to learn when to do that.
+59:36
+And then we have our new memory cell here, which is similar to what we had before.
+59:41
+So in fact all these four here have the same equation inside and
+59:45
+just three sigmoid non linearity and one tan h non linearity.
+59:51
+So these are all just four single layer neural nets.
+59:56
+Now we'll put all of these gates together when we compute the memory cell and
+60:01
+the final hidden state.
+60:02
+So the final memory cell now basically separated out the input and
+60:06
+the forget gate.
+60:07
+Instead of just c and 1 minus c, we have two separate mechanisms
+60:10
+that can be trained and learn slightly different things.
+60:14
+And actually become also in some ways counter intuitive like you say, I don't
+60:18
+wanna forget but you do wanna forget, but you also input something right now.
+60:23
+But the model turns out to work very well.
+60:28
+So basically here we have final hidden state is just to forget gate how to
+60:33
+mark product with the previous hidden states final memory cell ct-1.
+60:38
+So this again will determine, how much do you wanna keep this around or
+60:42
+how much do we wanna forget from the past?
+60:45
+And then the new memory cell here, this has a standard recurrent neural net.
+60:50
+If i is all 1s, then we really keep the input around.
+60:55
+And if the input gate says no, this one doesn't matter,
+60:59
+then you just basically ignore the current word back there.
+61:06
+So in that sense, this equation is quite intuitive, right?
+61:09
+Forget the past or not, take the input or not, that's basically it, yeah?
+61:19
+So the secret question,
+61:20
+once you forget the past does it mean you forget grammar or something else?
+61:23
+And the truth is we can think of these forget gates as sort of absolutes.
+61:30
+They're all vectors, and
+61:31
+they will all forget only certain elements of a long hidden unit.
+61:36
+And so really, I can eventually show you what these hidden states look like.
+61:42
+And sometimes they're actually more intuitive than others.
+61:46
+But it's rare that you would find this particular unit when it was turned off or
+61:50
+on actually had like this perfect interpretation that
+61:53
+we as humans find intuitive and think of as grammar.
+61:56
+And also of course grammar is a very complex kind of beast.
+62:00
+And so it's hard to say any single unit would capture any particular like entirety
+62:05
+of a grammar, it might only capture certain things.
+62:08
+So it's not implausible to think of these three cells together
+62:12
+suggest that the next noun should be a plural noun or something like that.
+62:16
+But that's the most we could hope for in many cases.
+62:21
+All right, and then here, the final hidden state again,
+62:24
+we can keep these cs around, right?
+62:26
+And cs will compute our computer from other cs.
+62:30
+But we might not want to expose the content of this memory cell
+62:34
+in order to compute the final hidden state, ht minus 1.
+62:43
+All right, now yeah, this is it, this is the LSTM.
+62:46
+It's a really powerful model, are there any questions around the equations?
+62:50
+We're gonna attempt at some illustrations, but
+62:54
+again I think the equations are sometimes more intuitive.
+63:03
+Does the LSTM and GRU completely liviate or just help with an engine came problem?
+63:09
+And the truth is they helped with it a lot, but they don't completely obviate it.
+63:13
+You do multiply here a bunch of numbers that are often smaller than 1.
+63:18
+And over time even if it would have to be a perfect one,
+63:23
+but that would mean that, that unit is really, really strongly active.
+63:26
+And then it's hard to sort of dies, it's like the gradient,
+63:31
+when you have unit that's really, really active and looks something like this.
+63:37
+Now the input is really large to that unit and it's here,
+63:41
+then grade in around here, It's pretty much 0.
+63:44
+So that unit's kind of dead.
+63:45
+And then the model can't do anything with it anymore.
+63:47
+And so it happens, there are, when you want to train these,
+63:50
+you'll observe some units just sort of die after training after awhile.
+63:53
+And you'll just sort of keep around stuff, or delete stuff at each time step.
+63:58
+But in general most of the units are somewhat small than 1, and
+64:03
+so you still have a bit of a vanishing creating problem but much less so.
+64:10
+And intuitively you can come up with final P for
+64:13
+a lot of good ways to think about this right?
+64:17
+Maybe you want to predict different things at different time steps.
+64:19
+But you wanna keep around knowledge through the memory cells but
+64:25
+not expose it at a given prediction.
+64:27
+Yeah.
+64:32
+What is the point of the exposure gate when it already had the forget gate?
+64:34
+So basically, you want to,
+64:37
+sort of forget gate will tell you whether you keep something around or not.
+64:41
+But exposure gate, will mean, does it matter to this current time step or not.
+64:47
+So you might not wanna forget something.
+64:48
+But you also might not wanna show it to the current output,
+64:51
+because it's irrelevant for that output.
+64:53
+And it would just confuse the Softmax classifier at that output.
+65:00
+Yeah?
+65:11
+Does the exposure gate help you, or do you mean the output gate here, right?
+65:16
+So does the output gate, does it help you to what exactly?
+65:22
+To not have to forget everything forever.
+65:28
+So, in some ways, yes.
+65:29
+You can basically, this model could decide that,
+65:33
+while it doesn't wanna give as output something for a long time.
+65:38
+And hence it's basically a temporal forgetting, right?
+65:42
+It will only be forgotten at that time set but actually be kept around in.
+65:46
+I don't wanna use, like anthropomorphize the models, but
+65:49
+like the subconsciousness of this model or whatever, right?
+65:52
+Keeps it around but doesn't expose it.
+65:55
+Don't quote me on that.
+66:00
+All right, one last question, yeah?
+66:07
+The initialization to all these models matters, it matters quite significantly.
+66:10
+So, if you initialize all your weights, for instance such that
+66:13
+whatever you do in the beginning, all of the weights are super large.
+66:16
+Then your gradients are zero and you're stuck in the optimization.
+66:19
+So you always have to initialize them properly.
+66:23
+In most cases, as long as they're relatively small, you can't go too wrong.
+66:27
+Eventually, it might slow down your eventual convergence, but
+66:30
+as long as all your parameters, W here,
+66:31
+and your word vectors and so on are initialized to very small numbers.
+66:35
+It will usually eventually do it pretty well.
+66:40
+Yes you could use lots of different strategies for initialization.
+66:44
+All right, now, some visualizations.
+66:46
+I like this one from Chris Olah on his blog from not too long ago.
+66:50
+But again, I don't know.
+66:53
+I feel like the equations speak mostly for themselves.
+66:55
+You can think of these.
+66:57
+I have four different neural network layers, and then you combine them in
+67:00
+various ways with pointwise operations, such as multiplication or addition.
+67:05
+And sometimes you know multiplication and then addition,
+67:08
+and concatenation and copies and so on.
+67:11
+But, In the end you often observe,
+67:13
+this kind of thing where we'll just write LSTM in this block.
+67:17
+And has an X and an H, and
+67:19
+we don't really look into too many details of what's going on there.
+67:26
+And here's some, I think, even less helpful [LAUGH] illustrations that,
+67:31
+yeah, I think are mostly confusing to a lot of people.
+67:35
+I have the forget gates here, output gates, input gates, and so on.
+67:39
+But and your memory cells as they try to modify each other.
+67:45
+This one is a little cleaner.
+67:47
+You know you have some inputs, your gates,
+67:49
+you have your forget gates on top of your memory cell and so on.
+67:54
+But in general I think the equations are actually quite intuitive, right?
+67:57
+If you think of your extremes,
+67:58
+if this is zero, one, then this input matters more to the output.
+68:05
+All right, now as I said, LSTMs, currently super hip.
+68:09
+The en vogue model are for pretty much all sequence labeling tasks and
+68:14
+sequence to sequence tasks like machine translation.
+68:17
+Super powerful in many cases, you will actually observe that we'll stack them.
+68:21
+So just like the other RNN architectures, we'll have a whole LSTM block and
+68:26
+we put another LSTM block with different sets of parameters on top of it.
+68:30
+And then the parameters are shared over time, but
+68:33
+are different as you have a very deep model.
+68:37
+And, of course, with all these parameters here, we have essentially
+68:42
+many more parameters then the standard recurrent neural network.
+68:45
+Where we only have two such parameters and we update every time.
+68:49
+You wanna have more data especially if you stack you now have
+68:53
+10x the parameters of standard RNN, we wanna train this on a lot of data.
+68:57
+And in terms of amount of training data available machine translation is
+69:01
+actually one of the best tasks for that.
+69:04
+And is also the one where these model sort of shine the most.
+69:10
+And so in 2015, I think the first time I gave the deep learning for NLP lecture,
+69:15
+the jury was still a little bit out.
+69:17
+The neural network models came up fairly quickly.
+69:21
+But some different, more traditional machine translation systems
+69:26
+were still slightly better, like by half a BLEU point.
+69:30
+We haven't defined BLEU scores yet.
+69:33
+You can essentially think of it as an engram overlap.
+69:36
+The more your translation overlaps in terms of unigrams and bigrams and
+69:40
+trigrams, the better it likely is, period.
+69:45
+So you have this reference translation, sometimes multiple reference translations.
+69:49
+You have your translation, you look at engram overlap between the two.
+69:52
+So the higher the better.
+69:54
+And basically the neural network models were often also just use it for
+69:58
+rescoring traditional MT model.
+70:02
+Now, just one year later, last year,
+70:04
+really a couple months ago, the story was completely different.
+70:08
+So this is WMT, the worldwide competition for machine translation.
+70:15
+And you have different universities,
+70:18
+and different companies and so on, submit their systems.
+70:22
+And the top three systems were all neural machine translation systems.
+70:28
+The jury is now basically not out anymore.
+70:31
+It's clear neural machine translation is the most accurate
+70:35
+machine translation model in the world.
+70:41
+Yeah that number two was us, yeah.
+70:43
+>> [LAUGH] >> James Bradbury and me worked on that.
+70:49
+James Bradbury was actually a linguistics undergrad while he was doing that, but
+70:53
+now he's full-time.
+70:55
+So, yeah, basically we haven't talked that much about ensembling and
+70:59
+ensembles of different models.
+71:01
+But you can also train five of these monsters and
+71:04
+then average all the probabilities and you'll usually get a little better.
+71:08
+We just, as general thing,
+71:09
+you'll observe for every competition machine learning competition out there.
+71:12
+If you go on Kaggle, other machine learning competitions usually train
+71:16
+even the same kind of model five times.
+71:18
+You end up in slightly different local optimum average,
+71:20
+and you still do pretty well.
+71:23
+What's cool also though,
+71:24
+is that while we might not be able to exactly recover grammar, or
+71:30
+have specific units be explicitly sort of capturing very intuitive things.
+71:37
+As we project this down similar to the word vectors,
+71:39
+we actually do observe some pretty interesting regularities.
+71:42
+So this is a paper from Sutskever in 2014,
+71:47
+they projected different sentences.
+71:52
+They were trained basically with a machine translation task and
+71:57
+basically observe quite interesting regularities.
+72:01
+So John admires Mary is close to John is in love with Mary and
+72:05
+to John respects Mary.
+72:07
+Now of course,
+72:07
+we have to be a little carefull here to not over interpret the amazingness.
+72:10
+It's amazing, but we also have a selection vice here, right?
+72:14
+Maybe if we just had John did admire Mary or
+72:20
+something, it might also be close to it, right?
+72:21
+And it might be closer too, but
+72:23
+if you just project these six particular sentences into lower dimensional space.
+72:29
+Then you do see very nicely that whenever John has some positive feelings for
+72:33
+Mary, all those sentences are in here.
+72:36
+And all the ones that are on this area of the first two item vectors, Mary
+72:42
+admires John, Mary admires John, Mary is in love with John, and Mary respects John.
+72:48
+They're all closer together,
+72:49
+which is kind of amazing cuz some people are also worried.
+72:52
+Well it's a sequence model, so
+72:54
+how could it ever capture that the word order changes?
+72:58
+And so this is a particularly cool example of that.
+73:01
+So here we have,
+73:02
+she was given a card by me in the garden versus in the garden I gave her a card.
+73:07
+And I gave her a card in the garden, and
+73:09
+despite the word order being actually flipped, right?
+73:13
+In the garden is in the beginning here, and in the end here.
+73:16
+These are still closer together than the different ones where,
+73:20
+in the garden basically she gave me a card verses I gave her a card.
+73:25
+So that shows that the semantics here turn out to be more important than
+73:29
+the word order.
+73:30
+Despite the model just going from left to right or
+73:32
+this one was still the trick where we reversed the order of the input sentence.
+73:37
+But it choses that its incredibly invariant and
+73:41
+variance is a pretty important concept, right?
+73:43
+We want this model to be invariant to simple syntactic
+73:48
+changes when the semantics are actually kept the same.
+73:51
+It's pretty incredible, that it does that.
+73:55
+So this is also the power I think of some of these.
+73:58
+This is a very deep LSTM model where you have five different LSTM stacked in
+74:02
+the encoder and several in the decoder.
+74:04
+And they're all connected in multiple places too.
+74:10
+All right, any questions around those visualizations and LSTMs?
+74:19
+All right, you now have knowledge under you belt that is super powerful and
+74:23
+very interesting.
+74:25
+I expected to maybe have five minutes more of time.
+74:27
+So I'm going to talk to you about a recent improvement, two recurrent neural networks
+74:31
+that I think is also very applicable to machine translation.
+74:34
+But nobody has actually yet applied it to machine translation.
+74:37
+And that is a general problem with all softmax classification
+74:42
+that we do in all the models I've so far described to you.
+74:44
+And really up until two or three months ago,
+74:46
+that everybody in NLP had as a major problem.
+74:50
+And that is you can only ever predict answers if you saw that exact word at
+74:55
+training time.
+74:56
+And you have your cross entropy error saying I wanna predict this word.
+75:00
+And if you've never predicted that word, no matter how obvious it is for
+75:03
+the translation system it will not be able to do it, right?
+75:05
+So we have some kind of translation, and let's us say we have a new word,
+75:13
+like a new name or something that we've never seen at training time.
+75:18
+And it is very obvious that this word here should go at this location.
+75:23
+This is like Mrs. and then maybe the new word is like yelling or
+75:26
+something like that, it could be any other word.
+75:29
+And now let's say at training time, we've never seen the word yelling.
+75:32
+But now, it's like vowel, German misses,
+75:37
+miss in, yeah, German translation for this.
+75:41
+And now it's very obvious to everybody that after this word,
+75:44
+it should be the next one, the name of the of the miss.
+75:47
+And so these models would never be able to do that, right?
+75:53
+And so one way to fix that is to think about character meant translation models,
+75:58
+where the model's actually surprisingly similar to what we described here.
+76:03
+Well many times it have to go, but instead of having words we just have characters.
+76:09
+So that's one way, but now we have very long sequences.
+76:13
+And at every character you have a lot of matrix multiplications.
+76:18
+And these matrix multiplications that we have in here are not
+76:23
+50 dimensional for really powerful MT models, they're a 1,000 dimensional.
+76:28
+And now you have several thousand by a thousand matrices here
+76:32
+multiplying with thousand dimensional vectors.
+76:36
+And you stack them, so you have to do it five times.
+76:38
+Doing that for every single character actually gets really, really expensive.
+76:43
+So at the same time, it's very intuitive that
+76:47
+after we see a new word at test time we wanna be able to predict it.
+76:51
+And also in general when we have the softmax, even for words that we do
+76:55
+see once or twice, it's hard for the model to then still predict them.
+76:58
+It's this skewed data set distribution problem.
+77:02
+But you have very rare, very infrequent classes, our words are hard to predict for
+77:07
+the models.
+77:07
+So this is one attempt at fixing that, which is essentially a mixture
+77:13
+model of using standard softmax and what we call a pointer.
+77:18
+So what's a pointer? It's essentially a mechanism to
+77:21
+say well maybe my next word is one of the previous words in the context.
+77:26
+You say 100 words in the past, and every time step you say,
+77:30
+maybe I just wanna copy a word over from the last 100 words.
+77:35
+And if not, then I will use my standard softmax for the rest.
+77:40
+So this is kind of this sentinel idea here.
+77:43
+This is a paper by Stephen Merity and some other folks.
+77:48
+And basically, we now have a mixture model, where we combine
+77:52
+the probabilities from the standard vocabulary and from this pointer.
+77:57
+And now how do we compute this pointer?
+77:58
+It's very straightforward, we basically have a query.
+78:03
+This query is just a modification of the last hidden layer that we have here.
+78:09
+And we pipe that through a standard single layer neural network
+78:12
+to compute another hidden layer, which we'll call q.
+78:14
+And then we'll do an inter product between this q and
+78:18
+all the previous hidden states of the last 100 timed steps.
+78:22
+And that will give us, basically, the single number for
+78:25
+each of these interproducts.
+78:26
+And then we'll apply a softmax on top of that.
+78:30
+And this gives us essentially, a probability for
+78:33
+how likely do we wanna point to each of these words.
+78:37
+Or the very last one is we don't point to anything,
+78:41
+we just take the standard softmax.
+78:43
+So we keep one unit around where we do this.
+78:47
+And now of course in the context, the same word might appear multiple times.
+78:51
+And so you just sum up all the probabilities for specific words.
+78:55
+If they appear multiple times, you just sum them up.
+78:58
+With this simple modification, we now have the ability to predict unseen words.
+79:05
+We can predict based on the pattern of how rare words appear much more
+79:10
+similar things.
+79:11
+For instance, Fed, Chair, Janet, Yellen, raised, rates and so on, Ms.
+79:16
+is very obvious that this is the same Ms. that we're referring to here.
+79:22
+And you can base or you combine this in this mixture model.
+79:25
+And now over many, many years for language modeling.
+79:28
+The perplexity that we defined before was sort of stock actually around 80.
+79:35
+And then in 2015,
+79:36
+we have a bunch of modifications to LSTMs that were very powerful.
+79:40
+And lower this, and now were down to the lowest 70s.
+79:46
+And was some modifications will cover another class,
+79:49
+were actually down on the 60s now.
+79:51
+So it really had to told for several years, and
+79:53
+now perplexity numbers are really dropping in.
+79:56
+And this models are getting better and bettered capturing, more and
+80:00
+more the semantics and the syntax of language.
+80:03
+All right, so let's summarize.
+80:05
+Recurrent Neural Networks, super powerful.
+80:07
+You now know the best ones in that family to use in LSTMs.
+80:11
+This is a pretty advanced lecture, I hope you gained some of the intuition.
+80:15
+Again, most of the math falls out from the same basic building blocks we had before.
+80:20
+And next week or no next Thursday, we'll do midterm review.
+80:25
+All right, thank you.

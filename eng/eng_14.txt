@@ -1,0 +1,2336 @@
+00:00
+[MUSIC]
+00:04
+Stanford University.
+00:09
+>> Okay, hi everyone.
+00:11
+So back with lecture 14, so in today's lecture what I'm gonna do
+00:16
+is introduce really the last sort of major architecture for
+00:22
+neural networks that we're gonna teach you in this class.
+00:25
+And so that's going to extend beyond what we've seen with
+00:30
+both recurrent neural networks and convolutional neural networks.
+00:36
+And today,
+00:36
+what I'm gonna start to look at Is having tree structured recursive neural networks.
+00:42
+So this is a topic that is very dear to both me and Richard.
+00:46
+It's sort of dear to me as a linguist cuz I sort of believe that
+00:51
+languages have this basic tree structure, as I'll explain in the coming minutes.
+00:56
+And it's dear to Richard because it's what his thesis was about.
+01:00
+We'll talk [LAUGH] about some of that work later on.
+01:05
+So, there's some new stuff here, there's some stuff that in some sense is the same.
+01:12
+So, we kind of adopted the name because of neural networks to refer to
+01:18
+tree structured neural networks.
+01:20
+But if you think about it, recursive and
+01:23
+recurrent are kind of sort of come from the same Latin root, and
+01:27
+they're exactly the same through the first five letters.
+01:32
+And so, in some sense, it's kind of a form
+01:37
+of recurrent network that is now done over a tree topology, as I'll explain.
+01:42
+And so, more recently,
+01:43
+people have commonly referred to them as tree RNNs, sort of emphasizing that more,
+01:47
+what's different is the geometry of what you're dealing with.
+01:52
+And in the course of that I'll talk also a bit about constituency parsing.
+01:57
+So, I'll start off with some of the motivations and
+02:01
+looking at how these kind of models can be used for parsing.
+02:04
+We'll have the research highlight and then I'll go on with some other stuff with some
+02:09
+more applications and looking at some of the sort of better architectures
+02:13
+that you can then build for tree recursive neural networks.
+02:17
+Before getting under way just quickly reminders, so
+02:21
+there's some staffing complications coming up so.
+02:26
+For Richard, he's gonna be away on Tuesday.
+02:29
+So, his office hours are gonna be after class on Thursday.
+02:34
+So, come along then to talk to Richard.
+02:37
+Conversely for me, I also have a couple of irregularities in my schedule.
+02:42
+So for tomorrow but the sort of, the morning SCPD slot,
+02:47
+there's a linguistic's faculty meeting.
+02:48
+So, I'm gonna have to move that to earlier, to nine to ten.
+02:51
+The afternoon will be the same as usual for our projects officer hours.
+02:56
+But then next week,
+02:57
+I'm going to be away at the end of the week, Thursday and Friday.
+03:00
+So, I'm gonna have to sort of reschedule that.
+03:03
+And I'm gonna move the afternoon slot until the following Monday.
+03:07
+So, look on the calendar and get straight when those times are.
+03:12
+But we do still really want people coming and chatting to us and
+03:16
+the various other final project TAs about their projects.
+03:21
+Assignment four.
+03:23
+Make sure you're getting something working using a GPU for our milestone.
+03:26
+We're seeing a lot more people using GPUs and that is great.
+03:30
+Any problems stop by, one of the TA's office hours or
+03:35
+coding sessions and get both or messages and get that sorted out.
+03:40
+And then, just in general for final project discussions, please come and
+03:45
+talk to us about your projects.
+03:47
+And we've sort of regarded as just really really important for the final project.
+03:52
+That you actually have something that you can run by the end of this week.
+03:55
+We hope everyone doing their final projects is in the position where
+04:01
+they have some data ready to go and they can run some kind of baseline this week.
+04:06
+Cuz if you aren't in that position, it's pretty marginal.
+04:10
+As whether that things could possibly come to a good conclusion
+04:14
+given the time available.
+04:16
+Any questions about that, talk to your project mentor.
+04:20
+Okay, let me go on, so I just thought I'd start with some
+04:26
+general remarks about sort of what kind of structures that we put on,
+04:32
+language, when in some of these, NLP and deep learning applications.
+04:38
+This is just a fun picture for the sake of it.
+04:40
+But over at CMU they actually have this lovely artwork which is the bag of words.
+04:47
+And you have the bag with words inside it.
+04:51
+And down on to the floor here, have full and
+04:55
+the function words they're outside the bag of words.
+04:59
+So, one model of language that ends up being used
+05:03
+quite a bit in deep learning and sometimes very effective as we've discussed
+05:08
+is you have nothing more than a bag of words.
+05:11
+And for some kind of semantic similarity kind of objectives.
+05:16
+The sad truth is that our state of the art isn't really beyond a bag of words.
+05:21
+So that people have used clever bag of words models.
+05:24
+Things like deep averaging networks and get very good results.
+05:28
+So, there were papers at last year's IKWEA.
+05:32
+So ICLR is this new conference where a lot of deep learning
+05:35
+work appears--international conference on learning representations.
+05:39
+And so,there was a paper last year from people at the Toyota Technical Institute
+05:44
+where essentially their result was that for
+05:47
+doing paraphrase detection things have roughly the same meaning, that they could
+05:51
+get better results with a sort of deep averaging network of a sort than
+05:57
+people had been able to get with any kind of more complex structured neural model.
+06:03
+I think that's a sad result not a good result,
+06:05
+but that's the current state of the art.
+06:08
+On the other hand, in linguistics and in some computational models,
+06:14
+people attempt to use very elaborated structures
+06:19
+of language, which capture a huge amount of detail.
+06:24
+You can be at either of those extremes, or
+06:29
+you can hope to be somewhere in the middle.
+06:32
+And if you wanna be somewhere in the middle and have something that
+06:36
+roughly captures one of the most fundamental properties of language,
+06:42
+it seems like you don't wanna have word vectors, and
+06:46
+you want to have something that can minimally capture
+06:50
+the main ideas of the semantic interpretation of language.
+06:54
+And the idea I want to get at there,
+06:57
+is it seems the fundamental notion for human languages is that we have this
+07:02
+idea of composition where we can put together the meaning of phrases.
+07:07
+And so, we'd like to know about larger units that are similar in meaning.
+07:12
+So, if we have two pieces of text,
+07:16
+perhaps paraphrase for example, the snowboarder is leaping over a mogul or
+07:21
+a person on a snowboard jumps into the air.
+07:24
+It sort of seems the first essential point that a human being would notice and
+07:29
+think is part of the solution here is that person on a snowboard
+07:34
+means roughly the same as snowboarder that it's a paraphrase.
+07:38
+And we can do that because we can take the sequence of words, person on a snowboard
+07:44
+and say that's a phrase and we can put together a meaning for
+07:48
+that phrase even if we haven't heard it before and
+07:51
+know that it's got this meaning that's roughly the same as snowboarder.
+07:57
+And so essentially,
+07:59
+that's what human beings do every day when they're listening to their friends, right?
+08:04
+Every day, people are saying to you different sentences.
+08:08
+They might first off just say, how's it going?
+08:11
+And you've heard that 10,000 times before.
+08:13
+But as soon as they get a bit further into describing their day,
+08:17
+they're gonna be saying sentences that you've never heard before, and yet
+08:21
+we can work out what they say.
+08:23
+And we're not working out what they say just as a bag of words of saying,
+08:27
+mm, this is about a party.
+08:29
+We're actually getting the details of what they said and who said what to who.
+08:33
+And we're doing that by starting off by knowing the meanings of words and
+08:37
+then doing a semantic composition where we can put smaller units into bigger units,
+08:43
+and work out their meaning.
+08:45
+And so we'd like to have models that can do the same.
+08:49
+So at the very top level this is compositionality,
+08:52
+is to how you can put pieces together into bigger parts, and
+08:57
+then understand what those bigger parts do.
+09:00
+I think it's a problem that's especially prominent when you start thinking about
+09:05
+human languages.
+09:06
+But I'd like to suggest this is not only a problem
+09:09
+that has to do with human languages.
+09:11
+In many ways it's sort of a more general cognitive capability.
+09:16
+So that if you have something like a complex picture,
+09:19
+well that's also something that has a compositional structure.
+09:23
+So that you have pieces of stuff that you have parts of a church that go together.
+09:29
+You have people that go together into a crowd or in front of this church.
+09:33
+And then that also has a kind of a compositional structure.
+09:37
+So in general, it seems that for language understanding in particular, but
+09:42
+also for other kinds of artificial intelligence, that we need to have models
+09:47
+that have this kind of capability for semantic compositionality.
+09:52
+You can put together smaller pieces into larger pieces and
+09:56
+work out the meaning of those larger pieces.
+09:59
+And what I'd like to suggest is our tree recursive neural networks.
+10:03
+One model that you could think about as a good model for understand compositionally.
+10:10
+So there's this general idea of sort of taking parts and
+10:13
+putting them together into bigger parts and understanding their meaning.
+10:17
+There's a notion that's related to that,
+10:20
+which goes slightly beyond that which is the notion of recursion.
+10:26
+So by far the most famous linguist is Noam Chomsky.
+10:30
+And so in some of Noam Chomsky's recent work with colleagues
+10:36
+they've tried to advance this picture at in terms of.
+10:41
+I mean, it's for 50 years it's been Chomsky's position that
+10:47
+humans have this special innate born with part of your brain structure ability for
+10:53
+human language that sort of sets us apart from other beings.
+10:58
+And it's sort of actually seeing that as having sort of specific
+11:02
+brain structure for language.
+11:04
+Not everyone else believes that.
+11:06
+But they've been trying to sort of put forward these proposals as to
+11:11
+what is special in the sort of capabilities of the humans for language.
+11:17
+And Chomsky and colleagues have wanted to claim that really the defining property is
+11:22
+that humans have this ability, which you see through language, to have recursion.
+11:29
+So that's just like in your CS class, right, when you have things going back and
+11:33
+back to the same thing, looping over, than you have recursive structure.
+11:38
+And human languages have this kind of recursive structure, it appears.
+11:43
+So what's the idea of that?
+11:45
+That if you have the man from the company that you spoke with about
+11:49
+the project yesterday that what we have here, I think might have, no that's great.
+11:55
+What we have here is sort of recursive levels of the same kind of structure.
+12:00
+So that project is a little noun phrase,
+12:03
+the company that you spoke about the project yesterday.
+12:08
+That's a bigger noun phrase that contains the smaller part noun phrase, the project.
+12:14
+And then the man from the company that you spoke with about the project is very
+12:18
+that's an even bigger noun phrase that contains my other two nouns phrases.
+12:23
+So human languages have this nesting of structure.
+12:27
+Of where you sort of have the same units, like noun phrases and
+12:30
+clauses that will nest inside each other.
+12:33
+And you can nest them deeper and deeper, and that gives us the idea
+12:38
+that recursion is a natural thing for describing human languages.
+12:43
+And that's essentially the sort of basis of Chomsky's claim.
+12:48
+Now, are human languages recursive?
+12:52
+I mean, cognitively, that's actually a little bit debatable, and
+12:56
+there are active debates on psycholinguistics and this kind of issue.
+13:00
+I mean, it's sort of complex because, really,
+13:04
+as soon as you're thinking sentences are only gonna be some finite length.
+13:10
+No one's gonna say a sentence longer than 300 words.
+13:14
+You can never sort of prove that things are fully recursive,
+13:20
+because there's sort of a maximum depth as to which things are gonna be embedded.
+13:24
+And actually, there's slightly more to it to it than that.
+13:27
+It's a well known psycho-linguistic observation that actually
+13:31
+having things embedding in the middle of the sentence.
+13:34
+So I sort of deliberately the project not right at the very right edge,
+13:39
+but had something come after it.
+13:41
+So when you're sort of having more central embedding,
+13:44
+that tends to be disfavored in human languages.
+13:46
+So although you get a lot of embedding,
+13:49
+most of the embedding that you get tends to have more of a chaining structure,
+13:53
+where you have a right branching kind of structure.
+13:56
+And to the extent the structure is purely chaining,
+13:59
+then you don't actually need to have full recursion to
+14:03
+describe it because you can think of it more as a kind of an iterative sequence.
+14:07
+Anyway, some cognitive arguments there cognitive science arguments.
+14:12
+But nevertheless, if you're sort of wanting to give a neat sort
+14:17
+of natural description of natural languages.
+14:21
+It's sort of basically you end up describing them recursively.
+14:24
+Cuz what you want to say is well, there are noun phrases which can expand to
+14:28
+various things like a short noun phrase like the man followed by a prepositional
+14:33
+phrase which has a preposition from followed by a noun phrase.
+14:37
+And here's this big noun phrase.
+14:38
+And inside this noun phrase it's got a relative clause.
+14:42
+And inside that it's got other noun phrases like you and the project.
+14:47
+So you kind of get these levels inside each other heading down recursively.
+14:52
+And you can and indeed people do,
+14:54
+in things like news live sentences embed them even more deeply than my example.
+15:00
+And so thinking about these kind of tree structures which have embedding
+15:05
+inside them where we can have noun phrases with noun phrases inside them.
+15:11
+And so a natural way to think about language structure and
+15:14
+to think about things like how we disambiguate sentences.
+15:18
+We sort of talked before about having ambiguities of attachment and
+15:23
+we talked about dependencies before.
+15:26
+The other way to these this and think about them is to have these kind of
+15:29
+constituency or free structure representations.
+15:32
+Which in computer science terms correspond to context-free grammar representations.
+15:38
+And then we have noun-phrased units and
+15:41
+we can be saying with a spoon is modifying the verb eats.
+15:45
+It's a child of the verb phrase constituent or the with meat
+15:50
+here is a similar prepositional phrase with the noun phrase inside it.
+15:54
+But it's modifying the noun phrase spaghetti to build a bigger noun phrase.
+15:59
+And so as soon as we started using these kind of structures in a context-free
+16:03
+grammar kind of structure, we have the ability for recursion, and
+16:07
+human languages seem to indicate that.
+16:11
+And we kind of want to refer to these units when we do other tasks.
+16:16
+So next Tuesday, I'm gonna talk about co-reference resolution,
+16:21
+which is how you refer back in the text or
+16:24
+to the environment refer back to entities that have already been established.
+16:29
+And that sort of can be thought of as sort of picking out pieces of structure
+16:33
+in terms of this kind of constituency, compositionality.
+16:37
+So John and Jane went to a big festival.
+16:40
+They enjoyed the trip and the music there,.
+16:42
+So they refers back to something, and
+16:45
+it seems to refer back to this noun phrase, John and Jane enjoyed the trip.
+16:51
+So the trip's a noun phrase, which seem to refer back to going to a big festival.
+16:55
+And the music there, the there is
+17:00
+again referring to this big festival.
+17:04
+Okay, so and, finally, having these kind of grammatical
+17:09
+analyses of sentences is clearly better for some tasks.
+17:13
+It's capturing a very powerful prior of what human language structure is like,
+17:19
+and is then useful for understanding and interpreting human languages.
+17:24
+So in the start of the course, we just had word vectors, and so
+17:29
+we had word vectors for things like Germany, France, Monday and Tuesday.
+17:34
+And we sort of were able to capture word semantic similarity in terms of our word
+17:39
+vectors.
+17:40
+What we'd like to be able to do is say, no.
+17:42
+As well as just single words, we have larger constituents.
+17:47
+So we have noun phrases like the country of my birth or the place where I was born.
+17:51
+And we'd also like to understand the semantic similarity between those phrases.
+17:57
+And the idea that we're going to develop to answer how can we do
+18:02
+that is that what we're gonna do is say, well, what we'd like
+18:07
+to be able to do is take bigger units of linguistic structure,
+18:12
+and also work out how to calculate their meaning as vectors,
+18:17
+and place them in exactly the same vector space.
+18:21
+So we're sort of hoping we can take bigger phrases and
+18:24
+say let's just stick those into our vector space as well, and
+18:28
+also represent their semantic similarity as a kind of vector similarity.
+18:33
+Where, of course, this example's only two dimensional, and
+18:36
+in practice, we'll be using 100, 200, 1000 dimensions.
+18:39
+Yes, question?
+18:40
+>> [INAUDIBLE] >> Okay,
+18:48
+so the question is why would we want to put them in the same
+18:51
+space as the word vectors?
+18:53
+I mean, that's not a necessary thing.
+18:56
+Obviously, you could say, no, that's just not what I wanna do.
+18:59
+I'm gonna have word vectors in one place and phrase vectors in another place.
+19:04
+The reason why a lot of the time that seems a good idea is that,
+19:10
+I mean, individual words can capture a lot of meaning.
+19:16
+And, in particular, they can sort of bundle up a bunch of semantics that's
+19:20
+often equivalent to things that you can say in other ways with a phrase, right.
+19:25
+So I guess I had the example right at the beginning where I had
+19:30
+a person on a snowboard, and snowboarder.
+19:33
+It seems like, well, those should be counted as paraphrases and
+19:37
+mean the same thing.
+19:38
+And I'm only gonna be easily able to capture that kind of similarity if I'm
+19:42
+using the same vector space to represent both phrase meaning and word meaning.
+19:50
+Okay, so that's our goal.
+19:54
+And so the question is how can we go about doing that?
+19:58
+And for words what we did was had a big lexicon of words, and
+20:03
+said let's learn a meaning representation for each one of them.
+20:09
+And we were able to do that.
+20:11
+I mean, that's clearly not possible for phrases, like the place where I was born,
+20:17
+because we just have an infinite number of such phrases as they get longer.
+20:22
+And so we can't possibly calculate and store a vector for each phrase.
+20:28
+And as we started to see last week is even for words, in a lot of cases, it seems
+20:35
+like it might actually turn out to be sort of unappealing to store a vector for
+20:39
+every word, especially when they're words that have some morphological complexity,
+20:45
+like snowboarder, which is snow, board.
+20:50
+And so we started to talk about, even words, how we might want to
+20:53
+compose their meaning out of smaller units as part of some neural network.
+20:58
+So, again, that's what we're gonna want to do for
+21:00
+having these bigger phrases in language.
+21:03
+So we're gonna have something like the country of my birth.
+21:06
+And what we'd like to be able to do is semantic composition.
+21:09
+We'd like to be able to use the principle of compositionality,
+21:14
+which is sort of a famous thing from philosophy of language or
+21:17
+semantics, which is saying you can derive the meaning of a phrase or
+21:22
+a sentence by starting with the meaning of its words.
+21:25
+And have some kind of, then, composition function
+21:29
+that you can then calculate meanings of bigger units as you combine things.
+21:33
+So what we'd like to be able to do is put together my birth as two words, and
+21:38
+have a meaning for that phrase, a meaning for the phrase, country, and
+21:43
+keep on calculating up, and get some meaning for the whole phrase,
+21:47
+which we could then represent in the vector space.
+21:52
+Okay, so if we build models of this type, we can potentially hope to do two things.
+21:59
+We can potentially use them both as models that will build structure,
+22:04
+that will actually build sentence structure as they go.
+22:08
+And they will also build semantics, that they will build a meaning representation
+22:13
+for these phrases as they build up.
+22:16
+So the general picture of what we're going to want to
+22:18
+do is we're gonna start off with a bunch of words, and their word vectors,
+22:23
+which we'll look up in the lexicon.
+22:24
+The cat sat on the mat.
+22:26
+And then we're going to start building phrase structure.
+22:30
+So we're gonna say, that's a noun phrase.
+22:32
+This is a noun phrase, prepositional phrase, verb phrase, build a sentence.
+22:38
+So we'll have a kind of a syntactic phrase structure of the tree.
+22:42
+And then we'll, using that, kind of build up the semantic representations.
+22:48
+And for that case,
+22:49
+I just sort of knew what the right phrase structure I wanted for the sentence was.
+22:54
+And just sort of drew in those nodes and calculated their semantics.
+22:58
+Well, one of the questions is how can we calculate that as we go along?
+23:02
+And I'll come back to that in a minute.
+23:04
+Then before doing that, I just wanted to spend
+23:07
+a couple of slides just sort of going back over the connections and
+23:12
+differences between the model types that we've been looking at recently.
+23:18
+So up at the top half, we now have our tree recursive neural network.
+23:23
+And in the bottom part, we then have our recurrent neural network.
+23:29
+Now, in some sense the kind of linear sequence models that you get for
+23:34
+recurrent networks, are kind of sort of like a sort of a limit case of a tree,
+23:41
+so that if you sort of stare down from about this angle,
+23:45
+what you're looking at actually looks like a tree, right.
+23:50
+If you sort of tip it, it's sort of like this tree, but
+23:54
+it's a tree that's always sort of right branching down to the right.
+23:59
+And, actually,
+24:00
+it turns out that quite a lot of English structure is right branching down
+24:04
+to the right in most sentences that you sort of get these pieces of constituency
+24:08
+where you get left branching like the country in this example.
+24:12
+But if you look at the details of these two
+24:16
+models the details of the model are kind of different.
+24:20
+Because in this model we're exclusively sort of building upwards.
+24:25
+We're taking smaller pieces of structure and then computing a representation for
+24:32
+a larger piece of structure that they can pose into.
+24:37
+Whereas this model is sort of actually a kind of a funny sort of
+24:41
+mixed model when you think about it comparing it to a tree,
+24:44
+cuz this sort of the word vectors are going up to compute something but
+24:49
+then simultaneously, we have something going down the tree.
+24:52
+And that's sort of the idea that Richard was mentioning last time.
+24:55
+How the recurrent models are really sort of
+24:59
+capturing representations of whole prefixes and
+25:02
+you're not getting any representations of smaller units than that.
+25:07
+There are a couple of other pluses and minuses to think about.
+25:12
+So the problem of
+25:15
+tree recursive neural nets is that you have to get a tree structure.
+25:20
+And so this is actually a huge problem.
+25:23
+I mean if I had If I admit right at the beginning tree
+25:28
+recursive neural networks have not swept the world.
+25:31
+There's some really good linguistic reasons to like them and
+25:34
+we'll say some stuff about them.
+25:36
+But if you just sort of go out on arXiv and start looking at
+25:40
+what people are using in neural networks for language you have to look for
+25:45
+a while to find people using tree structured models, right?
+25:47
+There's ten times as much use of the LSTMs that we've talked about previously.
+25:54
+And a big part of that reason is because the user,
+25:58
+tree recursive model, you have to have a tree structure.
+26:02
+And for some of the things that we've talked about
+26:04
+I think you can sort of immediately get a sense of why that's problematic.
+26:08
+Cuz putting a tree structure over a sentence is making
+26:12
+deterministic categorical choices as to which words are going together to
+26:16
+be constituents while other words aren't.
+26:19
+And anywhere you're making categorical choices that's a problem for
+26:24
+learning a model simply by running back propagation.
+26:28
+And so that sort of puts complexity into these models.
+26:32
+It also means that they're kind of GPU unfriendly, cuz there isn't just this
+26:36
+sort of simple lock step computation, like an LSTM gives you.
+26:42
+So LSTMs have this very simple structure,
+26:45
+cuz it doesn't matter what the sentence is.
+26:48
+The structure is always the same, right?
+26:50
+You just have that same sequence model that chugs along from left to right,
+26:55
+which makes them very computationally appealing.
+26:58
+But of course, they have the disadvantage that they're not actually representing
+27:02
+any of the structure of the sentence.
+27:05
+And if you want to get back to my original picture with the CMU bag of words, I think
+27:11
+there's just sort of a manifest sense for human languages that if you just want to
+27:15
+have this sort of first cut roughly the structure of human languages write.
+27:21
+What you gonna have to have is sort of know which sub units of words
+27:25
+goes together to have behaviours constituents and
+27:29
+the semantic parts out of which bigger sentences are described.
+27:35
+Okay, so conversely we can also think about the relationship between
+27:41
+the tree recursive neural networks and convolutional neural networks.
+27:48
+So these central difference there is that the tree recursive neural networks
+27:53
+calculate representations, compositional vectors only for
+27:58
+phrases that sort of make sense, that are grammatical,
+28:01
+which a linguist would say is part of the structure of the sentence.
+28:05
+Whereas what a convolutional neural network does is say,
+28:08
+okay let's just work out representations that every pair of words,
+28:13
+every triple words, every four words.
+28:16
+Regardless of whether they make any sense or not.
+28:19
+But again there's actually an advantage to that, right?
+28:22
+That since you're not actually having to make any choices, and
+28:25
+you just do it for every pair of words, and every triple of words.
+28:28
+You don't need a parser, you have, again,
+28:30
+you're back to this sort of uniform computation without any choices.
+28:35
+But it's not very linguistically or cognitively plausible, I feel.
+28:41
+To some extent, I actually think recurrent models are more cognitively plausible
+28:46
+as an alternative to tree structure models and convolutional neural networks.
+28:50
+So the sort of picture is that for the CNN, you're sort of making
+28:55
+a representation of every pair of words, every triple of words, every four words.
+29:00
+Where as the tree recursive neural network is saying well some of those
+29:05
+representations don't correspond to a phrase and so we're gonna delete them out.
+29:11
+So that for the convolultional neural network,
+29:15
+you have a representation for every bigram.
+29:17
+So you have a representation for there speak and trigram there speak slowly.
+29:23
+Whereas for the recursive neural network, you only have representations for
+29:28
+the sort of semantically meaningful phrases like people there and
+29:32
+speaks slowly going together to give a representation for the whole sentence.
+29:39
+Okay, so how do we go about calculating things in the course of neural network.
+29:46
+So the idea is when we wanna build a representation of a larger unit
+29:52
+what we're gonna do is take the representation of its children and
+29:57
+we're gonna have sort of binary trees for what we're showing here.
+30:00
+We gonna stick them through some kind of neural network,
+30:04
+and we're going to have probably two things come out.
+30:08
+One is going to be of a vector that's representing
+30:13
+what is going to be the meaning of this larger unit if you construct it.
+30:18
+But if we'd also like to parse at the same time and work out good structures.
+30:22
+We also wanna have some kind of score as to say, is this a good constituent?
+30:26
+Because that will allow us to build a parser at the same time.
+30:32
+So how we might we do that?
+30:34
+If we sort of start doing it at the simplest way possible just using
+30:38
+the kind of rudimentary neural networks that we've looked at.
+30:42
+This seems like the kind of idea what we could build so
+30:45
+we could take the vector representations of the two children
+30:50
+which might be just words or might already be phrases that you've built up.
+30:54
+We could concatenate them to make them into a bigger vector, have a linear layer,
+30:59
+multiplied by a matrix, added non-linearity, put that throw a tanh,
+31:03
+and so we've just got the simplest kind of single neural net layer.
+31:08
+And that will then give us our representation of the parent.
+31:10
+And then we want to score that and well,
+31:13
+one way we could score that is just having a vector here that we could then
+31:17
+multiply this representation by a vector and that'll give us a score for phrase.
+31:23
+And doing precisely that was the first type of tree recursive neural network
+31:29
+that Richard explored in his work back in about 2011.
+31:33
+Okay, but if we have just this.
+31:36
+Then we're in a position where we can use it
+31:40
+to parse a sentence with the tree recursive neural network.
+31:43
+And so the easiest way to do that and it's kind of similar in a way to what
+31:47
+we did with the dependency parsers sort of three weeks ago.
+31:52
+Is to say what were gonna do is we gonna run a greedy a parser we're going to look
+31:58
+at what seems best and make hard decisions on each action and then proceed along.
+32:04
+So what we could do is we could start off with the sentence the cat sat on the mat,
+32:10
+and what we're gonna do in a sense is kind of like
+32:13
+what the first part of a convolutional neural network does.
+32:17
+We're gonna take each pair of words and
+32:20
+we're going to calculate a representation for that pair of words.
+32:25
+But we've got one other tool at our disposal now.
+32:28
+That we're also calculating a score for
+32:31
+these combinations and so, we can say that the thing that scores
+32:36
+best is putting together a phrase is these two words on the left.
+32:41
+So, why don't we just hard commit to those and say, okay,
+32:44
+we've got the cat as the constituent.
+32:47
+With this semantic representation and so then at that point we can
+32:55
+for what to do next we have all of the choices we had before and
+32:58
+additionally we have a choice that we can put the cat together with sat.
+33:03
+So, that's a new choice that we can evaluate and at this point we can say
+33:08
+well, looks like the best thing to do is to combine the mat together,
+33:12
+cuz that's got a good score, so we do that, and we commit to that.
+33:16
+Then we thought one new thing we could try,
+33:19
+cuz we could have the mat go together with on.
+33:22
+And we can look at that and we could say, yeah, that's a really good thing to do.
+33:26
+On the mat, that's a really good phrase to have found.
+33:30
+So, the neural network will commit to that one, and
+33:34
+then we'll kind of keep on repeating and we'll decide putting sat
+33:39
+together would be a good idea sat on the mat that's a predicate, and
+33:42
+then we'll combine that together with the cat and we're done.
+33:46
+And so we sort of greedily incrementally building up parse structures
+33:51
+as we go along and working out the parse structure of the sentence.
+33:56
+And so, at the end of the day, that's a parse tree, and we're gonna have a score
+34:01
+for our parse tree, and that score for the parse tree we're just gonna say, we made,
+34:06
+we've got a score for each individual decision as we put two node's together.
+34:11
+And the tree has got a bunch of nodes in it, and we're just going to sum those
+34:14
+scores of each node decision, and that will give us the score of a tree, and
+34:19
+what we'd like to do is find the very best tree for
+34:24
+this bunch of words, and we've kind of approximated this by
+34:29
+doing this greedy algorithm where we just committed to what looked like
+34:32
+the best constituent to build at every particular point in the time.
+34:38
+And so, the final thing was then sort of set up as a loss function,
+34:43
+with a sort of max margin objective.
+34:46
+Where you were sort of trying to adjust the parameters of the model so
+34:52
+that you're maximizing the scores of the sentences that you have found.
+34:57
+And then, you're considering what the sort of structures you were finding,
+35:03
+what incorrect decisions you'd made versus what the gold structure for
+35:08
+the sentence is meant to be in the sort of gold structure in the tree bank
+35:12
+that tells you what are the right answers for it, and in this kind of a model,
+35:17
+you'll sort of, in theory what you'd like to do is to find the best tree for
+35:22
+each sentence, according to your model.
+35:25
+And then changing the parameters of the model.
+35:28
+So the model thinks the best tree is the correct tree in the tree bank.
+35:33
+And that's then gonna be minimizing your loss.
+35:36
+In practice, finding the best tree according to your model,
+35:42
+can require an exponential amount of work and we can't do that.
+35:46
+And so we're just substituting in this greedy finding of a parse,
+35:51
+that looks sort of good according to our model, and using that
+35:55
+in our loss function right here, the sort of score of the parse that we found.
+36:00
+There are obvious generalizations of this.
+36:02
+Rather than sort of keeping just one really best parse that you're finding, you
+36:08
+could have a beam parser, and you could explore some different possibilities.
+36:13
+And you could sort of have a ten best beam,
+36:16
+and sort of explore a bunch of parses to the end.
+36:19
+And sort of then come up with a better estimate
+36:22
+of what is the best parse according to your model.
+36:24
+But the central thing to be aware of is to what you can't do is standard result for
+36:32
+parsing context free grammars, when you have grammars with labels.
+36:36
+Like noun phrase, verb phrase, and things like that.
+36:40
+Then what you can do is dynamic program, context free grammar parsing,
+36:46
+and so you can then do parsing context free grammars in O(n^3) time and
+36:51
+be guaranteed to have found the optimal parse for
+36:55
+your sentence according to your grammar.
+36:58
+The problem is here, every time we're putting together two constituents, we're
+37:04
+running it through a little neural network and we're getting a vector out here.
+37:08
+And so for any way of putting things together differently
+37:12
+we're gonna get different vectors up here and so there's no substitute that if
+37:16
+you were actually wanting to guarantee you'd found the best parse of a sentence
+37:20
+that you'd have to do the exponential amount of work of exploring every
+37:24
+different possible way of putting things together, which we don't want to do.
+37:28
+but in general you can work pretty effectively by sort of doing fairly
+37:34
+greedy exploration, according, informed by your model to find good structures.
+37:39
+Okay, so this is our overall objective function and we want to be changing
+37:44
+the parameters of our model so that it's wanting to choose this parse of
+37:49
+the sentence the one that's the same as the gold parse of the sentence.
+37:54
+And so, the way we do that is again by backpropagation algorithm.
+38:00
+So, we'd sorted from the recurrent neural networks we had back propagation through
+38:06
+time where we're sorting of chugging back through the time steps of your linear
+38:09
+model.
+38:10
+You can generalize that to tree structures and
+38:13
+actually that was done by a couple of Germans in the 1990s.
+38:19
+Goller and Kuchler then came up with this algorithm called back propagation
+38:23
+through structure.
+38:24
+And in principle,
+38:26
+it's the same as the back propagation we've seen again and again and again.
+38:32
+But it's sort of just slightly more complex
+38:36
+because you have to be getting things working over a tree structure.
+38:41
+It ends up that there are three differences.
+38:44
+For working out the updates to the matrix W in your neural network.
+38:53
+So, just like an RNN, you're going to be summing up
+38:56
+the derivatives of the sort of error signals that you get coming into W,
+39:01
+everywhere you see it inside the tree structure.
+39:05
+Something that's slightly different when you back propagate down,
+39:09
+essential back propagating down a tree structure.
+39:12
+We then have to split the derivatives and
+39:14
+send them down both branches of the tree structure to the next level below.
+39:20
+And then when you're calculating your error messages,
+39:24
+you'll have an error message coming in from the node above.
+39:27
+You want to be adding to it, the additional error from the node itself.
+39:32
+And then, you wanna be splitting it and
+39:34
+passing it down to the two nodes down below you.
+39:38
+In these slides,
+39:41
+there are then some slides that go through that in more detail.
+39:46
+Summing derivatives of the nodes,
+39:48
+splitting the derivatives at each node, add error messages.
+39:54
+And actually from Richard last year, he wrote some Python code for
+39:59
+doing back propagation through structure.
+40:03
+I thought I wouldn't actually try and
+40:04
+explain in any more details than that in class right now, all the details of that.
+40:09
+But you can look at these slides on the website and
+40:12
+chug through it in more detail than that.
+40:15
+And I thought we could skip straight across to Kevin,
+40:18
+who's gonna be doing today's research highlight.
+40:28
+>> Okay.
+40:28
+Hi everyone.
+40:29
+I am Kevin and I am going to be presenting deep reinforcement learning for
+40:33
+dialogue generation, which is a paper by some people here at Stanford.
+40:38
+But some people elsewhere as well.
+40:41
+So the goal of this paper is to train a chat
+40:44
+bot that can hold a reasonable conversation.
+40:47
+And the authors approached this task in the sequence-to-sequence framework,
+40:51
+where the input sequence consists of a message, or
+40:55
+perhaps several messages from a conversation.
+40:58
+And the output sequence is a response to the message,
+41:00
+and that's what the chat bot will say.
+41:04
+So they use the exact same encoder-decoder model, you saw for
+41:09
+machine translation last week.
+41:11
+You can train this model with the exact same training objective,
+41:15
+which is maximum likelihood estimation.
+41:17
+So you find the data set of people talking to each other, and you train the model by
+41:22
+making it assign high probability to the responses people say.
+41:30
+So once you've trained a model like this,
+41:32
+it's kind of fun to have the model talk to itself and see what happens.
+41:35
+So this is a real conversation from the model in the paper.
+41:39
+So the first chat bot says, how old are you?
+41:42
+And then the second one says I'm 16, and the first one says 16?
+41:46
+And then things kinda fall apart.
+41:49
+>> [LAUGH] >> So the second chat bot says I don't
+41:52
+know what you're talking about, the first chat bot says you don't know what you're
+41:56
+saying, and the chat bots get stuck in an infinite loop.
+41:59
+>> [LAUGH] >> So if we look over this dialogue
+42:04
+we can sort of point to some problems, that might be causing this issue.
+42:08
+The first one is actually the response I'm 16.
+42:10
+Although it's kind of a reasonable follow up to the question, it's not very helpful.
+42:15
+So it'd be maybe better to say something like, I'm 16, how old are you?
+42:19
+And now you're giving more guidance to your conversation partner,
+42:22
+in what you should say next.
+42:24
+The second issue here is this, I don't know what you're talking about response,
+42:28
+which actually is more or less a reasonable reply.
+42:31
+It still kind of makes sense, but it's a very generic response.
+42:36
+And really the main issue here is that,
+42:38
+we're training our model to produce sentences that have high probability.
+42:42
+But that actually doesn't necessarily mean sentences that are good and useful for
+42:46
+the conversation.
+42:48
+So with the, I don't know what you're saying example, it is high probability cuz
+42:52
+really no matter what you're say to me I can respond with,
+42:54
+I don't know what you're saying and it sort of makes sense.
+42:57
+So trained with maximum likelihood estimation, the model thinks great
+43:01
+this is a good response, and we want some different objective to train the model.
+43:07
+So that got a little bit messed up, but the criteria we could think of for
+43:12
+training a good response is that, it is reasonable so it makes sense.
+43:17
+But also that is non-repetitive so we don't get in an infinite loop.
+43:20
+And that it's easy to answer, so
+43:22
+you say something a little bit more helpful than just I'm 16.
+43:26
+And in this paper, the authors come up with ways of
+43:31
+computationally scoring a response according to these criteria.
+43:37
+So they end up with a single scoring function that takes the responses input,
+43:40
+and returns some number indicating, did we do a good job with this response or not.
+43:46
+And then they train a model to maximize the scoring function,
+43:50
+using reinforcement learning.
+43:51
+So I'm not going to go into detail on how reinforcement learning works.
+43:54
+But the main idea is that instead of learning from an example, so
+43:58
+how a human responded to a message, you learn from a reward signal.
+44:02
+So we start off with, as before, encoding the message in a vector.
+44:05
+But now instead of passing in a human-generated or a response
+44:10
+that a human said and try to increase this probability according to the model, we're
+44:14
+gonna just leave the model to its own devices and have it produce a response.
+44:20
+And then give it a reward signal, which tells it, did it do a good job
+44:24
+with the response or not, which is that scoring function I mentioned earlier.
+44:27
+So here it's negative, because I don't know isn't a good response.
+44:30
+And through reinforcement learning,
+44:32
+the model will learn to not produce these poor quality responses.
+44:39
+And so now on to some results, how well does this work?
+44:42
+These first results are quantitative results,
+44:44
+where the author showed dialogues produced by the system to humans, and
+44:49
+had them say which of these dialogues were better and
+44:53
+here a positive number means the reinforcement learning system did better.
+44:56
+So you can see that humans thought the reinforcement learned system,
+45:00
+was better particularly at making messages that are easy to answer, and
+45:05
+also for the general quality of a several turn dialog.
+45:10
+We can also have our chat bots talk to each other again, and
+45:13
+here you see that it's doing a bit better.
+45:15
+So the first chat bot ask who old are you?
+45:17
+But now instead of saying I'm 16 only, it also says why are you asking?
+45:21
+So it's kind of helping the conversation move along.
+45:24
+But actually after a couple turns, they end up in the same infinite loop.
+45:29
+>> [LAUGH] >> So this just kind of highlights,
+45:31
+although reinforcement learning is a useful technique,
+45:33
+it doesn't kind of magically fix everything.
+45:36
+So to conclude reinforcement learning is helpful when we monitor a model to do
+45:40
+something, beyond just mimicking the way humans perform a task.
+45:45
+And it's been applied to many areas beyond dialog.
+45:48
+So if you're interested, there's a lot of new and exiting work in that direction.
+45:53
+Thank you. >> [APPLAUSE]
+46:00
+>> Okay.
+46:02
+Yeah so, we'll have a bit more reinforcement learning in this class,
+46:07
+including I think next Tuesday, it might come up.
+46:10
+But maybe I should just while we're on that topic,
+46:13
+advertise there newest Stanford CS Faculty Emma Brunskill started work yesterday.
+46:19
+And in the spring she's gonna be teaching a class on reinforcement learning.
+46:23
+So if you wanna get a good dose of reinforcement learning,
+46:26
+there's an opportunity there.
+46:29
+Okay.
+46:32
+So what I wanted to do now was, sort of show you a bit more about how we
+46:37
+develop some of the ideas of having this tree-recursive neural networks.
+46:43
+I guess I haven't really shown anything in the sort of quantitative results,
+46:48
+of show big results tables for that simple recursive neural network.
+46:54
+But the summary of it was that, we could do some sort of useful things with it for
+47:01
+learning about paraphrases and getting syntactic structures right.
+47:05
+It sort of worked.
+47:07
+Able to publish a paper on it and all of those good things.
+47:11
+It seemed like it wasn't really fully adequate for
+47:17
+doing all the things that you wanted to do, for
+47:20
+understanding sentences and semantic composition.
+47:23
+And there are a couple of ways in which that was true, it appeared.
+47:28
+And so for some of the later work, and
+47:31
+only some of which I'm gonna be able to show you today,
+47:34
+we were then sort of starting to explore better ways in which we could put sort of,
+47:39
+more flexibility or better neural units into this sort of same
+47:44
+basic model of tree-recursive structure, to be able to do a better job.
+47:49
+And there are sort of a couple of ways in which it seemed like,
+47:52
+the model probably wasn't doing what you want.
+47:57
+The first one, the no interaction between the input words is,
+48:02
+I kind of think, a common issue that happens with quite a lot of models,
+48:06
+if you have just a single neural layer.
+48:08
+We sort of mentioned this also when we were talking about attention,
+48:11
+that if you just sort of concatenate C1 and C2.
+48:15
+And put them through a single matrix, multiply, and then a nonlinearity.
+48:20
+That you can think of the weight matrix as sort of being just
+48:25
+segmented into two smaller matrices.
+48:28
+When one W1 same matrix multiplies by C1, and the W2 matrix multiplies by C2,
+48:35
+and then you just sort of do the element wise non linearity.
+48:40
+Which sort of means that the two words,
+48:42
+their meanings don't actually really relate to each other.
+48:46
+And hat sort of seems bad and I'll come back to that
+48:51
+as the sort of last thing I touch on today.
+48:55
+But before we get to that one, the other thing that seems kind of dubious here is.
+49:00
+For all semantic composition we just have one composition
+49:05
+function which has one matrix.
+49:07
+So it doesn't matter whether we're putting together an adjective and
+49:11
+a noun or a verb and its direct object.
+49:13
+Or even if we're putting together the rest of a sentence with a period at
+49:17
+the end of it.
+49:18
+In every case we're using exactly the same matrix multiply and saying, just multiply
+49:23
+by that matrix and that'll put together the meaning of your sentence for you.
+49:28
+And that seems pretty wishful when you think about it, and
+49:32
+so an idea that seemed kind of a neat idea was.
+49:37
+Could we get something more powerful
+49:40
+by allowing more flexibility in the composition function for
+49:45
+different kinds of syntactic constructions in their composition?
+49:49
+And so that led to the idea
+49:51
+of Syntactically-Untied Tree Recursive Neural Networks.
+49:56
+Which actually proved to be a very successful idea for
+50:00
+building high quality parsers that parsed very well.
+50:03
+And essentially what this model did was sort of argue that there's a reasonable
+50:09
+separation that can be made between syntax and semantics in the following sense.
+50:16
+That there's sort of basic syntactic structure of languages.
+50:20
+So you have a noun phrase which can have a smaller noun phrase,
+50:24
+followed by a prepositional phrase, like the man at the lectern.
+50:29
+And that the prepositional phrase will be a preposition followed by a noun phrase.
+50:34
+That kind of syntactic structure can be pretty well captured by
+50:38
+actually a symbolic grammar.
+50:41
+So we assumed in this model that we did have a symbolic context free
+50:46
+grammar backbone that was adequate for basic syntactic structure.
+50:52
+But the problem for sort of traditional NLP in linguistics is,
+50:57
+although such a backbone is pretty adequate for
+51:01
+telling you the possibilities for building syntactic structure.
+51:06
+It's not very good at working out which structures that you should build or
+51:11
+what is the meaning of different kinds of units.
+51:15
+So the suggestion is it's perfectly fine to use discrete
+51:20
+categorical structures for the syntax of a language.
+51:24
+But what we want to do is make use of our soft vector representations for
+51:29
+describing the meanings of languages.
+51:33
+And so therefore we can sort of start with that observation and
+51:40
+then build the kind of flexibility of composition that we're wanting.
+51:46
+By saying well, if we are sort of knowing about something
+51:51
+about syntactic structures in a categorical way.
+51:57
+If I walk right over here, well we can know the categories of the children,
+52:03
+so maybe this is a preposition, and that's a noun phrase.
+52:08
+We can use our symbolic grammar to sort of then say,
+52:12
+okay these will go together into a prepositional phrase.
+52:16
+And so since we know these categories here,
+52:19
+we can then also use those categories to decide a composition function.
+52:24
+So we can decide, okay we're composing together a preposition and a noun phrase.
+52:32
+So let's use the composition function, that's the right composition function for
+52:38
+putting together a preposition and a noun phrase.
+52:41
+And so here now on this side,
+52:43
+rather than just always using the same W matrix for any cases of composition.
+52:48
+Now we can say, let's use the W matrix for
+52:51
+putting together a preposition and a noun phrase.
+52:55
+And that'll give us this bigger unit which will have some category according to our
+52:58
+syntactic grammar.
+53:00
+And then we're gonna be putting together an A and a P1 and so
+53:04
+we'll be able to use the right composition matrix to put together those categories.
+53:14
+And there's some other good properties of doing things this way from
+53:18
+a practical sense.
+53:20
+Doing simple PCFG parsing with the categorical grammar is fast because
+53:26
+we can do it just using the symbolic categories and dynamic programming.
+53:32
+And then we only have to be doing the sort of deep learning
+53:35
+on the structures that we know are the ones that we want to build.
+53:39
+So it's actually we are using syntax to guide what we build rather
+53:44
+than trying out every different way of putting pairs of words together.
+53:51
+So essentially we're using the syntactic model to work out
+53:55
+reasonably plausible structures for the sentence.
+53:58
+And then we're building the semantic combination for those structures.
+54:04
+And then using the semantics to do the sort of harder decisions as to what does
+54:08
+this prepositional phrase modify and things like that.
+54:11
+And so he called this result the compositional vector grammar where it's
+54:16
+a combination of a probabilistic context-free grammar.
+54:19
+Plus then using this tree structured recursive neural networks grammar.
+54:25
+And in this class we haven't really talked about sort of the whole
+54:30
+history of doing parsing for natural language processing and
+54:35
+the kind of grammars that people built.
+54:38
+But in some sense you can think of this as a generalization of the kind
+54:43
+of things that people have been involved in for the last decade for
+54:48
+trying to improve the quality of parsers.
+54:51
+So the starting point is you can just have a context free grammar parser.
+54:56
+And that works very badly for natural language because you kind of can't do
+55:00
+a good job of dealing with all the syntactic ambiguities and
+55:04
+deciding things like prepositional phrase attachments.
+55:08
+So back in 2003, Dan Klein and me sort of said well,
+55:12
+if we did some manual feature engineering and
+55:15
+we kind of split categories, and we had fine grained categories.
+55:19
+And so that we knew that it was not just a prepositional phrase, but
+55:23
+a prepositional phrase headed by all of our prepositional phrase headed by for.
+55:27
+We could actually just have a CFG parse quite a lot better, and that was true.
+55:32
+Then following on from that, a few years after that, Slav Petrov said, well,
+55:36
+maybe we could actually learn those subcategories automatically, and
+55:40
+that could help things along.
+55:42
+And that did work, and
+55:44
+simultaneously there was a whole line of work on doing lexicalized parsers.
+55:49
+Which sort of said, well a reasonable way to represent the semantics
+55:55
+of a phrase like, the person at the lectern.
+55:59
+Is to say, what is the head word of that phrase?
+56:02
+It's person, and just represent the semantics
+56:05
+of the person at the lectern with the semantics of person.
+56:09
+And that was a useful idea, To help pausing and
+56:13
+making dismbiguation decisions because to some extent that's right.
+56:18
+But on the other hand your losing a lot because your saying
+56:21
+the meaning of the person at the lectern is just person and
+56:25
+you've lost all the other words of that at the lectern.
+56:29
+And so, effectively for the CVGs,
+56:33
+we're trying to sort of extend that further and say, we'll no,
+56:37
+rather than just having a sort of a finer grains in syntactic representation,
+56:43
+substituting in the head word and using it as a semantic representation.
+56:48
+We can actually calculate the semantics, the meaning for a whole phrase, and
+56:52
+then use that for doing our disambiguation decisions in semantic parsing and
+56:57
+that will be able to be more accurate.
+57:00
+And to a first approximation, that actually works.
+57:02
+So here are some results from parsing.
+57:05
+So, this is sort of trying to parse for
+57:09
+context free grammar structures, natural language sentences over a famous
+57:14
+corporates of Wall Street Journal articles.
+57:16
+And what we're scoring here is sort of an F1 measure as to
+57:20
+whether you're getting particular constituents right.
+57:22
+So you're making constituecy claims like that there's a noun phrase
+57:26
+from words three to 12.
+57:29
+And then that's either right or wrong.
+57:31
+And so you can see how there's been a succession of people gradually getting
+57:35
+better at this task.
+57:39
+So, if you just sort of have a plain CFG, your score is about 72%.
+57:44
+So how more kind of manually feature engineered, whoops, sorry.
+57:50
+Manually feature engineered,
+57:52
+context free grammar was considerably better, about 85%.
+57:56
+Some of the ideas of having putting in lexical heads were even better, 87%.
+58:03
+The automatically splitting, which sort of mixes syntax and
+58:07
+lexical information, was even better at about 90%.
+58:11
+And, but by build, and if you just have a plain RNN,
+58:15
+it's sort of not that great, because if you already just have one W matrix,
+58:19
+you kind of can't model a lot of composition.
+58:23
+But by having this idea of this syntactically untied RNN where you can
+58:27
+learn these different composition functions for different kinds of phrases,
+58:32
+that that actually worked very nicely and produced a strong, well performing parser.
+58:37
+I mean, there are some better parsing numbers where
+58:40
+people have done various kinds of self training in data orientation, and actually
+58:44
+there's some more recent results since 2013 that I don't show in this slide.
+58:50
+But nevertheless, this sort of proved a successful way to sort of build,
+58:54
+a sort of more semantically sensitive parser.
+58:56
+In some sense, the interest of this isn't sort of just that,
+59:02
+if can get parse structures right for sentences.
+59:05
+So the biggest interestingly different thing here is,
+59:10
+well actually we are computing a semantic,
+59:14
+some meaning representation for each phrase
+59:18
+that gets back to that original idea of understanding meaning similarities.
+59:23
+And that's just something that by itself,
+59:25
+that's sort of context free grammar isn't giving you at all.
+59:28
+And there's sort of some neat things you can see out of that.
+59:32
+I mean, one of the neat things you can see out of this is just sort of,
+59:36
+you can observe how the soft grammar learns
+59:40
+notions of where the information is, and so what are head words and phrases.
+59:45
+So this is as it starts to put together pairs of words that you can
+59:51
+see by the activations in the matrix, as to where it's getting information from.
+59:56
+And so there's something you have to know to interpret this.
+60:00
+So for training this model, what Richard did was he started
+60:05
+off the matrices with sort of identity initialization.
+60:10
+But they're sort of kind of two half matrices with identity initialization
+60:14
+because this is sort of the part of the matrix that's multiplying the left child.
+60:19
+And this is the part of the matrix that's multiplying the right child.
+60:23
+So they were initialized with identity initializations we've sort of spoken about
+60:28
+before that sort of has a similar effect of allowing this sort of propagation of
+60:32
+information at the beginning of training to the kind of thing that an LSTM does.
+60:36
+And so, if you're putting together a noun phrase with a conjunction, so
+60:41
+this is sort of something like the student and.
+60:45
+Well, it's correctly learning that most of the information
+60:48
+is coming from the student, and there's relatively little coming from and.
+60:53
+If you're putting together a possessive pronoun and the rest of a noun phrase.
+60:58
+So it's something like his cat.
+61:03
+Most of the information is coming from cat,
+61:05
+with relatively little coming from his.
+61:08
+And here are some other examples.
+61:12
+If you're putting an adjective together with a noun, so
+61:15
+this is something like red chair.
+61:18
+It's learning with your gain kind of quite a lot of information from both sides.
+61:24
+This is a whole adjective phrase and a noun, so this is something like
+61:28
+extremely dark movie.
+61:33
+So you're again, getting lots of information from both sides.
+61:36
+And there's sort of some structure here that you can sort of see
+61:39
+the same dimensions seem to be marking the kind of modifier meaning for
+61:44
+both the adjective phrase and just the plain adjective.
+61:49
+So that's kind of cool.
+61:51
+The more interesting thing then is to sort of say, well,
+61:55
+are we actually getting sort of a semantics for these phrases and sentences
+62:00
+that is capturing semantic similarity in the way I claim right at the beginning?
+62:05
+And actually that did work reasonably well.
+62:08
+So here is one sort of test that we did to try and illustrate that.
+62:13
+So basically we're saying okay, for any sentence or any phrase we've calculated
+62:19
+a meaning of that phrase so that we can sort of place into our vector space.
+62:24
+So just like for word vectors, we can then say,
+62:27
+what other sentences are placed nearest together in the space?
+62:32
+Cuz they should have the same meaning.
+62:34
+So if the test sentences, all the figures are adjusted for seasonal variations.
+62:39
+The two closest of the sentences in the Wall Street Journal corpus.
+62:43
+All the numbers are adjusted for seasonal fluctuations,
+62:46
+all the figures are adjusted to remove usual seasonal patterns.
+62:51
+And this is kind of actually nice, right?
+62:54
+That well, in some parts, like all the figures are the same,
+62:59
+all the numbers are very similar.
+63:01
+But in other places it seems to have learnt quite interesting things.
+63:04
+So, are adjusted for seasonal variations,
+63:07
+are adjusted to remove usual seasonal patterns.
+63:11
+So that's actually quite a different piece of word choice and syntactic instruction.
+63:17
+This learnt quite nicely that they're very similar in meaning.
+63:20
+Knight-Ridder wouldn't comment on the offer.
+63:24
+The two closest sentences were Harsco declined to say
+63:27
+what country placed the order.
+63:29
+2.Coastal wouldn't disclose the terms.
+63:32
+Those ones aren't quite so excellent, you could say.
+63:35
+I mean, to be fair, I mean,
+63:37
+something that you have to be aware of is that there are limits to how perfectly
+63:41
+you can find other sentences that mean roughly the same thing.
+63:45
+Cuz this is only being run over corpus of about 40,000 sentences so
+63:50
+except the sort of fairly formulaic utterances that get repeated quite a bit.
+63:57
+Often you're gonna have to be choosing sentences that sort of somewhat different.
+64:01
+So you know,
+64:02
+there probably aren't other sentences with Knight-Ridder not commenting on the offer.
+64:07
+So but you know, some of them are perhaps a little bit too different.
+64:11
+Declined to say what country placed the order.
+64:14
+But nevertheless,
+64:15
+it does seem to have captured something as to what the main semantics is going on.
+64:20
+So, all of these, so this first sentence is a company
+64:25
+not wanting to say something about some transaction.
+64:30
+And both of these two closest sentences.
+64:34
+Also a company not wanting to say something about some transactions.
+64:38
+So, there is a sort of meta-sense in which it does seem to
+64:41
+capture the semantic similarity pretty well.
+64:45
+Final example here is sales growing.
+64:50
+And again, the two sentences that are closest to that are both other sentences,
+64:55
+when sales are growing further.
+64:59
+So, that was kind of nice and that still seemed to work pretty nicely.
+65:05
+We still kind of weren't really convinced that we're doing
+65:09
+a great job at capturing semantics of phrases.
+65:13
+And there was still a worry.
+65:16
+That things didn't work very well.
+65:19
+So now, we change things so
+65:22
+that we had different Ws depending on whether we're combining an adjective and
+65:27
+a noun, and a verb and its object, or whatever like that, but
+65:31
+otherwise we still had the problem that I mentioned, if for that hadn't gone away.
+65:36
+That when you're doing this matrix vector multiply
+65:41
+that what you're doing is you still got kind of half of W as being multiplying
+65:46
+itself by c1 and half of W is multiplying itself by c2, and
+65:50
+there is no real interaction Between c1 and
+65:56
+c2, and that just doesn't actually seem what you want for natural language.
+66:02
+Oops.
+66:05
+Okay, sorry.
+66:06
+That was a bit we did before.
+66:09
+And so, in particular, you know, what every semanticist has observed and
+66:14
+worked to account for in symbolic theories of semantics for the Last 40,
+66:20
+50 years is what you actually get in natural language is that you have words
+66:25
+that act as operators of functions that modify the meaning of the other words.
+66:31
+So that if you have something like very good, or
+66:34
+extremely good, or quite good, or any of those things.
+66:38
+It seems like what you have is you have good that has a meaning.
+66:42
+And then very is some kind of operator or function
+66:45
+that'll modify the meaning of good, to make it sort of more extreme and strong.
+66:50
+Or weaker, depending on whether you're saying very, extremely, quite, etc.
+66:54
+So, it sort of seems like somehow we'd like to be able to build neural networks
+66:59
+that capture those kind of ideas of composition for language.
+67:05
+So, the last thing I want to mention today, is this was sort of then
+67:09
+version three of how might we capture that composition, and
+67:14
+so essentially, if you have a vector here for good, and
+67:19
+then you want to be able to modify it's meaning with an operator, like very and
+67:25
+how might you do that, kind of a natural idea from sort of
+67:31
+linear algebra to think about is, well, what if I made very a matrix?
+67:36
+Then I can do a matrix vector multiply, and
+67:40
+calculate a new vector, and that could be a meaning of very good.
+67:45
+And there had been some previous work that for
+67:49
+particular phrase combinations had done precisely that.
+67:52
+So, there's been a paper or two that looked at,
+67:55
+let's describe the meaning of adjective noun combinations or
+67:59
+adverb adjective combinations by doing that kind of matrix-vector multiply.
+68:04
+But we wanted something more general that could be applied to whole sentences
+68:09
+arbitrarily to come up with a meaning, and so,
+68:12
+this came up with a model where sort of we were going to have matrixes and
+68:17
+vectors and we were going to combine them together in all ways to try and
+68:23
+create sort of meanings for phrases, so.
+68:27
+If we now had very good,what we gonna say is well we are not quite sure
+68:32
+when something is gonna be an operator and when it's gonna be operated on.
+68:37
+So let's just have it both ways and see what comes out.
+68:41
+So, each word is going to be represented by both vector and the matrix,
+68:46
+so very and good are both represented by vector and the matrix and so then,
+68:51
+to compute representation of the phrase very good, what we are then going to do
+68:58
+is we're going to multiply the vector by the matrix.
+69:03
+So, big a with little b and we're going to multiply big b by little a and
+69:09
+so, we're going to do both vector matrix multiplies and
+69:14
+then having done that we're going to concatenate those as we've done before.
+69:20
+And then we're gonna multiply it, put it through a neural network layer just like
+69:25
+before so we have another W matrix to the decide which of these to use and
+69:31
+how, it goes through a tanh and that gives our parent representation.
+69:34
+So at that point we've got a vector representation for the parent.
+69:40
+And that sort of looks hopeful.
+69:42
+But well, we wanna keep on building this up into a representation of whole phrases
+69:47
+and we wanna be able to build very good movie.
+69:50
+And well, at that point, we sort of conceptually wanna be using
+69:53
+the word vector for movie and would like to say well this is another operator and
+69:58
+we'd like to multiply very good by movie.
+70:02
+So, to do that, we're gonna have to also have a matrix coming out for very good.
+70:07
+And so we wanted to build one of those, and so.
+70:11
+We said well in addition to that, what we could do is put
+70:16
+together the two matrices A and B that we got down here.
+70:21
+We can concatenate them to build a bigger matrix and
+70:25
+do a matrix multiplier on that, and
+70:27
+that would then give us a representation, a matrix representation of the parent.
+70:33
+And so formally now our parent has- will now have both a vector and a matrix.
+70:39
+So, I'll show you a bit about this model.
+70:45
+It could do some quite interesting things and it also had some weaknesses.
+70:52
+And I think- In terms of where the weaknesses are,
+70:55
+if I give the game away right at the beginning,
+70:58
+a lot of the weaknesses were in this part here for the matrices.
+71:01
+Cuz we sort of had problems with that.
+71:04
+I mean, firstly, the matrices were kinda problematic,
+71:08
+because matrices have a lot of parameters in them.
+71:11
+And so, that makes it hard to learn them effectively, and that's an idea that
+71:15
+perhaps be revisited using some ideas that have come up since then, but
+71:19
+secondly we didn't have a very good way of composing matrices to build,
+71:25
+picking new matrices so that part of the model perhaps wasn't so
+71:28
+great, but here is sort of a picture that sort of shows you some of the things
+71:34
+that you would like to be able to do and whether models can do them.
+71:38
+So, we're looking now at building two word combinations, so, fairly annoying,
+71:44
+fairly awesome, fairly sad, not annoying, not awesome, not sad,
+71:49
+unbelievably annoying, unbelievably awesome, unbelievably sad.
+71:54
+And then what we're wanting to do is take those phrases and
+71:58
+interpret their sentiment and put a probability
+72:02
+distribution over sentiment scores between 1 and 10.
+72:07
+So, 10 is extremely good, and 1 is extremely bad.
+72:13
+And for some pairs of words, we actually
+72:19
+had some sort of empirical data that was kind of connected to these meanings.
+72:24
+The empirical data was kind of a sort of distant supervision,
+72:28
+not to be trusted very much.
+72:30
+But this was sort of saying well suppose we'd seen a review of a movie that
+72:35
+said not said and that what rating was being given to that movie and
+72:42
+it was sometimes a bad rating, occasionally a good rating.
+72:47
+And that sort of was shown in that one example for the red line.
+72:51
+But what's perhaps more interesting to see is that
+72:55
+the sum of these Combinations that the plain
+73:00
+RNN is actually more effective than you might have thought it first it will be.
+73:04
+So if it's something like unbelievably awesome,
+73:08
+that can be captured pretty well in the model captures,
+73:12
+that unbelievably awesome that even the basic RNN model is good at knowing,
+73:17
+that means it's a very good movie and very positive sentiment.
+73:21
+We can even do some sort of more interesting things.
+73:26
+So if you have the phrase unbelievably sad it turns out that that's kind of
+73:30
+ambiguous that there many really good movies that are unbelievably sad.
+73:35
+So there's a lot of weight over here and then, there are some cases
+73:38
+where people say, a movie is unbelievably sad, because it's just terrible.
+73:42
+[LAUGH] And so, you're actually getting this sort of U shape,
+73:47
+where you get some weight on both ends of the spectrum.
+73:50
+And, interestingly, even the plain RNN, and also our matrix vector
+73:55
+RNN is able to capture that pretty well, so that's kind of nice.
+74:01
+But, there are some things that the basic RNN just
+74:06
+isn't able to capture right, where our new model does a lot better.
+74:11
+So if you look in these middle row ones, like not annoying and not awesome.
+74:16
+That, by itself, the word not just tends to be a marker of negativity, right?
+74:23
+People who go around saying not a lot, negative people.
+74:27
+So all else be equal if you see the word not in something
+74:31
+sentiment is more likely to be negative.
+74:33
+And then the word like annoying that's a negative sentiment word.
+74:37
+And so for the basic RNN model if you put those together they just have a kind of
+74:42
+additive effect it turns out, so that's the green line where it says not annoying,
+74:48
+it predicts that means bad movie low rating, whereas the result we'd like
+74:53
+to have is that not is an operator and it modifies the meaning of annoying and
+74:58
+this means like it's not so bad and it's not annoying.
+75:02
+And the interesting thing about natural languages is that they sort of don't work
+75:07
+like sort of basic logic where basic logic might tell you that not annoying
+75:12
+means this is a good movie because it's not annoying where if real human beings
+75:17
+when they say words like not bad, or not annoying, they mean it's sort of okay.
+75:23
+And so,
+75:26
+the distribution that the matrix vector model comes up with
+75:31
+is sort of flat, but it's sort of at least basically right that it actually gives
+75:35
+the highest probability to the midrange of the distribution, which is kinda correct.
+75:40
+And you see a similar effect with not awesome,
+75:44
+that the basic RNN isn't able to capture that,
+75:47
+it's still giving most of its weight to saying I've seen the word awesome,
+75:52
+this is a good movie, whereas the matrix vector RNN is at least done sort of
+75:57
+better and it's tapped down, giving weight to meaning that it's a great movie.
+76:02
+So it sort of seems like we're kinda doing
+76:05
+better at being able to model meaning combinations.
+76:08
+Yes?
+76:38
+Okay, so the question is, is it really wise to be doing it both ways with
+76:42
+the matrix and the vector or could you actually use your syntactic structure and
+76:48
+know which way to apply these two things and do it only one way?
+76:52
+Yeah, so, these results, even though all my phrases have
+76:55
+the operator on the left and the thing being modified on the right.
+76:59
+This is sort of running that symmetric matrix vector model, and
+77:04
+it's just doing it both ways.
+77:05
+So I think you're totally right, it wasn't something we did in this work.
+77:09
+But it seems like you can very reasonably say well wait a minute.
+77:14
+Why can't you take both of these two models that you've just shown us?
+77:18
+If you're using the sort of syntactically untied model,
+77:21
+you know that if you're doing adjective
+77:24
+noun combination you should treat the thing on the left as the operator.
+77:28
+And then you can just run it in one direction and
+77:31
+I mean, in general I think that'd be a very reasonable thing to try.
+77:36
+It sort of means that you have to have complete coverage.
+77:39
+And so you've decided in every case of when two different
+77:43
+categories come together.
+77:44
+You have to decide for sure which is the one you're going to treat as the operator
+77:50
+and you know that might actually require quite a bit of work to do.
+77:53
+In principle you could do it and that would work.
+77:57
+Yea, so we're basically done for today but just to show you
+78:03
+sort of one other thing that we were able to do with the matrix vector model, which
+78:08
+was sort of a nice example of how we're able to use this model to do an NLP task.
+78:13
+So this was a task of learning semantic relationships as
+78:18
+a kind of relation extraction task.
+78:21
+So, this was a data set that some people had explored where you had sentences like,
+78:26
+my apartment has a pretty large kitchen and then what you meant to say was,
+78:31
+what is the relationship, between apartment and kitchen?
+78:34
+And there were set of relationships that they could have and
+78:38
+one of them was that component whole relationship and so the correct answer
+78:42
+here was to say that the kitchen is a component of the apartment and then there
+78:47
+were various other relationships that could be a tool what you were using.
+78:51
+It could be the material something was made out of and
+78:54
+various other kinds of relationships.
+78:56
+And so, we explored using this matrix vector,
+79:01
+recursive neural network to learn these relationships.
+79:04
+And so, the way that we were doing that Is we were sort of building up semantic
+79:08
+compositions using the matrix vector RNN model, and so
+79:12
+we build up this semantic compositions until you reach the point where the two
+79:20
+noun phrases of interest joined together in the structure of the sentence.
+79:25
+So the movie showed wars, so this was the sort of the message,
+79:30
+the content that's being shown on this media.
+79:34
+So, where they join together, we'd say, okay, we've built
+79:39
+up a semantic representation that covers the movie showed wars.
+79:44
+So at this point, we then use another neural network,
+79:47
+that's just a straight classifier that says okay,
+79:50
+classify the relationship here, it's an example of message topic.
+79:56
+So we built that model and this is a nice example where it seemed like we
+80:03
+weren't able to show, that again, having this extra power gave us extra power.
+80:07
+So here are just some results on that.
+80:10
+So people had worked on these data set previously.
+80:13
+So as a sort of basic support vector machine got about 60% F1,
+80:19
+MaxEnt model so it's like a logistic regression
+80:24
+model with a lot of features, got 77%.
+80:28
+SVM model with a huge amount of hand built linguistic resources and features.
+80:34
+So this is using everything, it's using WordNet, dependency parses, Levin verb
+80:40
+classes, PropBank, FrameNet, NomLex-Plus, Google n-grams, paraphrases, TextRunner.
+80:44
+Every feature and
+80:46
+knowledge source you could possibly think of to throw into it got 82.2%.
+80:51
+So here are our results with our neural network model.
+80:55
+So the plain recursive neural network got held a little under 75% so
+81:02
+that's actually pretty good when all its doing is learning its own semantics,
+81:10
+representations that puts things together but not quite.
+81:16
+Winning the pack.
+81:18
+So the matrix vector model actually is clearly doing something useful,
+81:21
+so it's sort of getting you about 4% better scores.
+81:26
+So that shows we have made some progress in semantic representation.
+81:31
+Of course, like everyone else,
+81:32
+we wanted to have our model better than the last people's model.
+81:35
+So then we sort of built a model that sort of put in a few semantic features, but
+81:40
+only, sorry, a few extra features, but only fairly basic ones.
+81:43
+WordNet, part-of-speech, and NER, and that was sort of, hey,
+81:46
+I wanna push this just over the line, but I think the main message is that you're
+81:51
+sort of starting to get decent semantic models of phrase relationships without
+81:57
+actually having much more than just these continuous representations of semantics.
+82:02
+Okay, I'll stop there for now and we'll get to more next week.

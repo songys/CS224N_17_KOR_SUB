@@ -1,0 +1,2368 @@
+00:00
+[MUSIC]
+00:04
+Stanford University.
+00:07
+>> What an exciting ride it has been.
+00:11
+Before we tackle the limits of deep learning for natural language processing.
+00:15
+Some organizational things, I know some nerves are down to the wire.
+00:22
+So we wanna say first and foremost, sorry for some of the craziness around PA4.
+00:27
+It's a very large class.
+00:29
+It's a very useful class for a lot of your guys career, and girls.
+00:35
+So it will be useful, even if you might get a point here less,
+00:40
+here and there less.
+00:42
+It's a very useful class because it is so
+00:44
+cutting edge with that cutting edge research vibe and new models.
+00:49
+And the class size and
+00:50
+excitement, it is very hard to make everything perfect the first time.
+00:54
+So thanks a lot for all your feedback on the situation with PA4,
+00:58
+there is a lot of internal discussion in the TA staff and between Chris and
+01:04
+me and we are trying to make it as fair as possible and help you get off the ground.
+01:12
+The main thing that is I think, straightforward and
+01:16
+everybody's happy about it is that we'll give you a short 33-hour extension for
+01:21
+assignment 4 as well as the final project.
+01:23
+So the new deadline that does not use any late days is 9:00 AM on Sunday.
+01:29
+That's this upcoming Sunday.
+01:31
+And then the hard deadline that sadly we cannot push any further because we'll have
+01:36
+to actually grade the almost 700 students' projects, is 9:00 AM on Wednesday.
+01:42
+We have to submit the grades just a few days later to let people graduate and
+01:46
+all that, so that is the hard deadline, there's no extension.
+01:50
+Yes?
+01:51
+>> [INAUDIBLE] >> How do you submit it?
+01:53
+The submission instructions should be on the.
+02:02
+Ideally, if you do PA4,
+02:04
+you submit to CodaLab to get the official number as well.
+02:08
+You must, not ideally.
+02:11
+Totally required.
+02:14
+It looks like there are at least a dozen or two groups for
+02:19
+whom it would be ideal, and hopefully they will get something.
+02:24
+So we'll go a little bit into how to help those folks.
+02:29
+All right, then don't forget the poster session.
+02:31
+It is now actually just slightly before that final deadline.
+02:35
+But really at the poster session we wanna be able to get a sense of
+02:39
+what your project is about.
+02:41
+Really the last nine hours or
+02:44
+so that you have of mental time between the poster session and
+02:47
+the very final deadline, you should just be spending on writing a nice report.
+02:52
+Editing, nicer looking plots and things like that.
+02:55
+And maybe finishing that last cross validation experiment
+02:58
+to tweak your performance by 1 or 2%.
+03:01
+So we expect not too many excuses at the poster sessions,
+03:05
+saying, this is just a poster.
+03:06
+But in nine hours it will be much, much better and different.
+03:09
+Really will be looking at that poster as your main project output.
+03:14
+So the session itself is 5% of your grade, the final PA4, and
+03:19
+the final project are 27% of your grade.
+03:23
+Any questions around the poster session?
+03:27
+Organizational things?
+03:29
+All right, so another update.
+03:33
+I'll get back to poster session in a bit.
+03:36
+Another updated on PA4.
+03:38
+First we thought there, okay, there is a couple groups really struggling hard.
+03:43
+We'll give them some more helper code.
+03:47
+It's not really starter code at this point anymore.
+03:49
+It's just helping you out.
+03:50
+Even the modifications of the starter code were just pretty minor.
+03:53
+Then, there was a huge backlash of all the students who did put in
+03:58
+all the work to get to that baseline model themselves, and
+04:02
+that backlash seem to be larger than the excitement by the students.
+04:08
+And so again we're trying to balance things out a lot.
+04:10
+In general, I hope you appreciate the hard work that all the TA's are doing.
+04:15
+Back when I was undergrad in Germany, people were just like, you're 10 minutes
+04:19
+late of your assignment submission, you get zero out of your assignment.
+04:21
+If you can't make the final project or the final deadline for the midterm or
+04:25
+something, you just take the class next year.
+04:28
+So, [LAUGH] hopefully we're making everybody a lot happier than those times,
+04:34
+and we're trying really to be really fair.
+04:37
+So with that said, we'll give you some starter pseudo-code,
+04:42
+that is our way of trying to make the two balance the least unhappy.
+04:47
+Really the startup pseudo-code is super simple, I've given it to a couple of
+04:52
+people who were struggling with QA and who came to my office already before.
+04:56
+But it's something that you should all be able to implement fairly quickly at
+05:00
+this point.
+05:01
+And so I'll walk you through a little bit.
+05:03
+This starter code implemented properly and tuned well,
+05:07
+the right hyper-parameters and so on, should get you at least above 50% F1.
+05:12
+And the code is essentially, you just pipe your question through an LSTM,
+05:16
+you get the final hidden state of a question q.
+05:19
+You pipe your input through an LSTM.
+05:22
+You get an output at each hidden state,
+05:25
+let's call it x_i at each word in the input.
+05:29
+And then you just take a neural network to classify with an input,
+05:33
+the two inputs are the question vector, the final hidden state,
+05:36
+and each hidden state at a certain time step, x_i.
+05:39
+And then you predict the start token, and you can either use the same or
+05:44
+probably a different one to predict the end token for each question.
+05:50
+So something as simple as that should get you something like 50% F1 score.
+05:57
+And then on top of that, you can do all the bells and
+05:59
+whistles that the TAs have talked about before.
+06:02
+You can take all the elements of the hidden states of the LSTM,
+06:07
+and you do an inner product with the inputs and
+06:10
+your compute this co-attention or context matrix, and lots of other extensions.
+06:14
+But really, we hope that this is something that's possible for everybody, but
+06:18
+the groups who have already put in all the work, that should not be a big surprise.
+06:23
+And they may have some version of these, and
+06:26
+probably more advanced versions than that already.
+06:30
+All right, any questions about the starter code, the project?
+06:56
+So, I guess, the question is any advice on should we stick to what we have or
+07:01
+use this simple baseline.
+07:03
+I guess it depends on where you are with your F1.
+07:06
+If you're much above that, then you probably don't have to get back to this
+07:10
+and you probably in your current model capture something of that sort.
+07:14
+In general, these first two steps are good steps for pretty much every model, so
+07:18
+if you haven't done that just throw that in there.
+07:22
+These you probably have done something more advanced by now,
+07:25
+and if you get that then that's fine.
+07:28
+Sometimes, there's always a fine balance,
+07:30
+and you might be really annoyed with how hard this is.
+07:33
+But this is really also what we would like you to teach and learn about the field,
+07:37
+and sometimes it's frustrating, and sometimes you're really stuck.
+07:40
+And then learning exactly how to deal with this is actually a super valuable skill,
+07:44
+both for Academic research as well as industrial research.
+07:48
+Sometimes it's very hard to set up your problem and
+07:50
+know where to get started from.
+07:52
+And so as you put these together, sometimes you'll have a trade off.
+07:58
+You can tune a baseline more and get higher or
+08:02
+you have a not well tuned baseline and
+08:05
+add some more complex model variance to that baseline and also get better.
+08:10
+And so it's always a fine balance.
+08:13
+I think the default Is
+08:15
+just make sure you have a baseline that is set up that is correct.
+08:19
+And that kind of simple baseline should get you at least 50%.
+08:22
+Really if you tune that a lot with lots of crazy interesting dropout over recurrent
+08:27
+nets and so on you could get up to to 60% F1 with this kind of simple model.
+08:32
+Now, you don't need to tune it to death.
+08:34
+Sometimes, you basically get sort of diminishing returns, right?
+08:37
+If you tune it a little bit, you get a couple of percent improvements, and
+08:40
+then the last couple of improvements of the baseline might be harder and harder.
+08:44
+And it might be faster for
+08:45
+you to just implement a slightly more sophisticated model.
+08:49
+And that's true for generally all sort of people running NLP systems.
+08:56
+Great question.
+08:59
+All right,
+09:00
+now one last note on the poster session before we get on to the last limits.
+09:05
+Some of those limits actually include question and answering.
+09:07
+So we will talk about the dynamic co-attention network which some
+09:10
+of you may know now.
+09:11
+But, again, everybody is expected to attend the poster session.
+09:16
+If you can not attend, you have to submit a small video and
+09:21
+ask for an exception, especially SCPD students.
+09:25
+Everybody is in two blocks.
+09:27
+We hope that in the block that you're not assigned, you can actually walk around and
+09:30
+see other student's projects.
+09:32
+I can guarantee you that there's some really exciting and
+09:36
+interesting projects out there.
+09:38
+And it'll be just I think fun to talk to students even if you're a little sleep
+09:42
+deprived, maybe just before.
+09:44
+I'm sure I was in most of mine.
+09:47
+You will have a very nice lunch, lots of food.
+09:51
+And because it's public there's a lot of excitement around this.
+09:55
+That's kind of what I meant, too, of yes, it's much harder, this class and
+09:59
+especially this PA4.
+10:00
+But it is also a lot more useful than a lot of other classes.
+10:03
+I personally know many dozens of people who took many versions of this class
+10:07
+before and they got job offers just because of that class and
+10:10
+what they've done and their projects in this class.
+10:13
+So there will be lots of companies and
+10:16
+representatives from those companies, there will be VCs and who knows you
+10:19
+might even get some seed funding just because you have an awesome project.
+10:22
+So it's hopefully that will make you less
+10:26
+upset about the struggle of the last week for this project.
+10:30
+All right, any last questions about the poster session?
+10:37
+All right so let's talk about the limits of single task learning and,
+10:41
+in general, deep learning for natural language processing.
+10:46
+I think so far the field of deep learning and NLP has gotten very good at
+10:52
+taking a single dataset task and model and metric and then optimizing that setting.
+10:57
+That's kind of what we've also gone through a lot of examples in this class.
+11:01
+And thanks to these end to end trainable, deep learning models,
+11:06
+the speed of these improvements has also gotten better and better over time.
+11:10
+Which is really exciting to see, especially if you followed the field for
+11:14
+a long time.
+11:16
+However, if we continue to start all these projects from random parameters,
+11:20
+which we mostly do, except maybe the word vectors.
+11:23
+Word vectors are great sort of to pre-train a lot of your models.
+11:26
+We won't ever obtain a single natural language understanding system,
+11:31
+that we can just kind of converse with and
+11:34
+one that understands language in all of its complexity.
+11:39
+And so
+11:39
+I personally don't think that a single unsupervised task can fix that either.
+11:43
+In fact you'll hear some people talk about this and
+11:46
+this is certainly a point of contention.
+11:48
+Can we have a single unsupervised task and just solve that really well and
+11:52
+then get to some kind of better AI systems?
+11:55
+I don't think NLP will fall into that category because largely language
+12:00
+has actually a lot of supervision and different kinds of feedback.
+12:05
+And requires you in the end to solve a lot of different tasks.
+12:09
+In language if you want to have a proper language system, you may have to do
+12:14
+some sentiment understanding of what you're getting, given this input.
+12:19
+But sometimes you also have to logically reason over certain kinds of facts.
+12:23
+And other times you have to retrieve some different facts from a database or
+12:27
+maybe logically reason over facts in the database and do some memory retrieval.
+12:33
+And yet again other times you have to ground whatever you're talking about in
+12:37
+the visual or physical world.
+12:39
+And so there are a lot of different kinds of components, and
+12:42
+if we want to have a system that understands language better and better,
+12:46
+ideally that system can incorporate lots of different things.
+12:49
+And so in a more scientific way, and the way we kind of described in
+12:53
+a lot of tasks, we have different kinds of frameworks for sequence tagging,
+12:58
+sentence level kinds of classification or two sentence kinds of classification.
+13:03
+Like understanding entailment, logical entailment and things like that.
+13:06
+And we have a lot of different kinds of sequence to sequence models.
+13:10
+And so as I mentioned a couple of slides ago,
+13:15
+we have a bunch of obstacles to get towards such a system.
+13:19
+And here's just a couple of very recent papers.
+13:24
+Several of which I've been involved with, so I'm very excited about them.
+13:27
+And then some also, one from Google.
+13:31
+Where basically, we're trying to tackle that limit,
+13:34
+the limits that we have in natural language processing, especially deep NLP.
+13:40
+The first one is one that we actually already talked about which is we didn't
+13:43
+have a single architecture let alone a single model.
+13:46
+Again, architecture might have different hyper-parameters, different weights for
+13:50
+the different tasks that you work on.
+13:52
+And we all ready basically talked about this dynamic memory network
+13:56
+which could also be used for question answering.
+13:59
+And some form of that you might even be able to use for question answering.
+14:03
+But we all ready talked about that.
+14:04
+So I want to talk about the next obstacle which we didn't get to last time.
+14:09
+And that is to actually jointly learn many tasks in a single model.
+14:14
+Now, fully joined multitask learning is really really hard.
+14:19
+What do I mean by this?
+14:20
+So basically so far when people talk about multi-task learning or many-task learning,
+14:27
+they assume there's a source task and then there's a target task.
+14:31
+And they just kind of hope that the pre-training your neural network
+14:35
+on the source task will improve another target task.
+14:39
+But in my case, I'd ideally have both of them be trained jointly, so
+14:44
+instead of having separate decoders for
+14:47
+instance for different languages of different classification problems.
+14:51
+Ideally we have just a single set of a very large set of different classes we
+14:56
+might wanna predict about a certain input, text input.
+15:02
+Really have the exact same decoder.
+15:04
+So if we have a sequence a sequence model and
+15:07
+we have a question about each sequence.
+15:09
+Ideally, the sequence decoder can just output different kinds of answers
+15:13
+depending on what the question was about that input.
+15:17
+Now when people do multitask learning in many cases they also just
+15:22
+share lower layers and train those jointly, but not these higher layers.
+15:27
+So what I mean by this,
+15:28
+in natural language processing mostly we're sharing just the word vectors.
+15:32
+We don't share other higher LSTM layers for
+15:36
+instance across a whole host of different tasks.
+15:39
+And computer vision is actually a little further ahead in that respect.
+15:42
+In that pre-trained CNN.
+15:45
+On a very large dataset like imageNet can actually be used for
+15:49
+a lot other tasks pretty well.
+15:50
+You just change the top layer of a deep convolution neural network in computer
+15:55
+vision and you can still get pretty good accuracy and
+15:58
+transfer a lot of the learnings from different visual task.
+16:01
+We still can't really do that very convincingly in NLP And
+16:07
+in many cases you'll only read about multitask learning in the cases
+16:11
+where the tasks where somewhat related and hence, helped each other.
+16:14
+So we know, for instance, part of speech tagging helps parsing.
+16:18
+Cuz the parser makes decisions.
+16:21
+And if it knows a certain word is a determiner,
+16:24
+then it's almost clear which word should be the dependent of the other.
+16:29
+However, what you rarely ever read about is when the tasks aren't perfectly related
+16:34
+and good matches, they don't help each other.
+16:37
+They actually hurt each other.
+16:38
+And so these kind of negative results are very hard to publish.
+16:41
+And hence, not talked about very much.
+16:44
+And so, yeah, these are all the issues, or at least some of the issues,
+16:47
+of why multitask learning is really hard.
+16:50
+And I think at that perimeter of the limits of deep learning for NLP.
+16:56
+And so, this is a paper that's currently in submission,
+16:59
+that basically tries to tackle that.
+17:01
+The title of the paper is A Joint Many-Task Model: Growing a Neural Network
+17:06
+for Multiple NLP Tasks.
+17:09
+And the final model is actually quite a monster, to be honest.
+17:13
+It has a lot of different components.
+17:16
+Fortunately, we now know pretty much all of these components.
+17:19
+And hence, we can talk about this very paper, it's not even published yet,
+17:24
+I mean it's on arXiv.
+17:25
+But you should be able to understand all the components of this model now.
+17:30
+And be able to implement something very similar.
+17:33
+So I'll go over it a little bit in a high level, and
+17:36
+then we'll zoom in to the different aspects.
+17:38
+And feel free to ask any kind of question.
+17:41
+So the first that we'll do is, we have some kind of word vector presentations.
+17:44
+And there are actually some clever things in this paper about n-gram vectors too,
+17:49
+instead of just word vectors.
+17:52
+Which sometimes you have these unknown words, you can go subword tokens,
+17:57
+Chris mentioned character models are in a similar kind of idea.
+18:02
+And then, the word vectors are basically given to a series of LSTMs.
+18:07
+All of these big blocks here are LSTMs.
+18:10
+And the output of one LSTM is given as input to the next one, but
+18:16
+not the just the output from the softmax but also the hidden states of the LSTMs,
+18:20
+as a standard when you stack multiple LSTM nodes or cells on top of one another.
+18:27
+So you have these short circuit connections.
+18:28
+So the first LSTM here will just classify a part of speech tags at every word.
+18:33
+The next one will classify beginnings and endings of chunks.
+18:37
+And then this one will do dependency parsing.
+18:40
+I'll describe how to do that with a simple LSTM in a second.
+18:44
+And then, when we classify dependency parses, for instance,
+18:47
+we still take as input these short circuit connections from part of speech tags,
+18:52
+to each of these higher level tasks.
+18:55
+And then, at some point, new tasks and
+18:58
+higher level tasks will require you to understand two sentences at once.
+19:02
+So then we have a simple sort of pooling scheme,
+19:05
+similar to what we described with convolusional neural networks,
+19:09
+where we pool over time for classifying relatedness and entailment.
+19:14
+And in the end we can train this entire beast jointly in one objective function.
+19:21
+All right, before I jump into details, any questions high level?
+19:27
+Great question, why do we have two of them?
+19:30
+So this is just, you can think of it,
+19:32
+if you only have tasks that require one sentence, you can just have one.
+19:36
+It's just if you want to classify how related is this
+19:39
+sentence to the other sentence, we just show two.
+19:42
+And because that's sort of the highest level we get to,
+19:49
+we just showed it in one plot to have all things in there.
+20:09
+So the question is, if the relationship is symmetric,
+20:11
+wouldn't you wanna use the same system for both sentences?
+20:14
+So, we do use the same system for both sentences.
+20:16
+These two here are completely identical pieces, and so is this one.
+20:22
+It's just once you put,
+20:23
+pipe them through here, that you basically take into consideration where they are.
+20:27
+But you can also pool the, you can pool cross these
+20:33
+two different final representations, to make sure that they're symmetric as well.
+20:39
+All right, so I think it'll become clear, sort of what's going on,
+20:43
+when we zoom into the model.
+20:45
+So, again, we have this character n-grams,
+20:48
+as well as standard word vectors, like word2vec that we've learned about.
+20:54
+And this first layer here is a very standard part of speech tagging LSTM.
+21:00
+At every time step we essentially just have a single layer LSTM, and
+21:04
+we pipe that into softmax.
+21:07
+And then, what we also do is actually we'll compute a label embedding,
+21:10
+that essentially will allow us to take
+21:14
+into consideration some of the uncertainty that the part of speech tagger had.
+21:19
+The main idea,
+21:19
+you can think of this basically as another layer that takes as output the softmax.
+21:24
+But you can also write it as this kind of convex combination here,
+21:27
+where every label that you have, has associated with it a vector.
+21:33
+And you basically sum up all these vectors in a weighted sum here and the weight
+21:38
+depends on how certain the model was, to have that label at that time step.
+21:43
+So for instance, if you have 3 different, you have over 40, but let's say you had 3
+21:47
+different part of speech tags, just adjectives, nouns and verbs or something.
+21:52
+And basically each of these 3 will have a vector associated with it,
+21:56
+say a 50 dimensional random vector, it's something you'll learn as well.
+22:00
+And you have some probabilities, you think like with 0.9 this is a verb, and
+22:03
+0.05 it's an adjective or a noun.
+22:06
+Then you multiply these 3 numbers with their respective embeddings, and
+22:10
+that will determine the label embedding for y.
+22:15
+And so now, those are the outputs of the POS tagging LSTM.
+22:20
+And so to go to the next level, the chunking model will actually give
+22:25
+as input, again, the word vectors directly,
+22:29
+the hidden states from the POS LSTM, and that label embedding.
+22:34
+These are all the inputs, and then we just plug, those are just concatenated, and
+22:39
+we plug that into another LSTM.
+22:42
+And that will, again, do something very similar, where it has as output
+22:46
+a hidden state softmax, and then a label embedding for the chunking labels.
+22:51
+And you could, in theory, do this a lot.
+22:53
+And some previous similar kinds of architectures had actually thought about
+22:58
+putting all of these into the same layer.
+23:01
+And we compare that, and
+23:02
+we find it works better if you have these three different tasks, POS,
+23:07
+chunking and dependency parsing, actually all in their own LSTM layer.
+23:15
+Any questions about that architecture?
+23:25
+Cool, now on dependency parsing, it's a little more complicated because in the end
+23:30
+we wanna have a tree structure, right?
+23:32
+And so dependency parsing,
+23:34
+turns out, in many cases, used to require some kind of beam search.
+23:38
+But here this model actually is incredibly simple.
+23:42
+We, again, have a standard bi-linear, bidirectional LSTM.
+23:46
+With now four inputs, the word vectors, the hidden state of the chunker,
+23:52
+and the label embeddings for POS and chunking.
+23:54
+So these are just four inputs at every time step.
+23:57
+And now a bidirectional LSTM, as we defined it in class.
+24:00
+And now basically we'll just run a quadratic number of classifications of
+24:07
+just saying is this word the dependent of that word, or of that word, or that word.
+24:13
+Run through all of them and it would just take the maximum for
+24:18
+each of them and we just say that's the tree.
+24:21
+Now if you think about this a little bit it might not even be a proper tree.
+24:24
+Maybe none of them said I am classified as I'm the root, so
+24:28
+I have all like the potential to classify I'm the root of the tree.
+24:31
+Or maybe two things pointed the same parent or
+24:35
+the same child or they create loops or anything like that.
+24:40
+So in theory, this might not even create proper trees but
+24:43
+in practice surprisingly it does in like 99% of the cases.
+24:48
+There's a very small number of cases where this very simple feed
+24:52
+forward architecture does not give you proper tree and
+24:55
+you can use basically some very simple deterministic rule base systems
+25:00
+to clean up that last less than 1% of non-proper trees and
+25:05
+just delete certain edges or add certain like the route to the tree.
+25:10
+And then you get a proper tree.
+25:11
+And this actually resulted in the state of the art dependency parser,
+25:16
+submitted it but since then I think one of Chris's papers.
+25:20
+Just outperformed it a little bit already again.
+25:24
+It's never ending fun race that we all work on together.
+25:28
+To work on pushing state of the art on these tasks.
+25:33
+But yeah, somewhat surprising, no beam search required,
+25:36
+just feed-forward computation.
+25:38
+And you get pretty good trees most of the time.
+25:41
+All right, any questions around the dependency parsing module?
+25:45
+Yeah?
+25:52
+You could do a lot more things to improve and actually add a proper beam search and
+25:57
+go through several of the scenarios or something like that.
+26:01
+Proper SQL you can do because you have these continuous vectors usually and
+26:05
+not SQL is also mostly for consistency parsing as dependency parsing and so on.
+26:10
+But you could do a lot more clever things and slow it down.
+26:14
+Surprisingly you don't have to.
+26:16
+We just, all of this computation is parallelizable, it's super fast,
+26:20
+there's no extra infrastructure needed for any kind of tree search.
+26:27
+All right, now the last level is basically to train multiple sentences for
+26:33
+different tasks such as semantic relatedness.
+26:37
+And what we do here is basically have a simple temporal max pooling, so
+26:41
+that last hidden stage of this LSTM is basically.
+26:48
+Just will produce a feature vector at every time step.
+26:52
+And you will now just look at across all the feature, the hidden dimensions of
+26:57
+all the time steps, where's largest value and you just pick that one.
+27:00
+So it's kind of why we call it temporal max-pooling and
+27:03
+you can then look at again these simple things like inner-products
+27:06
+between those features, and vector distances and so on.
+27:09
+Extract some features and pipe that into another softmax to classify
+27:14
+both relatedness and entailment kinds of relationships.
+27:18
+So it looks kind of complicated, but really it uses all the components
+27:23
+that we've carefully went through in class, just in a clever new way.
+27:27
+Now sadly when you just say, all right, this is my whole model.
+27:30
+Now back propagate every time you had a softmax,
+27:32
+we use our standard cross entropy error.
+27:34
+And you just throw that into it, it doesn't quite work right away.
+27:38
+There's one extra idea that you have to use and
+27:41
+call this sort of successive regularization.
+27:45
+Where basically inside each mini-batch you allow the model to first focus
+27:50
+on different tasks and then as you go higher,
+27:53
+you will regularized the weights of the lower levels to not change too much and
+27:59
+that too much is defined by this regularization term delta here.
+28:03
+So this is basically, then one of the novelties of how to make
+28:08
+the training more robust, and actually result in the end, with a final system
+28:12
+that gets the state of the art on four out of the five tasks that we looked at.
+28:16
+And so again, intuitively here you have at the end of the first mini-batch
+28:21
+where you focused on just part of speech tagging, you have a set of weights theta
+28:25
+that define your label embeddings, your LSTM weights, and so on.
+28:30
+And you now say when you train the next
+28:33
+higher level task in chunking to not move too far away.
+28:37
+From those weights that were really well tuned for part of speech tagging.
+28:42
+And then, as you go higher and higher,
+28:44
+you basically try to keep more things the same.
+28:47
+But if the higher level task really wants to change a certain weight,
+28:50
+it can still do it.
+29:01
+That's right, so the question is as you train inside each mini-batch or really
+29:05
+almost like the whole epoch, you can focus first on each of the different tasks,
+29:10
+and you do that in a way that you start with the lower level tasks and
+29:14
+then you move up through the network, that's right.
+29:22
+So each mini-batch is actually focused on a single task.
+29:33
+So each mini-batch focuses on one task, but as you go and
+29:37
+you finish on that, you go to the next task.
+29:45
+That's exactly right.
+29:46
+When you go to the next task you have a soft sort of
+29:51
+regularization or clamp on those previous slides.
+30:00
+So that's something that could actually work for various projects to some folks
+30:04
+had the idea of using SNLI or entailment classification as a pre-training step.
+30:09
+For question answering and those are all kinds of ideas that you could try as well.
+30:15
+So, there are, most of those tasks that joint training actually helps.
+30:22
+There's a lot of complexity in getting all these numbers, and
+30:25
+this whole paper actually has like over 12 or 15 tables for
+30:31
+the various ablation studies of using the successive regularization, yes or no?
+30:36
+Using character n-grams, yes or no?
+30:38
+Versus just word vectors.
+30:40
+Training various combinations of tasks together.
+30:43
+There's a lot of experiments that went into this task.
+30:47
+Basically overall, these two are sort of the summary of the table.
+30:53
+When you look at all the tasks separately and they train
+30:56
+all separately versus they're jointly trained, they basically all improve.
+31:00
+And these are all tasks that have been worked on quite a lot so
+31:04
+you don't see huge improvements.
+31:06
+Relatedness here is actually the lower the better.
+31:08
+So this is also good.
+31:10
+For some of the higher level tasks on smaller data sets you also get
+31:14
+larger improvement.
+31:15
+So in general joint training with different tasks often helps.
+31:20
+When you have less data.
+31:22
+It helps more when you have less data per task, right?
+31:24
+Because then you can transfer more.
+31:26
+If you have a simple task, that is only a binary classification problem,
+31:31
+for instance, or something like SNLI,
+31:33
+where you have is this entailment contradictory or neutral and
+31:37
+you have hundreds of thousands of examples for each of the three labels,
+31:42
+then you can probably just get away with training everything on just that dataset.
+31:48
+Of their more complex output spaces, so machine translation for instance, or
+31:52
+the smaller your data set this is, the more you benefit from trying to
+31:55
+jointly train with different kinds of objective functions,
+31:58
+having some unsupervised pre-training of word vectors,
+32:01
+then maybe some semi-supervised things, where you have, you continue to train.
+32:06
+And supervised word vectors together with some supervised tasks and so on.
+32:11
+This result here is in parenthesis because the part of speech tagging and
+32:17
+chunking subsets are actually, sorry, the dependency and
+32:22
+chunking results actually overlapping on the DEV and test set.
+32:27
+And so obviously, chunking will help a lot, in the dependency part.
+32:31
+You know that inside this chunk everything should point to one another
+32:36
+inside the dependency tree.
+32:38
+And so, this result is a little too optimistic, so
+32:41
+we have one that just trains on these two jointly.
+32:45
+You still have an improvement, but it's less strong.
+32:48
+So these in parenthesis numbers, when you carefully look at your training,
+32:51
+in your dev and in your test sets, you realize there's some overlap.
+32:55
+And you need to mention that, we do in the footnote.
+32:59
+Any questions around the experiments over the set of this model?
+33:04
+Now, these are just some more results of the various,
+33:08
+just a subset of the many people who have worked on all these different tasks, and
+33:12
+sort of the comparison.
+33:13
+And this is generally something that I've encouraged you to do in all your
+33:17
+proper projects, but also something that you'll see in most good papers.
+33:21
+You usually have two sets of tables.
+33:23
+One set of tables is about you comparing your best model
+33:27
+to all other people's best models.
+33:29
+And then the other subset of tables is about understanding your model better with
+33:33
+ablations and modifications to your model and
+33:36
+decisions that you made about your model.
+33:39
+And so this set of tables here is basically the comparison to
+33:42
+all the other folks, who have worked on those tasks.
+33:45
+And in many cases, it's basically the state of the art model.
+33:51
+And this is just one of the many tables of this paper that tries to understand
+33:56
+all of the various combinations, and which tasks help which other tasks.
+34:02
+All right, any questions about joint many task learning
+34:24
+So the question is what's the key insight that made this model work to be honest,
+34:29
+there are a bunch of them and they all matter a little bit.
+34:33
+So having a better word representations with character n-grams
+34:37
+help just a little bit.
+34:39
+In the paper, you'll see how much they all help.
+34:42
+And then, having the short circuit connections helped and
+34:46
+we have a table that shows all the deltas for having the short circuit connections.
+34:53
+From all of the lower level tasks, outputs, and
+34:56
+label embeddings directly to the higher level tasks.
+34:59
+And then, the successive regularization helped a little bit also, so yeah.
+35:06
+It's actually a sequence of things.
+35:08
+There's no single insight other than of course having this main model.
+35:12
+So we also have a table that shows how much it helps to have three layers for
+35:18
+all these tasks versus a three layer LSTM,
+35:21
+where all the tasks are output at the same height or same depth of the network.
+35:27
+And we show that it works better if they're actually sort of,
+35:30
+each task has its own LSTM.
+35:32
+So yeah, it's a combination of those and because there's so
+35:37
+many moving pieces, there's so many, over a dozen tables in the paper
+35:43
+that show how much each helps for each of the five different tasks.
+35:52
+No, many of them we invented in this paper.
+35:56
+So they weren't available back then.
+35:58
+And they're, So the question is, and this is something I brought up myself, right?
+36:06
+Can you actually add some of these things to other models?
+36:11
+And so the word vectors, for
+36:12
+instance, are an idea that you could add to all the other models.
+36:15
+The success of regularization doesn't really make
+36:20
+sense unless you have successive layers,
+36:24
+which no one had really done for more than two tasks before.
+36:29
+Some of the model architectures and the differences are just very novel and
+36:36
+then you have to think of what models would actually do this.
+36:41
+The majority of papers published on these different tasks
+36:46
+aren't extendable in that kind of way, right?
+36:48
+They're, for instance, graphical models, where it wouldn't be obvious to just plug
+36:52
+this vector into this other thing and something would happen.
+36:55
+So it's hard to use these insights on a lot of these previous models.
+37:00
+Or they have convolutional operators instead of LSTMs, and so you don't have
+37:05
+a nice sort of, at this time step I have this representation and things like that.
+37:10
+But yeah, at least the word vectors and character engrams,
+37:12
+that's a pretty general insight that a lot of people could use.
+37:19
+All right, awesome.
+37:20
+Now, another obstacle that we also discussed already briefly before
+37:25
+is that we don't have zero shot word predictions.
+37:28
+And what do I mean by this?
+37:30
+In almost all the cases, the various models that we described,
+37:34
+like the machine translation models, have softmax at the end.
+37:38
+And you can only predict the words that you've seen at training time.
+37:43
+And we've also already covered how to fix this with pointers.
+37:47
+And you'll see now in PA4 already
+37:50
+that we also have there not just a pointer to a single word but
+37:53
+pointers to spans of words, so beginning and end token pointers.
+37:58
+And actually a interesting side note here.
+38:02
+Again, we've covered this already.
+38:03
+But you can also, in this PA4, and for general question answering,
+38:09
+try to predict a sequence of single words, with a set of pointers like this.
+38:14
+It actually turns out to not work as well as pointing to the beginning,
+38:18
+learning to point to the beginning token, and then the end token.
+38:21
+That works better by 2 to 5% or so, depending on how you do it,
+38:26
+than pointing to a sequence of different words.
+38:30
+Basically you make two decisions versus having to make five decisions if you point
+38:34
+to a span of five words.
+38:38
+All right, now let's have our research highlight on Neural Turing Machines.
+38:43
+Take it away Nish.
+38:44
+>> Thanks Richard.
+38:46
+Hi everyone, today I'll be presenting on Neural Turing Machines.
+38:51
+So we'll be covering two papers.
+38:53
+One on the Neural Turing Machine itself.
+38:55
+And then a second paper on differential neural computers,
+38:57
+which was both of these papers were from DeepMind.
+39:00
+And we'll be seeing the architecture proposed in the first paper and
+39:04
+then the results from the second paper.
+39:06
+The architecture modification of the second paper is only slight and we can
+39:10
+really just wanna take the high level idea that these architectures have introduced.
+39:15
+So all the neural networks that we have seen in class so
+39:19
+far excel at pattern matching.
+39:21
+So you might have heard of DeepMind's agent
+39:23
+that played Atari games such as Breakout with superhuman performance.
+39:27
+And these tests are relatively easy for
+39:30
+the network because they have to make very reactive decisions.
+39:33
+However, when it comes to reasoning from knowledge,
+39:36
+neural networks still struggle at that.
+39:38
+Consider the problem of finding the shortest path.
+39:40
+Now in our introductory algorithm classes, any algorithm, such as DFS, or
+39:44
+breadth-first search,
+39:46
+usually requires us to store which nodes we have visited before.
+39:49
+In the current architectures that we have seen so far, it's really hard for
+39:53
+networks to store that information.
+39:55
+So the solution to this is having more memory.
+39:58
+But you might be worried, like LSTMs didn't they already have memory cells?
+40:03
+It is a valid question,
+40:04
+but this is not the right kind of memory we are looking for.
+40:08
+So if you understand systems peak, if you consider LSTM's memory cell as a cache.
+40:13
+What we really need is random access memory, or RAM.
+40:17
+And this is where Neural Turing Machines come in.
+40:19
+So you can, okay, yeah, in this architecture
+40:25
+diagram, the controller is an RNN.
+40:29
+And it decides whether to read and write from the memory cells.
+40:33
+And we'll see how both of these operations are implemented.
+40:36
+How does reading and writing work?
+40:40
+If you have taken previous systems classes at Stanford,
+40:43
+you might have realized that memory is inherently very fundamentally discrete.
+40:48
+So how do we make it differentiable,
+40:50
+because we need to optimize it using back propagation.
+40:54
+And the answer to that is our friendly method of attention mechanism.
+40:59
+Which is read and write everywhere, but just for different extents.
+41:04
+And you'll see about how we go about doing that.
+41:07
+So, how does reading from memory work?
+41:11
+So we have this memory vector and
+41:13
+we have been provided with an attention vector corresponding to it.
+41:17
+So, in this case, the first element, I'm zero indexing here.
+41:19
+The first element of the attention vector is blue, which means it has high value.
+41:25
+And so we read the first element from the memory vector itself.
+41:31
+And it's a weighted sum, so given the attention vector,
+41:34
+the reading would be different.
+41:36
+Similarly, in terms of writing, we have our old memory and we have a write value.
+41:41
+We want to write everywhere, but how much do we write each value in the memory by?
+41:46
+And, again,we use the attention mechanism here.
+41:48
+So you can see that the second element is blue here.
+41:52
+And although the write value and memory at that location is at
+41:56
+opposition locations you can see that at the new memory.
+41:59
+The vector has shrunk just because of different magnitudes.
+42:01
+Because of similar magnitudes in the opposite direction.
+42:05
+It's a convex combination of the write value as well as the attention.
+42:11
+So, in both of these cases of read and write,
+42:14
+we assumed that we had a correct attention vector.
+42:16
+And how do we go about actually getting that?
+42:18
+The controller has a query vector, and
+42:21
+it looks at each point in the memory and performs a dot product.
+42:25
+And only to get which one it's more similar to.
+42:28
+So in this diagram, blue indicated high similarity and
+42:30
+pink indicates very high dissimilarity.
+42:33
+We perform a softmax, get the memory that has the most attention.
+42:42
+Now we have the attention from the previous step.
+42:44
+We interpolate from that attention to finally get
+42:47
+what part of the memory vector we should be focusing on now.
+42:51
+Finally, we can perform the shift vector.
+42:53
+Now this is what enables us to read at different locations around that
+42:59
+focused attention.
+43:01
+And we then sharpen it to get our final attention distribution.
+43:04
+This final attention distribution is then fed into the read and write operations.
+43:12
+We can now see your result, I'm not sure if the media has been incorporated.
+43:16
+Okay, let's see.
+43:21
+Just know that this video is from the differential neural computers which is
+43:25
+a slightly new architecture compared to the Neural Turing Machine.
+43:27
+But uses the overlying same principle of having an external memory bank.
+43:36
+So, in this case, our task is to infer relations from a family tree.
+43:40
+In most cases it's a graph traversal problem, as well as a storage problem.
+43:44
+And standard LSTM would struggle really hard at this problem,
+43:47
+which is where Neural Turing Machines really shine.
+43:55
+Keep in mind that the memory vector is being updated as we see for
+43:58
+each one, right.
+44:01
+Just like to acknowledge the papers and the resources I used, and
+44:04
+back to Richard, thanks a lot.
+44:09
+>> Yeah. >> [APPLAUSE]
+44:10
+>> All right, now to another obstacle.
+44:13
+And that is that we actually have multiple superfluous,
+44:18
+if you will, word representations.
+44:21
+So I mentioned that we share Word2Vec and GloVe kinds of pre-training vectors.
+44:27
+And now if we train a output, such as for machine translation or language modeling.
+44:33
+We'll actually have another set of weights in the Softmax,
+44:37
+one vector for every single word that we have in the output, the Softmax output.
+44:45
+Now what that means is at the top here we have this large Softmax.
+44:52
+It is the size of our vocabulary times the hidden dimensions of the LSTM.
+44:58
+And in the input, we also have word vectors for every word vectors.
+45:03
+So, again, the same size v times the size of our word vectors.
+45:08
+Now, a really cool paper and result and
+45:11
+idea that actually came from two students who took this class or 224D last year.
+45:16
+Was to tie these two vectors together,
+45:20
+just say they have to be the exact same, vectors.
+45:25
+So your Softmax weights for every word are the exact same as your input word vectors.
+45:32
+And you train them both jointly, you just back propagate.
+45:36
+Take the same derivatives, but now, they are actually the same.
+45:39
+It's very easy to implement if you don't have to take the derivatives yourself,
+45:42
+and tensor flow and so on.
+45:45
+Would be a little harder otherwise.
+45:47
+They also have some really nice theory about the Softmax and
+45:52
+various sort of temperatures when you do this.
+45:55
+But we're not gonna go into all those details.
+45:58
+But basically, it's a very simple idea and it turns out to quite significantly help.
+46:05
+So, here we basically have, again,
+46:08
+this language modeling task over the Penn Treebank.
+46:13
+We mentioned that at this Pointer Sentinel idea got 70.9.
+46:18
+And then these very, very large sort of 38 different LSTMs.
+46:23
+For instance, with 2.5 billion parameters, I get 68.
+46:29
+But this simple idea, where we basically tie
+46:33
+the word vectors together with just 51 million parameters.
+46:38
+I can get the lowest test perplexity when that paper came out.
+46:43
+Which is kind of incredible, like the amount, again,
+46:45
+the speed in which this perplexity has now been reduced more and more.
+46:49
+And we're better and
+46:50
+better able to predict this next word is kind of incredible.
+46:54
+So it's a very simple idea that you can actually use every time
+46:59
+you have an output space that includes all the words in your vocabulary.
+47:03
+As well as word vectors you can use this idea and one,
+47:06
+you're reducing one of the largest sets of parameters in your model.
+47:10
+So you use less ram, you can have larger mini batches, or
+47:13
+you can train faster, use less gpu ram and everything.
+47:16
+And it's more statistically efficient, whenever you see a word.
+47:22
+And the output, it benefits also its input representation.
+47:25
+So very neat idea, very simple, gives you a nice improvement.
+47:30
+Any questions about this idea?
+47:36
+It's one of those nice examples where everybody kind of assumes,
+47:39
+you just have a Softmax, and you have word vectors.
+47:41
+So nobody really thinks about it, and then sometimes people think about it.
+47:44
+And question some of the basic assumptions of the field, and
+47:48
+find a way to do a better job, so.
+47:50
+It's a really cool result and one of the best projects from that class.
+47:56
+Now, obstacle 5 is something that's very relevant to PA4.
+47:59
+So we spend a little bit more time on it But basically tackles the problem
+48:05
+that in many cases questions that we might ask a system have representations that
+48:11
+are independent of the current context or the input that we might have.
+48:17
+So, a kind of fun example is the question, may I cut you, should be interpreted
+48:22
+very differently if I am holding a knife or whether you're standing in line right.
+48:28
+And so you might want to have your question be reinterpreted given
+48:33
+the context and the input and the reason I brought up the dynamic memory network is
+48:38
+that this is in some ways a further refinement of this kind of idea.
+48:43
+You will still have some kind of document encoder, you'll have some kind
+48:47
+of question encoders, you 'll have an answer module but
+48:51
+this answer module actually predict indices of the answers.
+48:56
+And then you have this coattention encoder instead of this episodic memory module you
+49:01
+have seen before and now this coattention encode looks kind of complicated.
+49:06
+And is a little bit complicated in real life but not too badly so so
+49:11
+let's walk a little bit through it and the paper gives you all the equations.
+49:18
+And this is a reasonable model to try to implement again once you
+49:22
+to have your baselines implemented and bug free.
+49:25
+You can really actually in many ways start from just this first step here,
+49:30
+similar to the pseudocode I gave you.
+49:33
+And then several of these modules you can actually add one by one and see for
+49:37
+each one how much it improves.
+49:39
+And in fact, Caiming Xiong is the first author of this paper,
+49:43
+that's exactly what he did.
+49:45
+He looked at it, looked at errors, and then tried to add more coattention.
+49:49
+And then tried to add LSTM to incorporate all the facts again for
+49:52
+multiple time steps and things like that.
+49:55
+So there's kind of a hill climbing on the architecture kind of approach.
+49:58
+So and on a very high level, let's say you have a question queue here.
+50:03
+And you have the hidden states of an LSTM.
+50:06
+And you have some document input D here.
+50:10
+And you have m + 1 steps here.
+50:13
+You actually have this sentinels too that's why it's +1.
+50:16
+Now what you can do is essentially take the inner products between all these
+50:21
+hidden states.
+50:22
+And that's how you get these sort of context matrices and
+50:26
+then you can multiply these again with the hidden states in these products.
+50:31
+And you can concatenate various combinations of
+50:36
+these products between these two sets of vectors.
+50:41
+So you have these outer products compute these context vectors and
+50:44
+then you concatenate them in multiple ways until you have the final state here.
+50:50
+And now that one, you'll pipe each input here,
+50:54
+you pipe it through a bidirectional LSTM again.
+50:57
+And that will now be the question dependent interpretation
+51:02
+of every word in your input document.
+51:06
+So basically just a lot of inter products and
+51:09
+outer products between the hidden states of two LSTMs.
+51:12
+Such that you understand how related is this time step of this question at
+51:18
+this word of the question, to this time step at that word at the input document.
+51:25
+Lots of inner and outer products and then you try to agglomerate
+51:28
+all these different facts again in the bidirectional LSTM.
+51:32
+And now once you have an output a hidden state of that LSTM that will
+51:37
+be given as input to a classifier that essentially tries to identify.
+51:42
+And classify with these highway networks,
+51:46
+basically just neural networks with short circuit connections.
+51:52
+At each location of this now question dependent input representation
+51:57
+you classified which of these is the start token.
+52:01
+And that start token is then given its input to yet another neural network
+52:06
+that will now take the previous start token that we classified together
+52:11
+with a potential end token across all these different vectors.
+52:16
+You hear from the question dependent input representation to classify the output.
+52:21
+And you can do that multiple times and once they don't change the input and
+52:27
+the start and the end tokens are the same from the previous time step,
+52:33
+you'll basically stop.
+52:35
+So the reason we call this dynamic, here, is that you do this multiple times, and
+52:40
+your first iteration might be wrong.
+52:42
+But you give that input so the argmax is the highest resulting hidden state.
+52:50
+This could be the 51st time step for instance, the word turbine.
+52:54
+You give that as input to this LSTM, which was then given again,
+52:59
+its output given to the input of another iteration of this attempt
+53:04
+at predicting the start and end token.
+53:07
+Now In a simpler world, let's say when you eventually get to this model,
+53:11
+but you might implement the whole thing and you might be very optimistic,
+53:15
+just implement the whole thing and then it doesn't work.
+53:19
+What do you do to debug?
+53:21
+Well, you just take out all the different things and
+53:23
+you try to do the simplest thing,
+53:25
+which starts exactly at that pseudo code I had in the very beginning of the class.
+53:29
+You just have LSTM for input, LSTM for question.
+53:33
+And then you pipe each state of the input into a neural network and
+53:38
+you try to classify start and end token.
+53:40
+And you might have some outer products between them, and you plug those
+53:44
+into a straight up neural network and you classify start and end token.
+53:48
+Then you might concatenate these two outer products and
+53:52
+just classify those start end token.
+53:55
+If you eventually have that whole coattention encoder you could then say,
+54:00
+all right, now I just classify independently the start and
+54:04
+the end tokens from that representation of the question dependent encorder.
+54:09
+Just independent one classifier for the start token,
+54:12
+one classifier for the end token.
+54:14
+And then you can go on.
+54:15
+And each time it will take some time and you run some experiment but as long as you
+54:20
+sort of incrementally improve each step you know that you didn't introduce a bug.
+54:26
+And so whenever there is sort of general bug fixing, you wanna have you wanna try
+54:30
+to identify where your bugs might be as you build the larger and larger system.
+54:34
+And so if you start from something simple that you know works reasonable well and
+54:39
+is bug free then each time you add something to it.
+54:42
+And it improves the accuracy you can be fairly certain that there's no new part,
+54:47
+not always but for the most part.
+54:49
+And so this is a you know in the end a very complex system that puts a lot of
+54:53
+these simpler steps together.
+54:55
+We actually again have sort of introduced all of the basic components,
+55:00
+basically of this but there again, sort of put together in a very novel way.
+55:05
+And you already know the Stanford Question Answering Dataset,
+55:08
+unless of course you're doing a project that has nothing to do with PA 4.
+55:11
+So I'll just describe it a little bit briefly, sorry for
+55:14
+the folks who are doing PA 4 and are intricately familiar with this already.
+55:18
+So the Stanford Question Answering Dataset is a really great dataset of 100,000 plus
+55:23
+question answer input triplets.
+55:25
+And the way it's constructed is that for each question the answer
+55:31
+has to be a particular span in the input paragraph for the most part.
+55:36
+Sort of short documents but really mostly paragraphs.
+55:39
+So when you ask, what is Donald Davis credited with what's great also is
+55:44
+they actually have multiple people answering the same question,
+55:48
+cuz sometimes it's ambiguous.
+55:50
+So one ground truth answer might be Davis is credited with coining the modern name
+55:54
+packet switching and inspiring numerous packet switching networks in Europe.
+55:58
+Another person might just say he's credited with just coining the modern name
+56:02
+Packet switching and inspiring numerous packet switching networks, or
+56:06
+even shorter, just coining the modern name Packet Switching.
+56:09
+And we would assume that all of them are reasonably correct and
+56:14
+close enough, and if your model predicts one, that it's good enough.
+56:23
+Great data set, now again these whenever you put a results table in it's already
+56:28
+deprecated, actually one thing that was really great to see, I just noticed today.
+56:36
+Let's see if I can find this, is the model now,
+56:41
+this is the SQUAD website.
+56:45
+Again, sorry to bore the folks who are working on PA4 and not on the problem set.
+56:52
+It's a really great new phenomenon that I think we'll see
+56:57
+also as we push the limits of not just deep learning for NLP, but
+57:01
+I think in general, Of machine learning and AI.
+57:06
+So have proper trained dev test splits, nobody sees the test set.
+57:09
+You have to submit your code, so
+57:11
+that makes it more reproducible in the future too,
+57:13
+if people are willing to open source their codes, of course, you don't have to here.
+57:18
+And it's I think in general a great way to improve the science
+57:24
+of what is mostly an engineering discipline, we're creating new systems and
+57:29
+so you see here different systems and now you also can see when they were submitted.
+57:34
+So some groups were super active.
+57:37
+Now there's kind of, this is my group, submit it.
+57:40
+>> [LAUGH] >> Four months ago and
+57:43
+this is when that paper came out, and when this table happened.
+57:48
+And so since the last four months we worked on other things,
+57:51
+and now this is not the state of the art anymore.
+57:53
+And there are lots of people who are just this week submitted more, but
+57:57
+at the time of submission this was kind of this dynamic co-attention network,
+58:01
+was the best model on squad, the first one sort of push it above 80.
+58:05
+What's also great is to actually have human baseline and
+58:08
+that is something that will make sense for you too sometimes.
+58:12
+And I have had several students groups also and
+58:13
+in their problem set work on a task, and then they say, I look at my errors now,
+58:18
+which is great, always do careful error analysis,
+58:21
+something we would definitely want to see in your report in the posters.
+58:24
+When does your model fail, what can it not capture yet?
+58:28
+And sometimes, you look at your errors and you actually say,
+58:31
+I actually agree more with my model than with the data set,
+58:35
+the official ground truth label is actually kind of wrong.
+58:38
+There's also just people, they were busy, they had to make money on AMT or
+58:43
+something, Crowd workers, right?
+58:46
+Maybe they weren't properly filtered and so on.
+58:48
+And eventually you might hit
+58:50
+an upper limit of just what that data set can ever give you.
+58:53
+And so it's good to have this kind of human baseline.
+58:57
+Here the human baseline is sort of 91 in terms of F1,
+59:02
+or the exact match of 82.
+59:05
+And you know once you push above that,
+59:08
+really you're just fitting to the noise of that data set in some sense.
+59:11
+And so that is good if you're at that level, and
+59:15
+it also helps to feel less bad if you have a new data set, you created it yourself.
+59:20
+It's good to know that it's okay to be at 85,
+59:23
+because if I ask two people they would only agree in 85% of the cases.
+59:28
+So this inter-annotator agreement is pretty important
+59:31
+to consider as your pushing your numbers sort of higher and higher.
+59:37
+Any questions on SQUADs, the dynamic content neural network, yeah?
+59:44
+I don't actually know all the details of who they asked,
+59:47
+it may have been just the first author.
+59:52
+It's the Turkers and their interannotator agreement.
+59:55
+So maybe, okay, so then if that's the case then basically
+60:00
+you can look at how often do these, training set.
+60:07
+Explore.
+60:10
+So how often do people actually agree with when they write their answers?
+60:17
+So here, there's perfect agreement between the humans, but here, it might not be.
+60:21
+So one might say, what did the church claim could be avoided with money?
+60:26
+God's punishment for sin or versus just God's punishment.
+60:30
+Or late medieval Catholic church versus just a Catholic church.
+60:33
+So they're different, sometimes different people agree differently.
+60:37
+And it doesn't make sense for your model to try to agree more with any single
+60:41
+human, than humans between one another.
+60:49
+How do you say its performance exceeds human performance?
+60:54
+So you can try to do that by basically saying, all right,
+60:58
+humans agree this often with other humans.
+61:01
+You can create an output that other humans would be more likely to agree with
+61:07
+than with one another that's one way.
+61:08
+Or you say I will take five or ten experts in the world about a certain thing.
+61:12
+This actually becomes more important for like medical diagnosis, when you wanna
+61:16
+also make those kinds of claims or just train really accurate algorithms.
+61:20
+You could basically take a group of experts, and you only select
+61:25
+those where the majority of the experts agree on what the output should be.
+61:29
+And if you then agree more often with the majority than any single doctor
+61:33
+would agree with that majority then you can claim super human accuracy.
+61:57
+So what are the principles behind sort of claiming a novel algorithm?
+62:10
+So I guess in some ways it's kind of out of the scope of the question,
+62:13
+cuz it's a legal question.
+62:14
+I think in general, novelty of algorithms is something that is also in the eyes
+62:20
+of the reader so, that's not really a good scientific answer to the question.
+62:29
+No, I guess in general, a lot of these papers are submitted to conferences and so
+62:34
+the question, whether they're novel enough, kind of often is subjective and
+62:38
+in the eyes of the reviewer.
+62:40
+Which can also not always be the right thing,
+62:42
+because two or three reviewers can also be wrong.
+62:48
+So then here's a nice visualization, again,
+62:50
+something I would encourage you all to do for your projects and problem sets.
+62:55
+I would just basically in this case trying to understand if this dynamic encoder
+63:00
+having an extra LSTM layer on top of just predicting a single start and
+63:04
+end token once will actually help.
+63:07
+And here we can kind of see it helping.
+63:09
+So as you go through this, it's kind of hard to read, but basically this is
+63:13
+an input, and then you see the outputs of the classifier of this highway network.
+63:19
+And how certain it is that a certain word is a start token, so
+63:23
+66, end token 66 with just a single word as a start token,
+63:28
+versus having the start token be 84 and the end token be 94.
+63:32
+And actually it switches from the first attempt at classifying the right span
+63:38
+to the second, and in this case more correct.
+63:44
+All right, now the second to last obstacle, one thing
+63:49
+you've noticed in a lot of things and in a lot of these more complex models is,
+63:54
+that we actually use recurrent neural networks as the basic building block for
+64:00
+a lot of the different deep learning NLP systems that we have.
+64:03
+And sadly, those recurrent neural network blocks are usually quite slow.
+64:09
+And unlike convolutional neural networks, they can't be parallelized as easily.
+64:14
+And so the idea here is to basically take the best and parallelizable
+64:20
+parts from RNNs and convolutional neural networks, respectively.
+64:24
+And try to combine them in one model, and this resulted in
+64:28
+the Quasi-Recurrent Neural Network by James, Stephen and Caiming and me.
+64:33
+And this is essentially the description of this quasi-recurrent neural network.
+64:40
+So, in general, the very first layer of an LSTM,
+64:44
+where you just pipe something through the single-word vector,
+64:50
+you might be able to parallelize.
+64:53
+But then as soon as you actually take into consideration
+64:56
+the previous time step HT-1 in your LSTM cell,
+64:59
+you have to wait until that's computed before you can compute your new one.
+65:04
+And so you can parallelize that.
+65:06
+On the other hand, in the convolutional neural network, you can parallelize
+65:11
+the convolution really well because it only depends on two consecutive inputs.
+65:16
+But then,
+65:17
+with the max pulling you don't actually get a hidden state at every time step.
+65:22
+But for many things like sequence classification or identifying spans and
+65:27
+things like that,
+65:28
+we would actually like to have such a hidden representation at every time step.
+65:32
+And so the idea on a high level of the QRNN is to have
+65:36
+a parallelizable convolutional layer.
+65:40
+And then have a parallelizable element-wise pooling layer
+65:44
+that just looks independently at each feature I mentioned and
+65:48
+computes these gates that we already know.
+65:52
+So in some ways in combines the CNN that we
+65:56
+looked at with the gated and LSTM type gates.
+66:01
+And so we can write this as a very simple description, right?
+66:06
+This is something that should look familiar to you.
+66:08
+But instead of having Xht- 1 here, you just have Xt- 1 and Xt.
+66:15
+So you don't have to wait until you computed the previous hidden time step.
+66:19
+You're just making these gating decisions based on two consecutive word vectors.
+66:27
+And you have multiple layers of these so this is just the first layer here.
+66:34
+And you basically just have a standard neural network.
+66:38
+It's not recurrent, just concatenating two input vectors at a time.
+66:45
+And you sum up after that and you have tanh or sigmoids,
+66:49
+depending on what kind of gates you have.
+66:53
+So now, this you can rewrite as a convolutional operator where
+66:58
+you have a set of weights, Wz over your input X.
+67:02
+You just basically multiply, it's a pretty discreet computation.
+67:06
+Once you write it like this, you can also think of larger filter sizes, or windows.
+67:12
+You could actually have Xt- 2, Xt- 1, and
+67:17
+Xt in each time step, for instance.
+67:21
+Does this make sense as an operator?
+67:24
+Can't you just can't you just compute the gates at each time step?
+67:51
+So the question is you're splitting a cell and
+67:54
+then you're parallelizing across each dimensions.
+67:57
+>> I don't see what's parallel about this.
+67:59
+>> So good question.
+68:00
+So why's this parallel and why can we parallelize this?
+68:05
+Let's say you have these five word vectors here,
+68:10
+x1, x2, x3, x4, and x5.
+68:14
+Now, at each time step what you do is you basically take two as input.
+68:21
+Take these two as input and you compute a vector such as z, all right.
+68:28
+And now, you do this basically for all these, for all these pairs.
+68:33
+Basically, you just move one over.
+68:35
+Now, the reason we can parallelize this
+68:40
+is basically because we can concatenate
+68:45
+a large matrix that just has x1 x2,
+68:49
+and then x2 x3, and x3 x4, and so on.
+68:54
+And we can basically preprocess our input in this format and
+68:58
+then just multiply that same matrix with all of those.
+69:02
+And hence we can parallelize all of them.
+69:04
+None of these computations depend on the previous hidden state.
+69:10
+So that's why this can be parallelize across the time dimensions by
+69:15
+basically just smartly preprocessing the input.
+69:19
+And then, the element-wise gate here can also be parallelized across channels.
+69:23
+So all of these are just elements-wise multiplications of these gates and
+69:28
+of the hidden states.
+69:29
+And so you just multiply, let's say you have 100 features,
+69:33
+100 of these computations over time can be done independently of one another.
+69:38
+So ht here, for the first dimension of my feature channel,
+69:43
+can be multiplied independently of h2 of the feature channel and h3, and so on.
+69:51
+The ith element of the feature channel is
+69:56
+independent of all the non-i feature channels.
+70:01
+Yeah?
+70:06
+That's right, so here you can parallelize this part across time,
+70:11
+but this only across feature channels.
+70:14
+So here, you have the ith element of ht depends
+70:19
+only on the ith element of f, h, and z.
+70:24
+But now, you parallelize differently, you parallelize across the feature channels,
+70:27
+not across time.
+70:30
+So you basically parallelize here, parallelize this.
+70:33
+Then once you have all of these, you parallelize this again and
+70:36
+you can parallelize this again.
+70:37
+But you have to wait,
+70:39
+you can't compute the third layer before you compute the first and the second.
+70:47
+So what's great about this is it turns out to sometimes actually be better
+70:53
+than LSTM for a couple of parameters and settings and tasks that we ran.
+70:59
+And it's certainly a lot faster, especially once you're implemented
+71:03
+properly with cuDNN kernels and CUDA kernels and really dig in.
+71:08
+If you just kind of multiply it in Python,
+71:11
+you might not be able to optimize the architecture as well.
+71:15
+And you won't get these kinds of speed ups.
+71:18
+So depending on your batch size, each of your mini-batches, and
+71:23
+depending on the sequence lengths, you can get up to sort of 16x speed ups.
+71:28
+But if you have very large batch sizes and very short sequences, then of course,
+71:33
+that parallelization will buy you less and you'll only get a 1.4 speed up or so.
+71:38
+When you look at how much of the computation for
+71:41
+this kind of model is now spent on what kind of operation.
+71:44
+What's amazing is basically if the Q-RNN, the recurrent types
+71:49
+of multiplications and just computation is actually very small now.
+71:54
+This is language modeling, so we have large vocabulary in our softmax.
+72:00
+The majority of time here is spent on the softmax classification only.
+72:06
+And then there's a little bit of just optimization overhead getting things onto
+72:09
+the GPU reading, and getting the word vectors and all of that stuff.
+72:15
+Sometimes, they're also sort of easier to interpret cuz we have this now independent
+72:20
+feature dimensions.
+72:21
+And so it can actually go into this demo, okay can't see it,
+72:35
+Where we re-visualize this.
+72:37
+And this is also, this is kind of nice to have.
+72:39
+You don't have to do this, but if you have extra time,
+72:42
+you already have good performance on your models,
+72:44
+it's always nice to have some interactive plots to interact.
+72:48
+If you have your question answering system figured out,
+72:50
+you can write a little JavaScript or some maybe even just command line thing.
+72:55
+Type in a question and
+72:56
+see what the answer is, give it a new kind of input, a new kind of document.
+73:00
+See if you can break it, how it breaks or what the activations look like and
+73:04
+things like that.
+73:05
+So here we basically had a QRNN trained on sentiment analysis.
+73:10
+And then looked at the activations as it goes over a very large and
+73:16
+very long document.
+73:17
+So here you can see what is there to say about this movie,
+73:22
+this movie is simply gorgeous.
+73:25
+So once you hit gorgeous, you see that a lot of the different activations for
+73:30
+several of the neurons really strongly change in their activation, so
+73:34
+right at this location here.
+73:37
+Simply gorgeous, a true feast for the eyes.
+73:40
+And now, some of these hidden activations,
+73:43
+stay the same no matter what other sort of content there is.
+73:47
+So game set standard for 3D role playing games seven years ago,
+73:51
+this movie sets the standard for future CG movies.
+73:54
+And then you've got these trailers, blah blah blah.
+73:56
+So this is kind of this idea that I mentioned in the very beginning about
+74:00
+having these different gates and now this is for sentiment,
+74:03
+and nothing changes much.
+74:04
+Just kind of talks about content, but
+74:08
+then when the movie does not disappoint, some of the neurons will switch again.
+74:14
+And then there's another sort of seemingly pretty important change in this review so
+74:20
+it's not exactly a bad story.
+74:22
+That doesn't sound super positive so a lot of these neurons again will switch around.
+74:29
+And then, at the end here I recommend this movie to everyone and
+74:34
+you see okay, several of the neurons again turning on very strongly and
+74:38
+eventually classified this as a positive review.
+74:43
+So those are super nice to have if you can try to visualize your model that way.
+74:50
+And now in the last five minutes I want to talk about
+74:53
+very recent paper from Quoc Le, also graduate
+74:58
+from Stanford now in the Google Brain team, actually a founding member of it.
+75:04
+Working with somebody else, Zoph here, where, basically,
+75:10
+they realized, and this is very good insight, more and more of our time as
+75:15
+researchers is spent on creating complex, neural network architectures.
+75:20
+And in some ways, if ideally, it would be better if we could
+75:26
+actually have an AI select the right architectures for what we do.
+75:33
+And again, putting more A back into AI and
+75:38
+have less human ingenuity and human architecture design.
+75:42
+So in some ways, and this is kind of an introspective sort of end thought also for
+75:47
+the class.
+75:48
+We've moved from something in the beginning where we said we do all this
+75:51
+feature engineering back in the day in the field.
+75:53
+And now look everything is much better cause now we have these architectures that
+75:57
+end to end trainable and they learn all these features.
+76:00
+But as were now trying to improve numbers more and more and performance and
+76:04
+create new kinds of capabilities for our deep learning NLP models.
+76:07
+We catch ourselves designing architectures more and
+76:10
+more just like we used to design features anymore.
+76:13
+We're humans, we want to use our intelligence in some positive way.
+76:17
+And so basically, the idea here is
+76:20
+to use artificial intelligence to find the right architecture for
+76:24
+a whole host of different kinds of problems or for a very specific problem.
+76:28
+And without going into too many details, the main basic
+76:33
+controller that we'll have is also going to be a recurrent neural network.
+76:37
+But the outputs of that recurrent neural network are actually
+76:41
+architecture hyper parameters, if you will.
+76:45
+So how many hidden layers should I have, or how big should my hidden layer be?
+76:48
+At each time step of the recurrent neural network,
+76:51
+I will output those kinds of features.
+76:53
+And then whenever it outputs that, it will try to train a child network
+76:59
+with that kind of architecture to get a certain accuracy on a single task.
+77:05
+And then feed that back.
+77:06
+Now it's very hard to actually, it's not differential because
+77:11
+as you make these various discreet kinds of decisions about the whole architecture,
+77:15
+so they use reinforcement learning, which we haven't really covered in class.
+77:18
+And in the last two minutes of class we're not going to able to really do it any
+77:22
+justice, so it's just a different learning regime than the standard back propagation.
+77:29
+This is kind of we trained the CNN what these outputs would look like at one
+77:34
+time step.
+77:35
+It might predict a number of filters and then the filter height and
+77:39
+filter width and the stride size, how far do you skip to either the next words?
+77:43
+Or in computer vision, how many pixels do you jump over, and so on?
+77:48
+So basically, this kind of architecture selects its own architecture for
+77:52
+specific problem that you say is its reward.
+77:56
+And, remember when I told you the numbers are getting better and better,
+78:00
+this is again this data set on language modeling where just a couple months ago,
+78:05
+we're super excited to have these pointers, and when we got to 70.
+78:09
+And then we're super excited cuz we're tied to word vectors, and
+78:13
+we got to 66, or a 68.
+78:15
+Now, with this incredible new idea to actually
+78:20
+human ingenuity is still important, they also share the embedding.
+78:23
+So it's sharing word vectors and soft mix outputs.
+78:25
+It's not something that that model could have ever predicted and it's something
+78:30
+that helps a lot, but in general, they choose different kinds of cells.
+78:34
+Instead of LSTMs, they learn what kinds of cells should be used at every recurrent
+78:40
+time step and with that, get to an amazing 62 perplexity.
+78:44
+It's really incredible how quickly these numbers have plummeted.
+78:49
+And just when you thought you had a good intuition of why LSTMs work well,
+78:54
+this is basically the kind of architecture that this model comes up with.
+78:59
+And there is no more like this gate, and what happens when this gate happens.
+79:04
+This kind of the model figured out how to do it well and
+79:09
+did it in the end incredibly well.
+79:12
+All right, so basically there are still a lot of limits that we need
+79:17
+to tackle as a field, still can't do general purpose, question answering.
+79:23
+We still can't really do complex multitask learning,
+79:26
+where we might have the same architecture, do machine translation and
+79:29
+question answering, and sentiment analysis, and so on.
+79:32
+They're all still very specialized architectures.
+79:36
+We don't have systems that can do multi-modal reasoning.
+79:39
+So over images or speech together with logical reasoning,
+79:43
+together with memory based retrieval, there's still a lot of work to be done.
+79:48
+And really, all the systems right now require us to have tons of data,
+79:52
+but I can introduce a new word to you like Jane hit John with an uftcha.
+79:56
+I just made up the word uftcha, but now you can make lots of various assumptions
+80:01
+about how heavy it could be, is it a physical object and not a mental concept.
+80:06
+How big it would be, how heavy, and
+80:08
+all these different logical kind of conclusions, from a single example.
+80:13
+All the systems we've looked at in this class require ton of different kinds of
+80:17
+examples and lot's of statistical patterns that we essentially need to match.
+80:23
+All right, with that congratulations, you've made it.
+80:26
+Good luck on your last couple of days of your projects.
+80:29
+Thanks to all the TAs, thanks to Chris.
+80:32
+Good time, good luck.
+80:33
+>> [APPLAUSE]

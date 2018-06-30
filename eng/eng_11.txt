@@ -1,0 +1,2118 @@
+00:00
+[MUSIC]
+00:04
+Stanford University.
+00:07
+>> Okay hi everyone.
+00:08
+Let's get started again.
+00:11
+We're back with we're into week six now and Lecture 11.
+00:20
+This is basically the third now last of our lectures.
+00:25
+It's sort of essentially concentrating on what we can do with recurrent models and
+00:30
+sequence to sequence architectures.
+00:33
+I thought what I'd do in the first part of the lecture is have one
+00:39
+more attempt at explaining some of the ideas about GRUs and
+00:44
+LSTMs and where do they come from and how do they work?
+00:48
+I'd sort of decide to do that anyway on the weekend,
+00:51
+just because I know that when I first started seeing some of these gated models,
+00:57
+that it took a long time for them to make much sense to me, and
+01:02
+not just seem like a complete surprise and mystery.
+01:05
+That's the way they work so
+01:06
+I hope I can do a bit of good at explaining that one more time.
+01:10
+That feeling was reconfirmed when we started seeing some of the people
+01:15
+who've filled in the midterm survey so thanks to all the people who filled it in.
+01:20
+For people who haven't,
+01:21
+I'm still happy to have you fill it in over the last couple of days.
+01:25
+While there were a couple of people who put LSTMs in the list of
+01:29
+concepts they felt that they understood really well.
+01:33
+Dozens of people put LSTMs and
+01:36
+GRUs into the list of concepts they felt kind of unsure about.
+01:41
+This first part is for you and if you're one of the ones that already understand
+01:46
+it really well, I guess you'll just have to skip ahead to the second part.
+01:50
+Then we'll have the research highlight which should be fun today.
+01:53
+And then, so moving on from that it's then completing,
+01:57
+saying a bit more about machine translation.
+02:00
+It's a bit that we sort of had skipped and probably should have explained earlier
+02:05
+which is how do people evaluate machine translation systems?
+02:08
+Because we've been showing you numbers and graphs and so on and never discussed that.
+02:12
+And then I wanna sort of say a bit more about a couple of things that
+02:17
+come up when trying to build new machines translation systems.
+02:22
+And in some sense, this is sort of done on the weed stuff it's not
+02:26
+that this is sort of one central concept that you can possibly finish your
+02:31
+neural networks class without having learned.
+02:34
+But on the other hand, I think that all of these sort of kind of things that come up
+02:38
+if you are actually trying to build something where you've actually got a deep
+02:43
+learning system that you can use to do useful stuff in the world and
+02:46
+that they're useful, good, new concepts to know.
+02:50
+Okay.
+02:52
+Lastly just the reminders and various things.
+02:54
+The midterm, we have got it all graded.
+02:57
+And our plan is that we are going to
+03:00
+return it to the people who are here after class.
+03:03
+Where in particular, there's another event that's on here after class,
+03:08
+so where we're going to return it after class is outside the door.
+03:13
+That you should be able to find TAs with boxes of midterms and
+03:17
+be able to return them.
+03:18
+Assignment three, yeah so this has been a little bit of a stretch for
+03:23
+everybody on assignment three I realized,
+03:26
+because sort of the midterm got in the way and people got behind.
+03:30
+And we've also actually we're hoping to be sort of right ready to go with
+03:35
+giving people GPU resources on Azure and that's kinda've gone behind,
+03:40
+they're trying to work on that right now so with any luck maybe by the end
+03:44
+of today we might have the GPU resources part in place.
+03:49
+I mean, at any rate, you should absolutely be getting start on the assignment and
+03:53
+writing the code.
+03:55
+But we also do really hope that before you finish this assignment,
+04:00
+you take a chance to try out Azure, Docker and
+04:04
+getting stuff working on GPUs because that's really good experience to have.
+04:09
+Then final projects, the thing that we all noticed about our
+04:15
+office hours last week after the midterm is that barely anybody came to them.
+04:20
+We'd really like to urge for this week, please come along to office hours again.
+04:26
+And especially if you're doing a final project, we'd really,
+04:30
+really like you to turn up and talk to us about your final projects and
+04:35
+in particular tonight after class and a bit of dinner which is again,
+04:40
+we're going be doing unlimited office hours.
+04:43
+Feel free to come and see him, and
+04:45
+possibly even depending on how you feel about it, you might even go off and
+04:48
+have dinner first and then come back and see him to spread things out a little bit.
+04:54
+Are there any questions people are dying to know,
+04:57
+or do I head straight into content at that point?
+05:03
+I'll head straight into content.
+05:06
+Basically I wanted to sort of spend a bit of time going through, again,
+05:10
+the sort of ideas of where did these kinds of fancy recurrent units come from?
+05:16
+What are they going to try and achieve and how do they go about doing it?
+05:21
+Our starting point is, what we have with a recurrent neural network is that
+05:26
+we've got something that's evolving through time.
+05:29
+And at the end of that we're at some point in that here where time t plus n.
+05:37
+And then what we want to do is have some sense of well,
+05:41
+this stuff that we saw at time t, is that affecting what happens at time t plus n?
+05:48
+That's the kind of thing of is it the fact that we saw at time t
+05:55
+this verb squash that is having some effect on the n words later,
+06:02
+that this is being someone saying the word window because this is some
+06:08
+kind of association between squashing and windows or is that completely irrelevant?
+06:13
+We wanna sort of measure how what you're doing here
+06:17
+affects what's happening maybe six, eight, ten words later.
+06:22
+And so the question is how can we achieve that and how can we achieve it?
+06:28
+And what Richard discussed and there was some sort of complex math here
+06:32
+which I'm not going to explain, again, in great detail.
+06:36
+But what we found is if we had a basic recurrent neural network what we're
+06:41
+doing at each time step in the basic recurrent neural network is
+06:46
+we've got some hidden state and we're multiplying it by matrix and
+06:50
+then we're adding some stuff to do with the input and then we go onto next
+06:54
+time stamp where we're multiplying that hidden state by the same matrix again and
+06:59
+adding some input stuff and then we go onto the time step and we model.
+07:03
+Multiplying that, hidden stuff by the same matrix again.
+07:07
+It keeping on doing these matrix multiplies and when you keep on doing
+07:12
+these matrix multiplies you can potentially get into trouble.
+07:18
+And the trouble you get into is if your gradient is going to zero
+07:23
+you kind of can't tell whether that means that actually what happened
+07:28
+in words ago is having no effect on what you're seeing now.
+07:33
+Or whether it is you hadn't set all of the things in your matrixes norm
+07:38
+exactly right and so that the gradient is going to zero because it's vanishing.
+07:50
+This is where the stuff about eigenvalues and stuff like that comes in.
+07:55
+But kind of the problem is with.
+07:59
+Basic RNA, sort of a bit too much like having to land your aircraft
+08:03
+on the aircraft carrier or something like that.
+08:06
+That if you can get things just the right size,
+08:10
+things you can land on the aircraft carrier but
+08:13
+if somehow your eigenvalues are a bit too small then you have vanishing gradients.
+08:18
+And if they're a bit too large you have exploding gradients and
+08:23
+you sort of, it's very hard to get it right and so
+08:27
+this this naive transition function seems to be the cause of a lot of the problems.
+08:34
+With the naive transition function in particular,
+08:37
+what it means is that sorta we're doing this sequence of matrix multipliers.
+08:42
+So we're keeping on multiplying by matrix at each time step.
+08:46
+And so, that means that when we're then trying to learn.
+08:49
+How much effect things have on our decisions up here.
+08:53
+We're doing that by backpropagating through this whole sequence of
+08:57
+intermediate nodes.
+09:00
+And so, the whole idea of all of these gated recurrent models is to say,
+09:06
+well, somehow, we'd like to be able to get more direct evidence
+09:11
+of the effect of early time steps on much later time steps,
+09:16
+without having to do this long sequence matrix multiplies, which almost certainly.
+09:24
+Give us the danger of killing off the evidence.
+09:27
+So essentially what we wanna have is,
+09:30
+we want to kinda consider the time sequence that's our straight line.
+09:35
+We also want to allow these shortcut connections so ht can directly
+09:40
+affect ht +2 because if we could do that we then when we're backpropagating
+09:46
+we'll then be able to measure in the backward phase the effect of ht on ht + 2.
+09:52
+And therefore,
+09:53
+we would be much more likely to learn these long term dependencies.
+09:58
+So that seems a good idea.
+10:03
+So I'm gonna do the kinda gated recurrent units first, and
+10:06
+then kinda build onto LSTMs, which are even more complex.
+10:10
+So essentially that's what we're doing in the gated recurrent unit.
+10:14
+And we're only making it a little bit more complex by saying, well,
+10:18
+rather than just uniformly putting in stuff from time -1 and
+10:23
+time -2, maybe we can have adaptive shortcut connections where we're
+10:30
+deciding how much attention to pay to the past, as well as to the present.
+10:35
+And so, that's essentially what you get with the gated recurrent unit.
+10:39
+So the key equation of the gated recurrent unit is this first one.
+10:45
+So it's sort of saying, well, we're going to do the normal neural network
+10:49
+recurrent units stuff, that's the stuff in green.
+10:53
+So for the stuff in green, we take the current input and multiply it by a matrix.
+10:58
+We take the previous hidden statement and multiply it by a matrix.
+11:01
+We add all of those things with a bias and
+11:04
+put it through a tanh, that's exactly the standard recurrent neural network update.
+11:09
+So we're going to do that candidate update just like a regular RNN.
+11:16
+But to actually work out what function we're computing,
+11:20
+we're then going to adaptively learn how much and on which dimensions
+11:25
+to use that candidate update and how much that we just gonna shortcut it,
+11:30
+and just stick with what we had from the previous time step.
+11:35
+And while that stuff in the previous time step will have been to some
+11:39
+extent computed by this regular and updated the previous time step.
+11:44
+But of course, that was also a mixture, so
+11:47
+to some extent, it will have been directly inherited from the time step before that.
+11:52
+And so, we kind of adaptively allowing things from
+11:56
+far past time steps just to be passed straight through,
+12:00
+with no further multiplications into the current time step.
+12:05
+So a lot of the key to is it that we have this plus here.
+12:09
+The stuff that is on this side of the plus, we're just saying,
+12:13
+just move along the stuff you had before onto the next time step,
+12:18
+which has the effect that we're directly having stuff from the past
+12:23
+be present to affect further on decisions.
+12:26
+So that's most of what we have in a GRU and
+12:30
+a GRU is then just a little bit more complex than that because if we do this,
+12:37
+it's sort of all additive, you kinda kick stuff around forever.
+12:43
+You're deciding which to pay attention to, but
+12:46
+once you've paid attention to it, it's around forever.
+12:50
+And that's because you're sort of just adding stuff on here.
+12:54
+And so, the final step is to say well actually, maybe we want to sort of prune
+13:00
+away some of the past stuff adaptively so it doesn't hang around forever.
+13:06
+And so, to do that, we're adding this second gate, the reset gate.
+13:10
+And so, the reset gate gives you a vector of, again, numbers between zero and
+13:16
+one, which is calculated like a kind of a standard recurrent unit.
+13:21
+But it's sort of saying, well to some extent, what we want to do is
+13:27
+be able to delete some of the stuff that was in ht- 1 when it's no longer relevant.
+13:33
+And so, we doing this sort of hadamard product,
+13:36
+the element wise product of the reset gate and the previous hidden state.
+13:40
+And so, we can forget parts of the hidden state.
+13:43
+And the parts that we're forgetting is embedded in this kind of candidate update.
+13:47
+The part that's being just passed along from the past to
+13:52
+have direct updates is still just exactly as it was before.
+13:58
+So to have one attempt to be more visual at that.
+14:02
+So if we have a basic vanilla tanh-RNN,
+14:06
+one way that you could think about that is we have a hidden state,
+14:13
+and what our execution of our unit is doing as a program
+14:18
+is saying you read the whole of that register h,
+14:23
+you do your RNN update, and you write the whole thing back.
+14:29
+So you've got this one memory register.
+14:33
+You read it all, do a standard recurrent update, and write it all back.
+14:38
+So that's sort of very inflexible.
+14:40
+And you're just sort of repeating that over and over again at each time step.
+14:45
+So in contrast to that, when you have a GRU unit, that is then,
+14:50
+allowing you to sort of learn this adaptive flexibility.
+14:55
+So first of all, with the reset gate, you can learn
+14:59
+a subset of the hidden state that you want to read and make use of.
+15:05
+And the rest of it will then get thrown away.
+15:07
+So you have an ability to forget stuff.
+15:10
+And then, once you've sort of read your subset,
+15:15
+you'll then going to do on it your standard RNN
+15:20
+computation of how to update things.
+15:23
+But then secondly, you're gonna select the writable subset.
+15:27
+So this is saying,
+15:29
+some of the hidden state we're just gonna carry on from the past.
+15:33
+We're only now going to edit part of the register.
+15:37
+And saying part of the register, I guess is a lying and simplifying a bit,
+15:41
+because really, you've got this vector of real numbers and
+15:45
+some said the part of the register is 70% updating this dimension and 20%
+15:50
+updating this dimension that values could be one or zero but normally they won't be.
+15:56
+So I choose the writable subset And
+15:58
+then it's that part of it that I'm then updating with my new candidate
+16:03
+update which is then written back, adding on to it.
+16:08
+And so both of those concepts in the gating,
+16:11
+the one gate is selecting what to read for your candidate update.
+16:16
+And the other gate is saying, which parts of the hidden state to overwrite?
+16:23
+Does that sort of make sense how that's a useful,
+16:26
+more powerful way of thinking about having a recurrent model?
+16:34
+Yes, a question?
+16:43
+Yeah, so how you select the readable subset is based on this reset gate?
+16:48
+So, the reset gate decides which parts of the hidden
+16:53
+state to read to update the hidden state.
+16:57
+So, the reset gate calculates which parts to read based on the current input and
+17:03
+the previous hidden state.
+17:05
+So it's gonna say, okay, I wanna pay a lot of attention to dimensions 7 and 52.
+17:12
+And so, those are the ones and a little to others.
+17:16
+And so those are the ones that will be being read here and
+17:20
+used in the calculation of the new candidate update,
+17:24
+which is then sort of mixed together with carrying on what you had before.
+17:30
+Any, yes.
+17:46
+So, the question was explain this again.
+17:50
+I'll try.
+17:51
+[LAUGH] I will try.
+17:53
+I will try and do that.
+17:55
+Let me go back to this slide first, cuz this has most of that,
+17:59
+except the last piece, right.
+18:01
+So here, what we want to do is we're carrying along a hidden state over time.
+18:09
+And at each point in time, we're going to say, well,
+18:14
+based on the new input and the previous hidden state,
+18:19
+we want to try and calculate a new hidden state, but
+18:24
+we don't fully want to calculate a new hidden state.
+18:28
+Sometimes, it will be useful just to carry over information from further back.
+18:33
+That's how we're going to get longer term memory into our current neural network.
+18:39
+Cuz if we kind of keep on doing multiplications at each time step
+18:44
+along a basic RNN, we lose any notion of long-term memory.
+18:48
+And essentially, we can't remember things for more than seven to ten time steps.
+18:54
+So that is sort of the top level equation to say, well, what we gonna calculate.
+19:01
+We want to calculate a mixture of a candidate update and
+19:07
+keeping what we had there before and how do we do that?
+19:13
+Well, what we're going to learn is this ut vector, the update gate and
+19:19
+the elements of that vector are gonna be between zero and one.
+19:23
+And if they're close to one, it's gonna say,
+19:26
+overwrite the current hidden state with what we calculated this time step.
+19:30
+And if they're close to zero, it's gonna say,
+19:33
+keep this element vector just what it used to be.
+19:37
+And so how we calculate the update gate is using our regular kind
+19:42
+of recurrent unit where it looks at the current input and
+19:46
+it looks at the recent history and it calculates a value with the only
+19:51
+difference that we use here sigmoid, so that's between 0 and
+19:56
+1 rather than tanh that puts that at between minus 1 and 1.
+20:01
+And so the kind of hope here intuitively is suppose
+20:06
+we have a unit that is sort of sensitive to what
+20:12
+verb we're on, then what we wanna say is well,
+20:17
+we're going through this sentence and we've seen a verb.
+20:24
+We wanted that unit, well, sorry, these dimension of the vector.
+20:30
+Let's say, their five dimensions of the vector that sort of record what kind of
+20:33
+verb it's just seen.
+20:35
+We want those dimensions of the vector to just stay recording what verb was
+20:42
+seen until such time as in the input, a band new verb appears.
+20:47
+And it's at precisely that point, we wanna say, okay, now is the time to update.
+20:53
+Forget about what used to be stored in those five dimensions.
+20:56
+Now, you should store a representation of the new verb.
+21:00
+And so, that's exactly what the update gate could do here.
+21:04
+It could be looking at the input and say, okay, I found a new verb.
+21:10
+So dimensions 47 to 52 should be being given a value of 1 and
+21:15
+that means that they'll be storing a value calculated from this candidate update,
+21:22
+and ignoring what they used to store in the past.
+21:27
+But if the update gate finds it's looking at a preposition or
+21:30
+at a term in our It'll say, no, not interested in those.
+21:34
+So it'll make the update value close to 0 and
+21:38
+that means that dimensions 47 to 52 will continue to
+21:43
+store the verb that you last saw even if it was ten words ago.
+21:48
+I haven't quite finish.
+21:49
+So that was that part of it, so yes.
+21:52
+So, the candidate update.
+21:54
+So, that's the update gate.
+21:55
+And when we do update, the candidate update is just exactly the same as
+22:00
+it always was in our current new network that you're calculating this
+22:05
+function of the important the previous hidden state and
+22:09
+put it through a tanh together from minus 1 to 1.
+22:13
+Then the final idea here is that well,
+22:17
+if you just have this, if you're doing a candidate update,
+22:23
+you're always using the previous hidden state and
+22:28
+the new input word in exactly the same way.
+22:33
+Whereas really for my example, what I was saying was if you have detected a new
+22:39
+verb in the input, you should be storing that new verb in dimensions 47 to 52 and
+22:45
+you should just be ignoring what you used to have there.
+22:48
+And so it's sort of seems like at least in some circumstances
+22:52
+what you'd like to do is throw away your current hidden state,
+22:56
+so you could replace it with some new hidden state.
+22:59
+And so that's what this second gate, the reset gate does.
+23:03
+So the reset gate can also look at the current import in the previous hidden
+23:07
+state and it choses a value between zero, and one.
+23:11
+And if the reset gate choses a value close to zero,
+23:15
+you're essentially just throwing away the previous hidden state and
+23:20
+calculating something based on your new input.
+23:24
+And the suggestion there for language analogy is well,
+23:28
+if it's something like you're recording, the last seen verb in dimensions 47 to 52.
+23:35
+When you see a new verb, well, the right thing to do is to throw away what you
+23:40
+have in your history from 47 to 52 and just calculate something new based
+23:45
+on the input, but that's not always gonna be what you want to do.
+23:49
+For example, in English, English is famous for having a lot of verb particle
+23:54
+combinations which cause enormous difficulty to non-native speakers.
+23:59
+So that's all of these things like make up, make out, take up.
+24:05
+All of these combinations of a verb and
+24:08
+a preposition have a special meaning that you just have to know.
+24:11
+It isn't really, you can't tell from the words most of the time.
+24:17
+So if you are wanting to work out what the meaning of make out is,
+24:22
+so you've seen make and you put in that into dimensions 47 to 52.
+24:28
+But if dimensions 47 to 52 are really storing main predicate meaning,
+24:33
+if you see the word out coming next, you don't wanna throw away make because it's
+24:38
+a big difference in meaning whether it's make out or take out will give out.
+24:43
+What you wanna do is you wanna combine both of them together to try and
+24:47
+calculate the predicate's meaning.
+24:49
+So in that case, you want your reset gate to have a value near one so you're
+24:55
+still keeping it and you're keeping the new import and calculating another value.
+25:02
+Okay, that was my attempt to explain GRUs, and now the question.
+25:18
+So the question is okay, but why this gated recurrent
+25:23
+unit not suffer from the vanishing gradient problem?
+25:29
+And really the secret is right here in this plus sign.
+25:39
+If you allowed me to simplify slightly,
+25:44
+and this is actually a version of a network that has been used.
+25:51
+It's essentially, not more details, but this aspect of it actually
+25:57
+corresponds to the very original form of an LSTM that was proposed.
+26:02
+Suppose I just delete this this- ut here, so this just was 1.
+26:10
+So what we have here is ht- 1, so kind of like the reset gate,
+26:16
+the update gate is only being used on this side.
+26:21
+It's saying should you pay any attention to the new candidate,
+26:25
+but you're always plussing it with ht-1.
+26:29
+If you'll imagine that slightly simplified form,
+26:33
+well, if you think about your gradients,
+26:37
+then what we've got here is when we're kind of working at h,
+26:43
+this has been used to calculate ht.
+26:46
+Ht-1 is being used to calculate ht, so
+26:51
+ht equals a plus ht-1, so
+26:54
+there's a completely linear relationship
+26:59
+with a coefficient of one between ht and ht-1.
+27:05
+Okay, and so therefore when you do your calculus and
+27:09
+you back prop that, right, you have something with slope 1.
+27:13
+That ht is just directly reflecting ht-1.
+27:19
+And that's the perfect case for gradients to flow beautifully.
+27:24
+Nothing is lost, it's just going straight back down the line.
+27:28
+And so that's why it can carry information for a very long time.
+27:34
+So once we put in this update gate, what we're having is the providing
+27:40
+ut is close to zero, this is gonna be approximately one,
+27:45
+and so the gradients are just gonna flow straight back to the line in an arbitrary
+27:50
+distance and you can have long distance dependencies.
+27:54
+Crucially, it's not like you're multiplying by a matrix every time,
+27:58
+which causes all with vanishing gradients.
+28:01
+It's just almost one there, straight linear sequence.
+28:07
+Now of course, if at some point ut is close to 1, so this is close to zero,
+28:14
+well then almost nothing is flowing in from ht-1.
+28:19
+But that's then saying there is no long term dependency.
+28:22
+That's what the model learn.
+28:24
+So nothing flows a long way back.
+28:29
+Is that a question?
+28:30
+Yeah.
+28:39
+So the question is, isn't ht tilted ut both dependent on ht-1.
+28:46
+And yeah, they are.
+28:47
+Just like the ut you're calculating it here in terms of ht-1.
+28:54
+So in some sense the answer is yeah, you are right but
+29:00
+it's sort of turns out not matter, right?
+29:06
+So the thing I think is If I put words in to your mouth, the thing that you're
+29:10
+thinking about is well, this ut look right down at the bottom here,
+29:15
+you'll calculate it by matrix vector multiply from ht-1.
+29:20
+And well then, where the ht-1 come from,
+29:24
+it came from ht-2 and there was some more matrix vector multiplies here,
+29:29
+so there is a pathway going through the gates where
+29:34
+you're keep on doing matrix vector multiplies, and that is true.
+29:38
+But, it turns out that sort of doesn't really matter,
+29:42
+because of the fact that there is this direct pathway, where you're getting
+29:47
+this straight linear flow of gradient information, going back in time.
+29:54
+Any other question?
+29:55
+Yes, I don't think I'll get any further in this class if I'm not careful.
+30:10
+I'm sorry if that's true.
+30:13
+So the question was, why when you Is before ut and one, one is ut.
+30:18
+We swapped.
+30:19
+>> [INAUDIBLE] >> Yeah, if that's true, sorry about that.
+30:23
+That was bad, boo boo mistake,
+30:25
+cuz obviously we should be trying to be consistent.
+30:27
+But, it totally doesn't matter.
+30:31
+This is sort of, in some sense, whether you're thinking of it as the forget
+30:36
+gate or a remember gate, and you can kind of have it either way round.
+30:40
+And that doesn't effect how the math and the learning works.
+30:48
+Any other questions?
+30:51
+I'm happy to talk about this because I do actually think it's useful to understand
+30:56
+this stuff cuz in some sense these kind of gated units have been the biggest and
+31:00
+most useful idea for making practical systems in the last couple of years.
+31:04
+Yes.
+31:11
+I actually have a picture for an LSTM later on.
+31:16
+It depends on a lot of particularities, but
+31:20
+it sort of seems like somewhere around 100.
+31:24
+Sorry the question was how long does a GRU actually end up remembering for and I
+31:29
+kind of think order of magnitude the kind number you want in your head is 100 steps.
+31:35
+So they don't remember forever I think that's something people also get wrong.
+31:40
+If we go back to the other one, that I hope to get to eventually,
+31:46
+the name is kind of a mouthful.
+31:49
+I think it was actually very deliberately named, where it was called,
+31:54
+long short term memory.
+31:56
+Right there was no idea in people's heads that this was meant to be
+32:01
+the model of long term memory in the human brain.
+32:05
+Long term memory is fundamentally different and
+32:08
+needs to be modeled in other ways and maybe later in the class,
+32:11
+we'll say a little a bit about the kind of ideas people thinking about this.
+32:16
+What this was about was saying okay,
+32:19
+well people have a short term memory and it lasts for a while.
+32:24
+Whereas the problem was our current neural networks are losing all of there
+32:29
+memory in ten time steps.
+32:31
+So if we could get that pushed out another order of magnitude during
+32:36
+100 time steps that would be really useful to give us
+32:40
+a more human like sense of short term memory.
+32:43
+Sorry, yeah?
+32:49
+So the question is, do GRUs train faster than LSTMs?
+32:55
+I don't think that's true, does Richard have an opinion?
+32:59
+>> [INAUDIBLE] >> Yes,
+33:05
+so Richard says less computation the computational cost is faster,
+33:10
+but I sort of feel that sometimes LSTMs have a slight edge on speed.
+33:15
+No huge difference, let's say that's the answer.
+33:17
+Any other, was there another question that people want to ask?
+33:24
+Okay, I'll go on.
+33:26
+You can ask them again in a minute and I go on.
+33:31
+Okay, so then finally I wanted to sort
+33:36
+of say a little bit about LSTMs.
+33:40
+So LSTMs are more complex because there are more equations down the right side.
+33:45
+And there's more gates but they're barely different when it comes down to it.
+33:52
+And to some extent, they look more different than they are because of
+34:00
+certain arbitrary choices of notation that was made when LSTMs were introduced.
+34:05
+So when LSTMs were introduced, Hochreiter & Schmidhuber
+34:10
+sort of decided to say, well, we have this privileged notion of
+34:15
+memory in the LSTM, which we're going to call the cell.
+34:20
+And so people use C for the cell of the LSTM.
+34:24
+But the crucial thing to notice Is that the cell of the LSTM
+34:30
+is behaving like the hidden state of the GRU, so really,
+34:35
+the h of the GRU is equivalent to the c of the LSTM.
+34:41
+Whereas the h of the LSTM is
+34:45
+something different that's related to sort what's exposed to the world.
+34:49
+So the center of the LSTM, this equation for updating the cell.
+34:55
+Is do a first approximation exactly the same as this most crucial equation for
+35:01
+updating the hidden state of the GRU.
+35:04
+Now, if you stare a bit, they're not quite the same,
+35:09
+the way they are different is very small.
+35:12
+So in the LSTM you have two gates a forget gate and then an input gate so
+35:18
+both of those for each of the dimension have a value between zero and one.
+35:23
+So you can simultaneously keep everything from the past and
+35:28
+keep everything from your new calculated value and
+35:32
+sum them together which is a little bit different.
+35:36
+To the GRU where you're sort of doing this tradeoff as to how much to take
+35:41
+directly, copy across the path versus how much to use your candidate update.
+35:47
+So it split those into two functions, so you get the sum of them both.
+35:51
+But other than that, it's exactly the same, right?
+35:54
+Where's my mouse?
+35:57
+The candidate update is exactly the same as what's
+36:02
+being listed in terms of c tilde and h tilde but
+36:06
+the candidate update is exactly, well, sorry,
+36:10
+it's not quite I guess it's the reset gate the candidate
+36:15
+update is virtually the same as the standard LSTM style unit.
+36:21
+And then for the gates, the gates are sort of the same,
+36:25
+that they're using these sort of R and
+36:28
+N style calculations to get a value between zero for one for each dimension.
+36:34
+So the differences are that we added one more
+36:39
+gate because we kinda having forget and
+36:44
+input gates here and the other difference is
+36:49
+to have the ability to sort of that the GRUs sort
+36:54
+of has this reset gate where it's saying,
+36:59
+I might ignore part of the past when calculating My candidate update.
+37:07
+The LSTM is doing it a little bit differently.
+37:11
+So the LSTM in the candidate update, it's always using the current input.
+37:17
+But for this other half here, it's not
+37:22
+using ct minus 1, it's using ht minus 1.
+37:28
+So the LSTM has this extra ht which is derived from ct.
+37:34
+And the way that it's derived from ct is that there's an extra tanh here but
+37:39
+then you're scaling with this output gate.
+37:42
+So the output gate is sort of equivalent of the reset gate of the GRU.
+37:49
+But effectively, it's one one time step earlier,
+37:53
+cuz on the LSTM side, on the preceding time step,
+37:57
+you also calculate an ht by ignoring some stuff with the output gate,
+38:03
+whereas in the GRU, for the current time step,
+38:07
+you're multiplying with the reset gate times your previous hidden state.
+38:13
+That sorta makes sense?
+38:14
+A question.
+38:29
+Right, yes, the don't forget gate.
+38:31
+[LAUGH] You're right, so it's the question about was the ft.
+38:36
+Is it really a forget gate?
+38:37
+No, as presented here, it's a don't forget gate.
+38:41
+Again, you could do the 1 minus trick if you wanted to and call this 1 minus f1,
+38:45
+but yeah, as presented here, if the value is close to 1,
+38:50
+it means don't forget, yeah, absolutely.
+39:03
+So this one here is genuinely an update gate because if If the value
+39:09
+of it is close to 1, you're updating with the candidate update.
+39:15
+And if the value is close to zero,
+39:17
+you're keeping the previous contents of the hidden state.
+39:20
+>> [INAUDIBLE] reset.
+39:25
+>> Right, so the reset gate is sort of a don't reset gate.
+39:29
+[LAUGH] Yeah, okay.
+39:30
+[LAUGH] I'm having a hard time with the terminology here [LAUGH].
+39:36
+You are right.
+39:39
+Another question?
+40:03
+So okay, so the question was sometimes you're using ct-1,
+40:09
+and sometimes you're using ht-1.
+40:13
+What's going on there?
+40:14
+And the question is in what sense is ct less exposed in the LSTM?
+40:22
+Right, so there was something I glossed over in my LSTM presentation, and
+40:27
+I'm being called on it.
+40:28
+Is look, actually for the LSTM, it's ht-1
+40:33
+that's being used everywhere for all three gates.
+40:39
+So really, when I sort of said that what we're doing here,
+40:44
+calculating ht, that's sort of similar to the reset gate in the GRU.
+40:51
+I kind of glossed over that a little.
+40:53
+It's sort of true in terms of thinking of the calculation of the candidate update
+40:58
+cuz this ht- 1 will then go into the candidate update.
+41:03
+But's a bit more than that, cuz actually, stuff that you throw away with your
+41:09
+output gate at one time step is then also gonna be thrown away
+41:14
+in the calculation of every gate at the next time step.
+41:20
+Yeah, and so then the second question is in what sense is the cell less exposed?
+41:28
+And that's sort of the answer to that.
+41:30
+The sense in which the cell is less exposed is
+41:35
+the only place that the cell is directly used,
+41:40
+is to sort of linearly add on the cell at the previous
+41:46
+time step plus its candidate update.
+41:51
+For all the other computations,
+41:53
+you're sort of partially hiding the cell using this output gate.
+42:01
+Another question, sure.
+42:28
+Hm, okay, so the question is, gee,
+42:32
+why do you need this tanh here, couldn't you just drop that one?
+42:42
+Whoops.
+42:51
+Hm.
+42:54
+I'm not sure I have such a good answer to that question.
+42:58
+>> [INAUDIBLE]
+43:17
+>> Okay, so Richard's suggestion is,
+43:19
+well this ct is kind of like a linear layer, and
+43:23
+therefore it's kind of insured if you should add a non linearity after it.
+43:28
+And that gives you a bit more power.
+43:32
+Maybe that's right.
+43:36
+Well, we could try it both ways and see if it makes a difference, or
+43:40
+maybe Shane already has, I'm not sure [LAUGH].
+43:43
+Any other questions?
+43:45
+Make them a softball one that I can answer.
+43:49
+>> [LAUGH] >> Okay,
+43:56
+so I had a few more pictures that went through
+44:02
+the parts of the LSTM with one more picture.
+44:08
+I'm starting to think I should maybe not dwell on this in much detail.
+44:12
+Cuz we've sort of talked about the fact that there are the gates for
+44:17
+all the things.
+44:18
+We're working out the candidate update, just like an RNN.
+44:25
+The only bit that I just wanna say one more time is I think
+44:30
+it's fair to say that the whole secret of these things,
+44:34
+is that you're doing this addition where you're adding together.
+44:41
+When in the addition, it's sort of a weighted addition.
+44:44
+But in the addition,
+44:46
+one choice is you're just copying stuff from the previous time step.
+44:51
+And to the extent that you're copying stuff from the previous time step,
+44:56
+you have a gradient of 1, which you're just pushing.
+45:00
+So you can push error directly back across that, and
+45:04
+you can keep on doing that for any number of time steps.
+45:08
+So it's that plus, having that plus with the previous time step rather
+45:13
+than having it all multiplied by matrix.
+45:16
+That is the central idea that makes LSTMs be able to have long short-term memory.
+45:22
+And I mean, that has proven to be an incredibly powerful idea,
+45:27
+and so in general, it doesn't sound that profound, but
+45:32
+that idea has been sort of driving a lot of the developments of what's
+45:37
+been happening in deep learning in the last couple of years.
+45:42
+So we don't really talk about, in this class, about vision systems.
+45:49
+You can do that next quarter in 231N.
+45:52
+But one of the leading ideas and has been used recently in better systems for
+45:57
+doing kind of vision systems with deep learning has been the idea of
+46:02
+residual networks, commonly shortened as ResNets.
+46:07
+And to a first approximation, so
+46:14
+ResNets is saying gee, we want to be able to build 100 layer
+46:18
+deep neural networks and be able to train those successfully.
+46:23
+And to a first approximation,
+46:25
+the way ResNets are doing that is exactly the same idea here with the plus sign.
+46:31
+It's saying, as you go up each layer,
+46:34
+we're going to calculate some non-linear function using a regular neural net layer.
+46:40
+But will offer the alternative,
+46:42
+which is that you can just shunt stuff up from the layer before,
+46:46
+add those two together, and repeat over again and go up 100 layers.
+46:51
+And so this plus sign, you may have learned in third grade, but
+46:56
+turns out plus signs have been a really useful part of modern deep learning.
+47:02
+Okay, Yeah, here is my little picture, which I'll just show.
+47:09
+I think you'll have to sort of then slow it down to
+47:14
+understand that this is sort of going backwards from
+47:19
+Time 128 as to how long information lasts in an LSTM,
+47:24
+and it sort of looks like this if I play it.
+47:29
+And so if we then try and drag it back, I think, then I can play it more slowly.
+47:33
+All right, so that almost instantaneously, the RNN has less
+47:38
+information because of the Matrix multiply.
+47:44
+But as you go back, that by the time you've gone back so
+47:47
+at ten times steps, the RNN is essentially lost the information.
+47:52
+Whereas the LSTM even be going back,
+47:57
+it starts loose information, but you know you sort of gain back this sort of more
+48:01
+like, time step 30 or something before it's kind of
+48:06
+lost all of its information which is sort of the intuition I suggested before.
+48:09
+But something like 100 time steps you can get out of a LSTM.
+48:16
+Almost up for a halftime break, and the research highlight,
+48:21
+but before that couple other things I wanted to say,
+48:25
+here's just a little bit of practical advice.
+48:29
+So both for assignment for or for many people's final projects.
+48:36
+They're gonna be wanting to train recurrent neural
+48:40
+networks with LSTMs on a largest scale.
+48:44
+So here is some of the tips that you should know, yes.
+48:46
+So if you wanna build a big recurrent new network,
+48:50
+definitely use either GRU or an LSTM.
+48:53
+So for any of these recurrent networks,
+48:56
+initialization is really, really important.
+49:01
+That if your net, recurrent your network should work, if your network isn't
+49:07
+working, often times it's because the initial initialization is bad.
+49:12
+So what are the kind of initialization ideas that often tend to be important?
+49:17
+It's turned to be really useful for the recurrent matrices, that's the one
+49:23
+where you're multiplying by the previous hidden state of previous cell state.
+49:27
+It's really useful to make that one orthogonal.
+49:29
+So there's chance to use your good old-fashioned linear algebra.
+49:33
+There aren't actually that many parameters in a recurrent neural net.
+49:37
+And giving an orthogonal initialization has proved to
+49:41
+be a better way to kinda get them learning something useful.
+49:46
+Even with sort of these ideas with GRUs and LSTMs,
+49:49
+you're gonna kinda keep multiplying things in a recurrent neural network.
+49:54
+So normally, you wanna have your initialization is small.
+49:58
+If you start off with two large values that can destroy things,
+50:02
+try making the numbers smaller.
+50:05
+Here's a little trick, so
+50:08
+a lot of the times we initialize things near zero, randomly.
+50:13
+An exception to that is when you're setting the bias of a forget gate,
+50:19
+it normally works out much better if you set the bias gate for
+50:24
+the forget gate to a decent size positive number like one or
+50:28
+two or a random number close to one or two.
+50:32
+That's sort of effectively saying you should start off paying
+50:36
+a lot of attention to the distant past.
+50:40
+That's sort of biasing it to keep long term memory.
+50:43
+And that sort of encourages you to get a good model.
+50:46
+Which effectively uses long term memory.
+50:48
+And if the long term past stuff isn't useful, it can shrink that down.
+50:53
+But if the forget gate starts off mainly forgetting stuff,
+50:57
+it'll just forget stuff and never change to any other behavior.
+51:02
+In general, these algorithms work much
+51:06
+better with modern adaptive learning rate algorithms.
+51:08
+We've already been using Adam in the assignments.
+51:10
+The ones like Adam, AdaDelta, RMSprop work a lot better than basic SGD.
+51:16
+You do wanna clip the norms of the gradients.
+51:19
+You can use a number like five, that'll work fine.
+51:22
+And so, we've used dropout in the assignments, but
+51:25
+we haven't actually ever talked about it much in lectures.
+51:28
+For RNNs of any sort, it's trivial to do dropout vertically.
+51:34
+And that usually improves performance.
+51:38
+It doesn't work and
+51:39
+I either do drop out horizontally along the recurrent connections.
+51:44
+Because if you have reasonable percentage of drop out and
+51:48
+you run it horizontally then within the few time steps, almost every
+51:52
+dimension will be dropped in one of them, and so you have no information flow.
+51:57
+There have been more recent work that's talked about ways that you
+52:03
+can successfully do horizontal dropout in recurrent networks in,
+52:08
+including orthongal's PhD student in England who did work on so
+52:13
+called base in drop out that works well for that.
+52:16
+But quite commonly, it's still the case that people just drop out vertically and
+52:20
+don't drop out at all horizontally.
+52:23
+The final bit of advice is be patient if you're running,
+52:27
+if you're learning recurrent nets over large data sets,
+52:31
+it often takes quite a while and you don't wanna give up.
+52:34
+Sometimes if you just train them long enough start to learn stuff.
+52:37
+This is one of the reasons why we really want to get you guys started
+52:42
+using GPUs because the fact of the matter,
+52:45
+if you're actually trying to do things on decent size data sets,
+52:50
+you just don't wanna be trying to train in LSTM or GRU without Using a GPU.
+52:56
+One other last tip that we should mention some time is ensembling.
+53:02
+If you'd like your numbers to be 2% higher, very effective strategy,
+53:08
+which again, makes it good to have a GPU, is don't train just one model,
+53:12
+train ten models and you average their predictions and
+53:16
+that that normally gives you quite significant gains.
+53:19
+So here are some results from MT Systems trained.
+53:24
+Montreal again.
+53:26
+So it's different language pairs.
+53:30
+The red ones is a single model.
+53:32
+The purple ones are training 8 models, and in this case,
+53:37
+it's actually just majority voting them together.
+53:42
+But you can also sort of average their predictions and
+53:45
+you can see it's just giving very nice gains in performance using the measure for
+53:50
+mt performance which I'll explain after the break.
+53:54
+But we're now gonna have Michael up to talk about the research highlight.
+54:02
+And I'll quickly explain it until the video is in
+54:04
+there- >> Okay.
+54:04
+>> After the picture.
+54:06
+>> Okay.
+54:08
+Hi, everyone.
+54:09
+I'm gonna be presenting the paper Lip Reading Sentences in the Wild.
+54:14
+So our task is basically taking a video, which we preprocessed into
+54:19
+a sequence of lip-centered images, with or without audio.
+54:23
+And we're trying to predict like the words that are being said in the video.
+54:28
+>> Just slide after that one.
+54:34
+Maybe it doesn't
+55:03
+>> The government will pay for both sides.
+55:06
+>> We have to look at whether it >> Not.
+55:09
+Said security had been stepped up in Britain.
+55:29
+>> Cool, so anyway, it's hard to do lip reading.
+55:34
+So anyway, and for the rest of this I'll talk about what architecture they use,
+55:38
+which is, they deem the watch, listen, attend, and spell model.
+55:42
+>> Gonna talk about some of these training strategies that might also be helpful for
+55:45
+your final projects.
+55:46
+There's also the dataset and
+55:48
+the results was actually surpassing like a professional lip reader.
+55:54
+So, the architecture basically breaks down into three components.
+55:58
+We have a watch component which takes in the visual and the listening
+56:03
+component which takes in the audio and these feed information to the attend, and
+56:09
+spell module which outputs the prediction one character at a time.
+56:15
+And they also use this with like, just the watch module or just the listen module.
+56:22
+To go into slightly more detail, for the watch module,
+56:26
+we take a sliding window over like the face centered images and
+56:32
+feed that into a CNN, which then the output of
+56:35
+the CNN gets fed into an LSTM much size over the time steps.
+56:41
+We output a single state vector S of v, as well as the set of
+56:46
+output vectors L of v and the listen module is very similar.
+56:52
+We take the pre-processed speech and
+56:55
+we again site over using the LSTM, and we have another state vector,
+57:00
+and another set of output vectors, and then in the decoding step.
+57:06
+So we have an LSTM as a really steps of during the decoding and
+57:11
+the initial hidden state is initialized as the concatenation of the two hidden
+57:16
+states from the two previous modules as well as we have
+57:21
+like a dual attention mechanism which takes in the output
+57:26
+vectors from each of their respective modules, and we take those together, and
+57:31
+we make our prediction using a softmax over a multi-layer procepteron.
+57:37
+And so, one strategy that uses called curriculum learning.
+57:40
+So ordinarily, when you're training this sequence to sequence models,
+57:45
+you might be tend to just use one full sentence at a time.
+57:50
+Tip by what they do on curriculum learning is you start with the word length like
+57:55
+segment and then you can slowly increase the length of your training sequences and
+58:01
+what happens is you're actually like the idea is you're trying to learn,
+58:07
+like slowly build up the learning for the model and
+58:10
+what happens is it ends up converging faster as well as decreasing overfitting.
+58:16
+Another thing that they use is called scheduled sampling.
+58:20
+So ordinarily during training, you'll be using
+58:24
+the ground truth input like character sequence, but
+58:29
+during the test time you wouldn't be using that you'd just
+58:34
+be using your previous prediction after every time step.
+58:40
+So what you do in scheduled sampling is kind of like bridge the difference in
+58:43
+scenarios between training and testing is that you actually just for
+58:47
+a random small probability, like sample from the previous input
+58:51
+instead of the ground truth input for that time step during training.
+58:58
+So the dataset was taken from the authors collected it from the BBC News and
+59:04
+they have like dataset that's much larger than the previous ones
+59:09
+out there with over 17,000 vocabulary words and
+59:13
+the other the quite a bit like processing to like some other things on the lips, and
+59:18
+do like the alignment of the audio, and the visuals.
+59:23
+So, just to talk about the results, I guess the most eye popping result is that
+59:29
+they gave the test set to actually like a company that does like professional
+59:34
+lip reading and they're only able to get about like one in four words correct or
+59:39
+as this model was able to get one in two, roughly, based on word error rate.
+59:44
+And they also did some other experience as well with looking at,
+59:48
+if you combine the lips version with the audio,
+59:52
+you get like a slightly better model which shows that using both modalities improves
+59:57
+the model as well as looking at what happens if you add noise to the model.
+60:02
+Great. Thanks.
+60:03
+>> [APPLAUSE] >> Thanks, Michael.
+60:09
+Yeah, so obviously, a lot of details there.
+60:11
+But again, that's kind of an example of what's been happening with deep learning
+60:16
+where you're taking this basic model architecture, things like LSTM and saying,
+60:21
+here's another problem, let's try it on that as well and
+60:24
+it turns out to work fantastically well.
+60:26
+Let's say, 20 minutes left.
+60:28
+I'll see how high I can get in teaching everything else about it on machine
+60:31
+translation.
+60:32
+So it's something I did just want to explain is so, back here and
+60:36
+in general, when we've been showing machine translation results.
+60:41
+We've been divvying these graphs that up is good and
+60:44
+what it's been measuring with these numbers are things called blue scores.
+60:48
+So, I wanted to give you some idea of how and why we evaluate machine translation.
+60:54
+So the central thing to know about machine translation is if you take a paragraph or
+61:00
+text and give it to ten different humans translators,
+61:04
+you'll get back ten different translations.
+61:08
+There's no correct answer as to how to translate
+61:13
+a sentence into another language.
+61:16
+And in practice, most of the time all translations are imperfect and
+61:21
+it's kind of deciding what you wanna pay most attention to is that do you want to
+61:26
+maximally preserve the metaphor that the person used in the source language or
+61:31
+do you wanna more directly convey the meaning it conveys,
+61:34
+because that metaphor won't really be familiar to people in the target language.
+61:40
+Do you want to choose sort of short direct words,
+61:43
+because it's written in a short, direct style?
+61:46
+Or do you more want to sort of,
+61:48
+you choose a longer word that's a more exact translation?
+61:52
+There's all of these decisions and things and in some sense a translator is
+61:56
+optimizing over if we do it in machine learning terms,
+61:59
+but the reality is it's sort of not very clear.
+62:02
+There are a lot of choices.
+62:03
+You have lots of syntactic choices as whether you make it a passive or
+62:07
+an active and word order, and so on.
+62:09
+No right answer.
+62:10
+So we just can't have it like a lot things of saying, here's the accuracy,
+62:14
+that was what you were meant to use.
+62:16
+So, how do you do it?
+62:18
+So, one way to do MT evaluation is to do it manually.
+62:22
+You get human beings to look at translations and to say,
+62:26
+how good they are.
+62:28
+And to this day, basically,
+62:29
+that's regarded as the gold standard of machine translation evaluation,
+62:34
+because we don't have a better way to fully automate things.
+62:38
+So one way of doing that is things like Likert scales where you're
+62:43
+getting humans to judge translations to adequacy,
+62:46
+which is how well they convey the meaning of the source and fluency which is for
+62:52
+how natural the output sentence sounds in the target language.
+62:56
+Commonly, a way that's more easily measurable that people prefer is actually
+63:02
+if you're comparing systems for goodness is that you directly ask human beings
+63:08
+to do pairwise judgments of which is better translation A or translation B.
+63:13
+I mean, it turns out that even that is incredibly hard for
+63:17
+humans to do as someone who has sat around doing this task of human evaluation.
+63:23
+I mean, all the time, it's kind of okay,
+63:26
+this one made a bad word choice here and this one got the wrong verb form
+63:30
+there which of these do I regard as a worse error.
+63:34
+So it's a difficult thing, but we use the data we can from human beings.
+63:38
+Okay, that's still the best thing that we can do.
+63:41
+It has problems.
+63:43
+Basically, it's slow and expensive to get human beings to judge translation quality.
+63:50
+So what else could we do?
+63:52
+Well, another obvious idea is to say, well, If we can embed machine
+63:57
+translation into some task, we can just see which is more easily a valuable.
+64:02
+We could just see which MT system lets us do the final task better.
+64:09
+So, we'd like to do question answering over foreign language documents.
+64:13
+We'll just to get our question answers correct score, and
+64:17
+they'll be much easier to measure.
+64:19
+And that's something that you can do, but
+64:22
+it turns out that that often isn't very successful.
+64:25
+Cuz commonly your accuracy on the downstream task is
+64:29
+very little affected by many of the fine points of translation.
+64:34
+An extreme example of that is sort of like cross-lingual information retrieval.
+64:38
+When you're just wanting to retrieve relevant
+64:41
+documents to a query in another language.
+64:44
+That providing you can kind of produce some of the main content words in
+64:48
+the translation, it really doesn't matter how you screw up the details of syntax and
+64:53
+verb inflection.
+64:54
+It's not really gonna affect your score.
+64:57
+Okay, so what people have wanted to have is a direct
+65:02
+metric that is fast and cheap to apply.
+65:06
+And for a long time, I think no one thought there was such a thing.
+65:11
+And so then starting in the very early 2000s,
+65:15
+people at IBM suggested this first idea of, hey,
+65:20
+here's a cheap way in which we can measure word translation quality.
+65:26
+And so they called it the BLEU metric.
+65:29
+And so here was the idea of how they do that.
+65:34
+What they said is let us produce reference translations.
+65:39
+We know that there are many, many possible ways that something can be translated.
+65:44
+But let's get a human being to produce a reference translation.
+65:53
+So what we are going to do is then we're going to have a reference translation by
+65:57
+a human, and we're going to have a machine translation.
+66:01
+And to a first approximation we're going to say that the machine
+66:06
+translation is good to the extent that you can find word n-grams.
+66:11
+So sequences of words like three words in a row, two words in a row,
+66:15
+which also appear in the reference translation anywhere.
+66:20
+So what are the elements of this?
+66:21
+So by having multi-word sequences, that's meant to be trying to
+66:28
+judge whether you have some understanding of the sort of right syntax and arguments.
+66:33
+Because you're much more likely to match a four word sequence
+66:37
+if it's not just you've got a bag of keywords.
+66:40
+You actually understand something of the syntax of the sentence.
+66:44
+The fact that you can match it anywhere is meant to be dealing with the fact that
+66:48
+human languages normally have quite flexible word order.
+66:51
+So it's not adequate to insist that the phrases appear in the same word order.
+66:57
+Of course, in general in English, a lot of the time you can say, last night I went
+67:02
+to my friend's place, or, I went to my friend's place last night.
+67:07
+And it seems like you should get credit for last night
+67:09
+regardless of whether you put it at the beginning or the end of the sentence.
+67:13
+So, that was the general idea in slightly more detail.
+67:17
+The BLEU measure is a precision score.
+67:20
+So it's looking at whether n-grams that are in the machine
+67:25
+translation also appear in the reference translation.
+67:29
+There are a couple of fine points then.
+67:31
+You are only allowed to count for a certain n and n-gram once.
+67:36
+So if in your translation, the airport appears three times,
+67:41
+but there's only one the airport in the reference,
+67:44
+you're only allowed to count one of them as correct, not all three of them.
+67:48
+And then there's this other trick that we have, this thing called a brevity penalty.
+67:53
+Because if it's purely a precision-oriented measure,
+67:57
+saying is what appears in the machine translation in the reference.
+68:01
+There are games you could play,
+68:03
+like you could just translate every passage with the word the.
+68:07
+Because if it's English the word the is pretty sure to appear somewhere in
+68:11
+the reference translation, and get precision one.
+68:14
+And that seems like it's cheating.
+68:16
+So if you're making what your translation is shorter than the human translations,
+68:21
+you'll lose.
+68:25
+Okay, so more formally, so you're doing this with n-grams up to a certain size.
+68:31
+Commonly it's four so you use single words, pairs of words, triples,
+68:35
+and four words.
+68:36
+You work out this kind of precision of each.
+68:38
+And then you're working out a kind of a weighted geometric mean
+68:43
+of those precisions.
+68:44
+And you multiplying that by brevity penalty.
+68:47
+And the brevity penalty penalizes you if your translation
+68:52
+is shorter than the reference translation.
+68:56
+There are some details here, but maybe I'll just skip them and go ahead.
+69:00
+So there's one other idea then which is, well, what about this big problem that,
+69:06
+well, there are a lot of different ways to translate things.
+69:11
+And there's no guarantee that your translation could be great, and
+69:15
+it might just not match the human's translation.
+69:18
+And so the answer to that that the original IBM paper suggested
+69:24
+was what we should do is collect a bunch of reference translations.
+69:30
+And the suggested number that's been widely used was four.
+69:34
+And so then, most likely, if you're giving a good translation,
+69:39
+it'll appear in one of the reference translations.
+69:43
+And then, you'll get a matching n-gram.
+69:45
+Now, of course, that's the sort of a statistical argument.
+69:49
+Cuz you might have a really good translation and
+69:51
+none of the four translators chose it.
+69:53
+And the truth is then in that case you just lose.
+69:57
+And indeed what's happened in more recent work is quite a lot of the time,
+70:02
+actually, the BLEU measure is only run with one reference translation.
+70:07
+And that's seems a little bit cheap.
+70:10
+And it's certainly the case that if you're running with one reference translation,
+70:14
+you're either just lucky or unlucky as to whether you guessed to translate the way
+70:19
+the translator translates.
+70:21
+But you can make a sort of a statistical argument which by and large is valid.
+70:25
+That if you're coming up with good translations,
+70:28
+providing there's no correlation somehow between one system and the translator.
+70:33
+That you'd still expect on balance that you'll get a higher score if you're
+70:38
+consistently giving better translations.
+70:40
+And broadly speaking, that's right.
+70:43
+Though this problem of correlation does actually start to rear its head, right?
+70:49
+That if the reference translator always translated the things as US, and
+70:54
+one system translates with US, and the other one translates with United States.
+70:59
+Kind of one person will get lucky, and
+71:01
+the other one will get unlucky in a kind of a correlated way.
+71:04
+And that can create problems.
+71:07
+So even though it was very simple when BLEU was initially introduced,
+71:12
+it seemed to be miraculously good that it just corresponded
+71:17
+really well with human judgments of translation quality.
+71:22
+Rarely do you see an empirical data set that's as linear as that.
+71:26
+And so this seemed really awesome.
+71:29
+Like many things that are surrogate metrics,
+71:33
+there are a lot of surrogate metrics that work really well If no one is trying
+71:38
+to optimize them but don't work so well once people are trying to optimize them.
+71:43
+So what happen then was,
+71:45
+everyone evaluated their systems on BLEU scores and so therefore,
+71:49
+all researchers worked on how to make their systems have better BLEU scores.
+71:53
+And then what happened is this correlation graph went way down.
+71:58
+And so the truth is now that current, and this relates to the sort of
+72:03
+when I was saying the Google results were exaggerated.
+72:06
+The truth is that current MT systems produce BLEU scores that are very similar
+72:14
+to human translations for many language pairs which reflects the fact that
+72:18
+different human beings are quite creative and vary in how they translate sensors.
+72:23
+But in truth, the quality of machine translation is still well below
+72:27
+the quality of human translation.
+72:31
+Okay, few minutes left to say a bit more about MT.
+72:35
+I think I can't get through all this material, but
+72:37
+let me just give you a little bit of a sense of some of it.
+72:42
+Okay, so one of the big problems you have if you've tried to build something,
+72:46
+any kind of generation system,
+72:49
+where you're generating words is you have a problem that there are a lot of words.
+72:55
+Languages have very large vocabularies.
+72:58
+So from the hidden state, what we're doing is multiplying by this
+73:02
+matrix of Softmax parameters, which is the size of the vocabulary
+73:07
+times the size of the hidden state doing this Softmax.
+73:12
+And that's giving us the probability of different words.
+73:16
+And so the problem is if you wanna have a very large vocabulary,
+73:19
+you spend a huge amount of time just doing these Softmaxes over, and over again.
+73:24
+And so, for instance, you saw that in the kind of pictures of the Google system,
+73:29
+that over half of their computational power was just going
+73:34
+into calculating these Softmax so that's being a real problem.
+73:38
+So something people have worked on quite a lot is how can we
+73:42
+string the cost of that computation.
+73:46
+Well one thing we can do is say, ha, let's use a smaller vocabulary.
+73:49
+Let's only use a 50,000 word vocabulary for our MT system, and
+73:54
+some of the early MT work did precisely that.
+73:56
+But the problem is, that if you do that, you start with lively sentences.
+74:01
+And instead what you get is unk, unk, unk because all of
+74:06
+the interesting words in the sentence fall outside of your 50,000 word vocabulary.
+74:12
+And those kind of sentences are not very good ones to show that human beings,
+74:18
+because they don't like them very much.
+74:20
+So, it seems like we need to somehow do better than that.
+74:25
+So, there's been work on, well, how can we more effectively do the softmaxes
+74:30
+without having to do as much computation.
+74:33
+And so, there have been some ideas on that.
+74:36
+One idea is to sort of have a hierarchical Softmax where we do the standard
+74:41
+computer scientist trick of putting a tree structure
+74:44
+to improve our amount of computation.
+74:46
+So if you can sort of divide the vocabulary into sort of tree pieces and
+74:50
+divide down branches of the tree, we can do less computation.
+74:56
+Remember, we did noise contrast to destination for
+75:00
+words of that was a way of avoiding computation.
+75:03
+Those are possible ways to do things.
+75:06
+They are not very GPU-friendly unfortunately.
+75:09
+Once you start taking branches down the tree, you then can't do the kind
+75:13
+of nice just bang bang bang type of computations down to GPU.
+75:17
+So there's been on work on coming up with alternatives to that, and
+75:21
+I wanted to mention one example of this.
+75:24
+And an idea of this is well, maybe we can actually
+75:29
+sort of just work with small vocabularies at any one time.
+75:34
+So when we're training our models, we could train using subsets of
+75:39
+the vocabulary because there's a lot of rare words but they're rare.
+75:45
+So if you pick any slice of the training data most rare words won't be in it.
+75:51
+Commonly if you look at your whole vocabulary about 40% of
+75:55
+your word types occur only once.
+75:57
+That means if you cut your data set into 20 pieces,
+76:02
+19 of those 20 will not contain that word.
+76:04
+And then, we also wanna be smart on testing.
+76:09
+So we wanna be able to, at test time as well, generate sort of a smaller
+76:15
+set of words for our soft max, and so we can be fast at both train and test time.
+76:20
+Well, how can you do that?
+76:22
+Well, so at training time, we want to have a small vocabulary.
+76:28
+And so we can do that by partitioning the vocab, for partitioning the training data,
+76:33
+each slice of the training data, we'll have a much lower vocabulary.
+76:39
+And then we could partition randomly or we could even smarter and
+76:44
+we can cut it into pieces that have similar vocabulary.
+76:49
+If we put all the basketball articles in one file and
+76:52
+all the foot walled articles in another pile, will shrink the vocabulary further.
+76:57
+And so they look at ways of doing that, so in practice that they can get down and
+77:03
+order a magnitude or more in the size of the vocab that they need for
+77:07
+each slice of the data, that's great.
+77:13
+Okay, so what do we do at test time?
+77:15
+Well, what we wanna do it at test time as well,
+77:18
+when we're actually translating, we want to use as much smaller vocabulary.
+77:23
+Well, here's an idea of how you could do that.
+77:26
+Firstly, we say, they're are just common
+77:28
+function words that we always gonna want to have available.
+77:32
+So we pick the K most frequent words and
+77:35
+say we're always gonna have them in our Softmax.
+77:37
+But then for the rest of it,
+77:39
+what we're actually gonna do is sort of have a lexicon on the side
+77:44
+where we're gonna know about likely translations for each source word.
+77:49
+So that we'll have stored ways that would be reasonable to translate she loves
+77:54
+cats into French.
+77:56
+And so when we're translating a sentence, we'll look out for
+77:59
+each word in the source sentence what are likely translations of it and
+78:04
+throw those into our candidates for the Softmax.
+78:09
+And so then we've got a sort of a candidate list of words.
+78:14
+And when translating a particular soft sentence,
+78:17
+we'll only run our Softmax over those words.
+78:21
+And then again, we can save well over an order of magnitude computations.
+78:28
+So, K prime is about 10 or 20 and K is sort of a reasonable size vocab.
+78:34
+We can again, sort of cut at least in the order of magnitude the size of
+78:39
+our soft mixers and act as if we had large vocabulary.
+78:44
+There are other ways to do that too, which are on this slide.
+78:50
+And what I was then going to go on, and we'll decide whether it does or
+78:54
+doesn't happen based on the syllabus.
+78:57
+I mean, you could sort of say, well, that's still insufficient
+79:02
+because I sort of said that you have to deal with a large vocabulary.
+79:07
+And you've sort of told us how to deal with a large vocabulary more efficiently.
+79:13
+But you've still got problems, because in any new piece of text you give it,
+79:18
+you're going to have things like new names turn up, new numbers turn up, and
+79:23
+you're going to want to deal with those as well.
+79:26
+And so it seems like somehow we want to be able
+79:30
+to just deal with new stuff at test time, at translation time.
+79:35
+Which effectively means that kind of theoretically we have
+79:39
+an infinite vocabulary.
+79:40
+And so, there's also been a bunch of work on newer machine translation and
+79:44
+dealing with that.
+79:45
+But unfortunately, this class time is not
+79:49
+long enough to tell you about it right now, so I'll stop here for today.
+79:53
+And don't forget, outside you can collect your midterm on the way out.

@@ -1,0 +1,2440 @@
+00:00
+[SOUND] Stanford University.
+00:09
+>> Okay, so we're back again with CS224N.
+00:14
+So Let's see.
+00:17
+So in terms of what we're gonna do today, I mean
+00:21
+I think it's gonna be a little bit muddled up, and going forwards and backwards.
+00:25
+Officially in the syllabus today's lecture is,
+00:30
+sequence to sequence models and attention.
+00:32
+And next Tuesday's lecture is machine translation.
+00:36
+But really,
+00:38
+Richard already started saying some things about machine translation last week.
+00:43
+And so I thought for various reasons, it probably makes
+00:46
+sense to also be saying more stuff about machine translation today.
+00:51
+So expect that.
+00:53
+But I am gonna cover the main content of what was meant to be in today's lecture,
+00:58
+and talk about attention today.
+00:59
+And that's a really useful thing to know about.
+01:02
+I mean almost certainly if you're gonna be doing anything in the space of sort of
+01:07
+reading comprehension, question answering models, such as, for instance,
+01:11
+assignment four.
+01:12
+But also kinds of things that a whole bunch of people have proposed for
+01:16
+final projects, you definitely wanna know about and use attention.
+01:21
+But then I actually thought I'd do a little bit of
+01:24
+going backwards next Tuesday.
+01:27
+And I want to go back and actually say a bit more about these kind of gated models,
+01:32
+like the GRUs and LSTMs that become popular lately.
+01:36
+and try and have a bit more of a go at saying just a little bit more about well,
+01:41
+why do people do this and why does it work?
+01:43
+And see if I can help make it a little bit more intelligible.
+01:48
+So we'll mix around between those topics.
+01:50
+But somehow over these two weeks of classes, we're doing recurrent models,
+01:55
+attention, MT and all those kinds of things.
+02:00
+Okay.
+02:01
+Other reminders and comments.
+02:04
+So the midterm is over yay!
+02:06
+And your dear TAs and me spent all last night grading that midterm.
+02:12
+So we're sort of 99% over with the midterm.
+02:18
+There's a slight catch that a couple of people haven't done it yet,
+02:23
+because of various complications.
+02:26
+So essentially next Tuesday is, when we're gonna be able to be sort of
+02:31
+releasing solutions to the midterm and handing them back.
+02:35
+Some people did exceedingly well.
+02:37
+The highest score was extremely high 90s.
+02:40
+Most people did pretty well.
+02:42
+It has a decent median.
+02:44
+A few few not so well.
+02:45
+[LAUGH] You know how what these things are like.
+02:48
+But yeah, overall we're pretty pleased with how people did in it.
+02:53
+I just thought I should mention one other issue,
+02:56
+which I will say sort of send a Piazza note about.
+03:00
+I mean I know that a few people were quite unhappy with the fact
+03:05
+that some students kept on writing after the official end of the exam.
+03:10
+And I mean I totally understand that.
+03:13
+Because the fact of the matter is,
+03:14
+these kind of short midterm exams do end up quite time-limited,
+03:19
+and many people feel like they could do more if they had more time.
+03:25
+I mean on the other hand,
+03:27
+I honestly feel like I don't know quite what to do about this problem.
+03:33
+Both Richard and me came from educational traditions, where we had exam proctors.
+03:40
+And when it was time to put your pens down, you put your pens down or
+03:45
+else dire consequences happen to you.
+03:48
+Whereas my experience at Stanford is that,
+03:51
+every exam I've ever been in at Stanford, there are people who keep writing
+03:57
+until you forcibly remove the exam out of their hands.
+04:02
+And so there seems to be a different tradition here.
+04:05
+And in theory this is meant to be student regulated by the honor code,
+04:10
+but we all know that there are some complications there as well.
+04:15
+So it's not that I'm not sensitive to the issue.
+04:19
+And you know really exactly what I said to the TAs before the end
+04:24
+of the exam is, so it's a real problem at Stanford, people going on writing, so
+04:28
+could everyone get in the room as quickly as possible,
+04:30
+and collect everyone's exams to minimize that problem.
+04:33
+But obviously, it's a little bit difficult when there are 680 students.
+04:38
+But we did the best we could.
+04:40
+And I think basically we have to proceed with that.
+04:44
+Okay.
+04:46
+Other topics.
+04:47
+Assignment three is looming.
+04:50
+Apologies that we were a bit late getting that out.
+04:53
+Though with the midterm, it wouldn't have made much difference.
+04:57
+We have put a little bit of extension to assignment three.
+05:00
+I guess we're really nervous about, giving more extension to assignment three.
+05:07
+Not because we don't want you to have time to do assignment three, but
+05:10
+just because we realized that anything we do is effectively stealing days away from
+05:15
+the time you have to do the final project or assignment four.
+05:18
+So we don't wanna do that too much.
+05:20
+We hope that assignment three isn't too bad.
+05:23
+And the fact that you can do it in teams can help, and
+05:26
+that that won't be such a problem.
+05:28
+Another thing that we want people to do but are a bit behind on, but
+05:32
+I hopefully can get in place tomorrow, is giving people access to Microsoft Azure,
+05:38
+to be able to use GPUs to do the assignments.
+05:41
+We really do want people to do that for assignment three.
+05:44
+Since it's just great experience to have and will be useful to know about, for
+05:49
+then going on for assignment four and the final project.
+05:52
+So we hope we can have that in place imminently.
+05:55
+And it really will allow you to do things much quicker for assignment three.
+06:00
+So the kind of models that you're building for
+06:02
+assignment three, should run at least an order of magnitude, sort of ten,
+06:07
+12 times or something faster, if you're running them on a GPU rather than a CPU.
+06:11
+So look forward to hearing more about that.
+06:14
+The final reminder I want to mention is, I'm really really encouraging people
+06:20
+to come to final project office hours for discussion.
+06:26
+Richard was really disappointed how few people came to talk to him about final
+06:31
+projects on Tuesday after the exam.
+06:33
+Now maybe that's quite understandable why no one turned up.
+06:36
+But at any rate moving forward from here, I really really encourage you to do that.
+06:43
+So I have final project office hours tomorrow from one to three.
+06:48
+Richard is gonna be doing it again next Tuesday.
+06:51
+The various other PhD students having their office hours.
+06:56
+So really do for the rest of quarter, try and get along to those.
+07:00
+and check in on projects as often as possible.
+07:04
+And in particular, make really really sure that either next week or the week after,
+07:09
+that you do talk to your project mentor, to find out their advice on the project.
+07:14
+Okay, all good?
+07:16
+Any questions?
+07:20
+Okay, so let's get back into machine translation.
+07:25
+And I just thought I'd sort of say a couple of slides of how important
+07:29
+is machine translation.
+07:31
+Now really a large percentage of the audience of these Stanford classes
+07:36
+are not American citizens.
+07:38
+So probably a lot of you realize that, machine translation is important.
+07:43
+But for the few of you that are native-born American citizens.
+07:48
+I think a lot of native-born Americans are sort of, very unaware of
+07:52
+the importance of translation, because they live in an English-only world.
+07:58
+Where most of the resources for
+08:00
+information are available in English, and America is this, sort of, a big enough
+08:05
+place that you're not often dealing with stuff outside the rest of the world.
+08:09
+But really in general, for humanity and commerce, translation,
+08:14
+in general, and machine translation in particular, are just huge things, right?
+08:19
+That for places like the European Union to run, is completely dependent on having
+08:24
+translation happen, so it can work across the many languages of the European Union.
+08:30
+So, the translation industry is a $40 billion a year industry.
+08:34
+And that's basically the amount that's spent on human translation,
+08:38
+because most of what's done as machine translation at the moment
+08:42
+is in the form of free services, and so it's a huge issue in Europe,
+08:47
+it's growing in Asia, lots of needs in every domain, as well as commercial,
+08:52
+there's social, government, and military needs.
+08:55
+And so the use of machine translation has itself become a huge thing.
+08:59
+So Google now translate over 100 billion words per day, right?
+09:04
+There are a lot of people that are giving Google stuff to translate.
+09:09
+It's then important for things like having social connections.
+09:14
+So I mean in 2016,
+09:15
+last year Facebook rolled out their own homegrown machine translation.
+09:20
+Prior to that they've made use of other people's translation, but
+09:24
+essentially what they had found was that the kind of commercial machine translation
+09:28
+offerings didn't do a very good job at translating social chit chat.
+09:33
+And the fact of the matter is that doing a better job at that is sufficiently
+09:37
+important to a company like Facebook that they're developing their own in house
+09:42
+machine translation to do it.
+09:44
+One of the quotes that came along with that was when they were testing it and
+09:48
+turned off the machine translation for some users, that they really went nuts,
+09:52
+that lots of people really do actually depend on this.
+09:56
+Other areas as well.
+09:57
+So eBay makes extensive use of machine translation to enable cross-border trade.
+10:02
+So that if you are going to be able to successfully
+10:06
+sell products in different markets, well, you have
+10:08
+to be able to translate the descriptions into things that people can read.
+10:13
+Okay, and so that then leads us into what we're gonna be focusing on here,
+10:18
+which is neural machine translation.
+10:20
+And so, neural machine translation or NMT is sort of a commonly used slogan name.
+10:27
+And it's come to have a sort of a particular meaning that's slightly more
+10:32
+than neural plus machine translation.
+10:34
+That neural machine translation is used to mean what we want to do
+10:40
+is build one big neural network which we can train
+10:45
+the entire end-to-end machine translation process in and optimize end to end.
+10:51
+And so systems that do that are then what are referred to as an MT system.
+10:55
+So that the kind of picture here
+10:58
+is that we're going to have this big neural network.
+11:01
+It's gonna take input text that's somehow going to encode into
+11:04
+neural network vectors.
+11:06
+It's then gonna have a decoder and out would come text at the end.
+11:11
+And so we get these encoder-decoder architectures.
+11:15
+Before getting into the modern stuff, I thought I'd take two slides
+11:19
+to tell you about the archaeology of neural networks.
+11:28
+Neural networks had sorta been very marginal or dead as a field for
+11:33
+a couple of decades.
+11:35
+And so I think a lot of the time people these days think of deep learning
+11:39
+turned up around 2012, with the ImageNet breakthroughs.
+11:43
+And boy has it been amazing since then.
+11:46
+But really there have been earlier ages of neural networks.
+11:48
+And in particular there's a boom in the use of neural networks in the second half
+11:53
+of the 80s into the early 90s which corresponds to when Rumelhart and
+11:57
+McClelland, so that's the James McClelland that's still in the Psych Department
+12:03
+at Stanford, pioneered or re-pioneered the use of neural networks partly as
+12:07
+a cognitive science tool, but also as a computing tool.
+12:11
+And many of the technologies that we've been talking about
+12:15
+really the math of them are worked out during that period.
+12:18
+So it was in the 80s there was really worked out of how to do general back
+12:23
+propagation algorithms for multi-layer neural networks.
+12:27
+And it was also during that period when people
+12:30
+worked out how to do the math of recurrent neural networks.
+12:33
+So algorithms like backpropagation through time were worked out in this period,
+12:39
+in the late 80s, often by people who were psychologists, cognitive scientists,
+12:43
+rather than hard core CS people in those days.
+12:47
+And so, also in that period, was actually when neural MT, in having these
+12:52
+encoder decoder architectures for doing translation, was first tried out.
+12:58
+The systems that were built were incredibly primitive and limited,
+13:02
+which partly reflects the computational resources of those days.
+13:07
+But they still were in coder/decoder architectures.
+13:10
+So as far as I've been able to work out, the first neural MT system was this system
+13:15
+that was done by Bob Allen in 1987,
+13:18
+the very first international conference on neural networks, and so
+13:23
+he constructed 3,000 English/Spanish pairs over a tiny vocabulary.
+13:29
+Sort of a 30 to 40 word vocabulary and
+13:31
+the sentences were actually kind of constructed based on the grammar,
+13:35
+it wasn't actually kind of we'll just collect together human language use, but
+13:40
+you know you sort of had sentences like this with some variation of word order and
+13:45
+things like that.
+13:46
+And he built this simple encoded decoded
+13:50
+network that you can see on the right that was not a recurrent model.
+13:54
+You just had sort of a binary representation of the sequence of words in
+13:59
+a sentence and the sentences were only short and then were pumped through that.
+14:05
+A few years after that, Lonnie Chrisman.
+14:09
+Lonnie Chrisman is actually a guy who lives in the Bay Area.
+14:12
+He works at a tech firm still to this day.
+14:15
+[LAUGH] Not doing neural networks anymore.
+14:18
+So Lonnie Chrisman in the early 90s then developed a more sophisticated
+14:25
+neural network architecture for doing encoded decoder MT architecture.
+14:31
+So he was using this model called RAAMS Recursive Auto Associative Memories
+14:38
+which were developed in the early 90s.
+14:42
+Not worth explaining the details of them.
+14:45
+But a RAAM is in some sense kind of like recurrent network of the kind
+14:48
+that we've already started to look at.
+14:50
+And he was building those ones.
+14:52
+And so that then leads into our modern
+14:55
+encoder decoder architectures that Richard already mentioned.
+15:00
+Where we're having, perhaps a recurrent network that's doing the encoding and
+15:04
+then another recurrent network there's then decoding out in another language.
+15:09
+And where in reality they're not normally as simple as this, and
+15:13
+we have more layers and more stuff, and it all gets more complicated.
+15:18
+I just wanted to mention quickly a couple more
+15:23
+things about the space of these things.
+15:25
+So you can think of what these encoder decoder
+15:28
+architectures are as a conditional recurrent language model.
+15:32
+So if we want to generate a translation,
+15:36
+we're encoding the source so we're producing a Y from the source.
+15:41
+And then from that Y we're going to decode,
+15:46
+we're going to run a recurrent neural network to produce the translation.
+15:50
+And so you can think of that decoder there as a conditional recurrent language model.
+15:56
+So it's essentially being a language model that's generating forward
+16:00
+as a recurrent language model.
+16:01
+And the only difference from any other kind of recurrent or
+16:05
+neural language model is that you're conditioning on one other thing,
+16:10
+that you've calculated this Y based on the source sentence.
+16:14
+And that's the only architecture difference.
+16:18
+So if we then look down into the details a little bit,
+16:21
+there are different ways that you can do the encoder.
+16:25
+The most common way to do the encoder has been with these gated recurrent units,
+16:30
+whether the GRUs or the LSTMs,
+16:32
+which are another kind of gated recurrent unit that Richard talked about last time.
+16:38
+I mean, people have tried other things.
+16:40
+I mean the modern resurgence of neural machine translation,
+16:44
+actually the very first paper that tried to do it was this paper by
+16:49
+Nal Kalchbrenner and Phil Blunsom who now both work at DeepMind.
+16:54
+And they actually for
+16:55
+their encoder they were using a recurrent sequence of convolutional networks.
+17:00
+Not the kind of gated recurrent networks that we talked about.
+17:04
+And sometime later in the course we'll talk a bit more
+17:08
+about convolutional networks and how they're used in language.
+17:11
+They're not nearly as much used in language, they're much,
+17:14
+much more used in Vision.
+17:15
+And so if next quarter you do CS231N and get even more neural
+17:20
+networks then you'll spend way more of the time on convolutional networks.
+17:25
+But the one other idea I sort of wanted to just sort of put out
+17:30
+there is sort of another concept to be aware of.
+17:34
+So we have this Y that we've encoded the source with.
+17:40
+And then there's this question of how you use that.
+17:44
+So for the models that we've shown up until now and that Richard had,
+17:49
+essentially what happened was we calculated up to here.
+17:53
+This was our y.
+17:55
+And we just used the y as the starting point of the hidden layer,
+18:01
+and then we started to decode.
+18:04
+So this was effectively the Google tradition of the way of doing it,
+18:08
+the model that Sutskever et al proposed in 2014.
+18:12
+And so effectively, if you're doing it this way, you're putting most of
+18:17
+the pressure on the forget gates not doing too much forgetting.
+18:22
+Because you have the entire knowledge of the source sentence here.
+18:27
+And you have to make sure you're carrying enough of it along through the network.
+18:31
+That you'll be able to continue to access the source sentence's semantics all
+18:36
+the way through your generation of the target sentence.
+18:40
+So it's especially true in that case that you will really
+18:45
+lose badly if you got something like a plain recurrent neural
+18:50
+network which isn't very good at having a medium term memory.
+18:53
+And you can do much better with something like an LSTM.
+18:57
+Which is much more able to maintain a medium term memory with
+19:00
+the sort of ideas that Richard started to talk about.
+19:05
+But that isn't actually the only way of doing it.
+19:09
+And so the other pioneering work in neural machine translation
+19:14
+was work that was done at the University of Montreal by Kyunghyun Cho and
+19:18
+colleagues and that wasn't actually the way they did it.
+19:21
+The way they did it was once they'd calculated the Y as
+19:25
+the representation of the source.
+19:27
+They fed that Y into every time step during the period of generation.
+19:34
+So when you were generating at each state, you were getting a hidden
+19:38
+representation which was kind of just your language model.
+19:41
+And then you were getting two inputs.
+19:43
+You were getting one input which was the previous word, the x_t.
+19:48
+And then you were getting a second input,
+19:50
+which was the y that you were conditioning on.
+19:53
+So you were directly feeding that conditioning in at every time step.
+19:57
+And so then you're less dependent on having to sort of preserve it along
+20:01
+the whole sequence.
+20:03
+And in a way having the input available at every time step,
+20:07
+that seems to be a useful idea.
+20:10
+And so that's actually the idea that will come back when I talk about attention.
+20:15
+That attention is again going to give us a different mechanism of getting at
+20:19
+the input when we need it.
+20:21
+And to being able to condition on it.
+20:24
+Let me just sort of give you a couple more pictures and
+20:28
+a sense of how exciting neural machine translation has been.
+20:34
+So for machine translation, there are a couple of prominent
+20:39
+evaluations of machine translation that are done.
+20:43
+But I mean I think the most prominent one has been done by what's called
+20:47
+the workshop on machine translation.
+20:49
+Which has a yearly evaluation.
+20:51
+And so this is showing results from that.
+20:54
+And most of the results shown are the results from Edinburgh Systems.
+20:58
+And the University of Edinburgh's traditionally been one of the strongest
+21:02
+universities at doing machine translation.
+21:04
+And they have several systems.
+21:06
+And so what we can see from these results, up is good of machine translation quality.
+21:13
+So we have the phrase-based syntactic machine translation systems
+21:18
+which is the kind of thing that you saw on Google Translate until November 2016.
+21:24
+That although they work reasonably,
+21:27
+there is sort of a feeling that although they are a pioneering
+21:32
+a good use of large data machine learning systems.
+21:37
+That they had kind of stalled.
+21:41
+So there really was very little progress in phrase-based machine
+21:45
+translation systems in recent years.
+21:47
+Until neural machine translation came along, the idea that people were most
+21:52
+actively exploring was building syntax-based statistical machine
+21:56
+translation systems, which made more use of the structure of language.
+22:02
+They were improving a little bit more quickly but not very quickly.
+22:06
+How quickly kind of partly depends on how you draw that line.
+22:11
+It sort of depends on whether you believe 2015 was a fluke or
+22:15
+whether I should draw the line as I have, in the middle between them.
+22:20
+But you got slightly more slope, then not a lot.
+22:23
+But so compared to those two things,
+22:25
+I mean actually just this amazing thing happened with neural machine translation.
+22:29
+So it was only in 2014, after the WMT evaluation,
+22:34
+that people started playing with.
+22:37
+Could we build an end-to-end neural machine translation system?
+22:41
+But then extremely quickly, people were able to build these systems.
+22:46
+And so by 2016 they were clearly winning in the workshop and machine translation.
+22:53
+In terms of how much slope you have for improvement,
+22:56
+that the slope is extremely high.
+22:58
+And indeed the numbers are kind of continuing to go up too in the last year.
+23:03
+So that's actually been super exciting.
+23:06
+As I say in the next slide.
+23:08
+That so neural MT really went from this sort of,
+23:12
+fringe research activity of let's try this and see if it could possibly work in 2014.
+23:20
+To two years later,
+23:21
+it had become this is the way that you have to do machine translation.
+23:25
+Because it just works better than everything else.
+23:30
+So I'll say more about machine translation.
+23:32
+But I thought I'd just highlight at the beginning, well,
+23:35
+why do we get these big wins from neural machine translation?
+23:39
+And I think there are maybe sort of four big wins.
+23:42
+At any rate, this is my attempt at dividing it up.
+23:45
+So the first big win
+23:48
+is the fact that you're just training these models end-to-end.
+23:51
+So if you can train all parameters of the model simultaneously for
+23:57
+one target driven loss function.
+23:59
+That's just proved a really powerful notion.
+24:03
+And indeed I think quite a lot of the success of deep learning systems is
+24:08
+that because we have these sort of big computational flow graphs
+24:13
+that we can optimize everything over in one big back propagation process.
+24:19
+So it's easy to do end to end training.
+24:21
+But that's been a very productive way to do end to end training.
+24:26
+And it's the end to end training more than neural nets are magical.
+24:31
+I think sometimes they're just given enormous amounts of power to
+24:34
+these systems.
+24:35
+But there are other factors as well.
+24:37
+So as we stressed a lot,
+24:39
+these distributed representations are actually just worth a ton.
+24:44
+So that they allow you to kind of share statistical strength between
+24:48
+similar words, similar phrases.
+24:51
+And you can exploit that to just get better predictions,
+24:54
+and that's given a lot of improvement.
+24:57
+A third big cause of improvement has been these neural MT
+25:01
+systems are just much better at exploiting context.
+25:06
+So Richard briefly mentioned traditional language models.
+25:09
+So those were things like four gram and five gram models which were just
+25:14
+done on counts of how often sequences of words occurred.
+25:17
+And those were very useful parts of machine translation systems.
+25:23
+But the reality was that the language models on
+25:27
+the generation side only used a very short context.
+25:32
+And when you are translating words and
+25:34
+phrases that the standard systems did that completely context free.
+25:38
+So the neural machine translation systems are just able to use much more context and
+25:43
+that means that they can do a lot better.
+25:46
+And there's an interesting way in which these things kind of
+25:49
+go together in a productive way.
+25:51
+So precisely the reason why your machine translation systems can
+25:55
+practically use much more context.
+25:58
+Is because there are these distributed representations that allow you
+26:02
+to share statistical strength.
+26:04
+Effectively you could never use more context in traditional systems.
+26:08
+Because you were using these one-hot representations of words.
+26:12
+And therefore you couldn't build more than five gram models usefully because you were
+26:17
+just being killed by the sparseness of the data.
+26:20
+And then the fourth thing that I want to call out is sort of
+26:24
+really related to all of one two or three.
+26:28
+But I think it's just sort of worth calling out.
+26:30
+Is something really powerful that's happened in the last couple
+26:35
+of years with neural NLP methods.
+26:37
+Is that they've proven to just be extremely good for generating fluent text.
+26:44
+So, I think it's fair to say that the field of sort of
+26:49
+natural language generation was sort of fairly moribund in the 2000s decade.
+26:57
+Because although there were sort of simple things that you can do,
+27:00
+writing a printf, that's a text generation method.
+27:03
+[LAUGH] But people could do a bit better than that with grammar driven
+27:07
+text generation and so on.
+27:09
+But there really were not a lot of good ideas as how to produce really good,
+27:13
+high quality natural language generation.
+27:15
+Whereas, it's just proven extremely easy and productive.
+27:20
+To do high-quality,
+27:21
+natural language generation using these neural language models.
+27:26
+Because it's very easy for them to use big contexts,
+27:29
+condition on other goals at the same time, and they work really well.
+27:33
+And so one of the big reasons why neural machine translation has been so
+27:38
+successful and the results look very good.
+27:41
+Is that the text that they're generating is very fluent.
+27:45
+In fact it's sometimes the case that the actual quality
+27:48
+of the translation is worse.
+27:51
+That the quality of the generation in terms of fluency is much better.
+27:57
+It's also worth knowing what's not on that list.
+28:00
+So one thing that's not on that list, that's a good thing,
+28:04
+is we don't have any separate black box component models for
+28:07
+things like reordering and transliteration and things like that.
+28:11
+And traditional statistical MT systems have lots of these separate components.
+28:17
+You had lexicalized reordering components and distortion models and this models and
+28:21
+that models.
+28:22
+And getting rid of all of that with this end to end system is great.
+28:27
+There are some other things that are not so great.
+28:30
+That our current NMT models really make no use of any kind of explicit syntax or
+28:35
+semantics.
+28:36
+You could sort of say, well maybe some interesting stuff is happening inside
+28:39
+the word vectors and maybe it is.
+28:42
+Sorry, there are current hidden state vectors and
+28:44
+maybe it is, but it's sort of unclear.
+28:47
+But actually this is something that has started to be worked on.
+28:50
+There have been a couple of papers that have come out just this year.
+28:52
+Where people are starting to put more syntax into neural machine translation
+28:57
+models, and are getting gains from doing so.
+28:59
+So I think that's something that will revive itself.
+29:04
+Also another huge failing of machine translation, has been a lot of the errors.
+29:09
+That higher level textual notions are really badly done
+29:13
+by machine translation systems.
+29:16
+So those are things of sort of discourse structure, clause linking, anaphora and
+29:20
+things like that.
+29:21
+And we haven't solved those ones.
+29:25
+Yeah, so that's been the general picture.
+29:28
+Before going on, one of the things we haven't done very much of in this class.
+29:34
+Is actually looking at linguistic examples and having language on slide.
+29:39
+So I thought I'd do at least one sentence of machine translation.
+29:44
+And I kind of guessed that the highest density of
+29:48
+knowledge of another language in my audience is Chinese.
+29:51
+So we're doing Chinese.
+29:53
+And this is my one sentence test set for
+29:58
+Chinese to English machine translation.
+30:04
+So I guess back in the mid 2000s,
+30:07
+we were doing Chinese to English machine translation.
+30:13
+And there was this evaluation that we did kind of badly on.
+30:16
+And one of the sentences that we translated terribly was this sentence.
+30:21
+And ever since then, I've been using this as my one sentence evaluation set.
+30:25
+So I guess this sentence, it actually comes from Jared Diamond's book,
+30:31
+Guns, Germs, and Steel.
+30:34
+So in a sense it's sort of a funny one since it's starting with the Chinese
+30:37
+translation of Jared Diamond's text.
+30:40
+And then we're trying to translate it back into English, but never mind!
+30:44
+That's our sentence for now.
+30:45
+So what have we got here?
+30:47
+So this is the 1519 year,
+30:50
+there were 600 Spanish people and
+30:55
+their landing in Mexico.
+30:58
+And then we've got "to conquer".
+31:01
+And the first bit I want to focus on is then this next bit here.
+31:05
+The several million population of the Aztec Empire.
+31:13
+And so, what you get in Chinese is so here's our "Aztec Empire".
+31:19
+So in general in Chinese all modifiers of a noun are appearing before the noun.
+31:25
+And Chinese has this really handy little morpheme right here, the [FOREIGN].
+31:29
+This is saying the thing that comes before it,
+31:35
+shown in that brownish color, is a modifier of this noun that follows it.
+31:40
+And this one's saying the sort of several million population.
+31:44
+So it's the Aztec Empire with the population of a few million.
+31:48
+And there's this very specific linguistic marker that tells you how you're meant to
+31:53
+translate it.
+31:54
+And then after that We then got the part here,
+32:00
+where then we've got so first time confronted them,
+32:06
+losses, two-thirds.
+32:09
+And so that's just sort of tacked on to the end of the sentence, so
+32:12
+they lost two-thirds of their soldiers in the first clash.
+32:16
+This is just an interesting thing in how translation works.
+32:20
+So you could in an English translation try and tack that onto the end of the sentence
+32:26
+and sort of say "losing two thirds of their soldiers in the first clash" or
+32:31
+"and they lost two thirds of their soldiers in the first clash".
+32:35
+But neither of those sound very good in English.
+32:38
+So, below here what we have is the reference
+32:42
+translation which is where we got some competent human to translate this.
+32:46
+And so, interestingly what they did and I think correctly actually here is that
+32:51
+they decide it would actually be much better to make this into two sentences.
+32:55
+And so, they put in a period and then they made a second sentence.
+32:59
+They lost two thirds of their soldiers in the first clash.
+33:02
+Okay, so I won't tell you a bad translation, but
+33:06
+every year since I've been running since this sentence through Google and
+33:11
+so I'll show you the Google translations.
+33:14
+So on 2009, this is what Google produced.
+33:19
+1519, 600 Spaniards landed in Mexico.
+33:23
+So that start's not very good.
+33:25
+But if we go in particular to this focus part,
+33:28
+millions of people to conquer the Aztec empire.
+33:31
+No, that's not correct.
+33:33
+And well it's getting some of the words right but it's completely not making any
+33:38
+use of the structure of the sentence in Chinese.
+33:43
+And it doesn't get much better.
+33:45
+The first two-thirds of soldiers against their loss.
+33:50
+Okay, so we can go on to 2011.
+33:53
+I left some of them out so he font size stayed vaguely readable.
+33:58
+So it changes a bit but not really.
+34:00
+1519, 600 Spaniards landed in Mexico.
+34:03
+Millions of people to conquer the Aztec empire.
+34:05
+The initial loss of soldiers two-thirds of their encounters.
+34:09
+So that last bit may be a fraction better but the rest of it is no better.
+34:13
+In 2013, it seemed like they might have made a bit of progress.
+34:17
+1519 600 Spaniards landed in Mexico to conquer the Aztec empire,
+34:23
+hundreds of million of people.
+34:25
+It's unclear if it's made progress.
+34:27
+The fact that you can read the to conquer the Aztec empire has mean the Spaniards
+34:31
+sort of means it might have made some progress but then after that they
+34:35
+just dump the hundreds of millions of people between two commas.
+34:38
+And so it's really not quite clear what that's doing but
+34:42
+it sort of seemed like whatever that change that was just kind of luck because
+34:47
+in 2014 it sort of switch back 1519 600 Spaniards landed in Mexico,
+34:52
+millions of people to conquer the Aztec empire,
+34:55
+the first two-thirds of the loss of soldiers they clash.
+35:01
+And not only that interestingly when I ran it again in 2015 and
+35:07
+2016, the translation didn't change at all.
+35:13
+So I don't know what all the people were doing on the Google MT translation team in
+35:18
+2015 and 2016, but they definitely weren't making progress in Chinese translation.
+35:24
+And I think this sort of reflects as if the feeling
+35:27
+that the system wasn't really progressing.
+35:29
+That they sort of built the models and mined all the data they could for
+35:34
+their Chinese English MT system that wasn't getting any better.
+35:39
+So then in late 2016, Google rolled out their neural machine translation system,
+35:44
+which you're gonna hear more about in a moment.
+35:47
+And there's actual and distinct signs of progress.
+35:51
+So in 1519 600, Spaniards landed in Mexico.
+35:54
+So the beginning of it is a lot better 'cause the whole time it'd just been
+35:59
+plunking down 1519 and 600, which wasn't a very promising beginning.
+36:04
+In the Chinese there's no word for "in", right?
+36:07
+So this character here is "year", right?
+36:09
+So it's sort of 1519 year, 600 people, Spanish people, right?
+36:16
+But clearly in English you wanna be putting in it in there and say in 1519.
+36:21
+But somehow Google it never manage to get that right where you might
+36:25
+have thought it could.
+36:26
+But now it is, right?
+36:27
+In 1519 comma, great beginning, and
+36:30
+it continues much better 600 Spaniards landed in Mexico
+36:34
+to conquer the millions of people of the Aztec empire, this is getting really good.
+36:39
+Neural machine translation is much, much better.
+36:42
+But there is still some work to do.
+36:44
+I guess this last part is kind of difficult in a sense the way it's so
+36:49
+tacked on to the end of the sentence.
+36:51
+But you're right, it still isn't working very well for
+36:54
+that cuz they've just tacked on the first confrontation they killed two-thirds,
+36:59
+which sort of it seems to be the wrong way around because
+37:02
+that's suggesting they killed two-thirds of the Aztecs.
+37:05
+Whereas meant to be that they lost two thirds of the Spaniards.
+37:09
+So there's still work to be done from proving neural machine translation.
+37:13
+But, I do actually think that that's showing very genuine progress and that's,
+37:18
+in general, what's been shown.
+37:20
+So neural machine translation has just given big gains.
+37:24
+It's been aggressively rolled out by industry.
+37:27
+So actually the first people who rolled out
+37:30
+neural machine translation was Microsoft.
+37:32
+So in February 2016, Microsoft
+37:37
+launched neural machine translation on Android phones no less.
+37:42
+And another of the huge selling points of neural machine translation systems,
+37:47
+is that they're actually massively more compact.
+37:50
+So that they were able to build a neural machine translation system that actually
+37:54
+ran on the cellphone.
+37:56
+And actually that's a very useful use case, 'cause the commonest
+38:01
+time when people want machine translation is when they're not in their home country.
+38:06
+And at that point it depends.
+38:07
+But a lot of people don't actually have cell plans that work in foreign countries,
+38:11
+at decent prices.
+38:13
+And so it's really useful to be able to run your MT system just on the phone.
+38:16
+And that was sort of essentially never possible with the huge
+38:20
+kind of look up tables of phrase based systems it is now possible.
+38:24
+Systran is a veteran old MT company that also launched this system.
+38:29
+And then Google launched their neural machine translation system
+38:34
+with massively more hype than either of the two predecessors,
+38:38
+including some huge overclaims of equaling human translation quality.
+38:44
+Which we've just seen still isn't true,
+38:46
+based on my one sentence test set, that they still have some work to do.
+38:50
+But on the other hand, they did publish a really interesting
+38:56
+paper on the novel research that they've done on neural machine translation.
+39:00
+And so for the research highlight today Emma is gonna talk about that.
+39:12
+>> Hi, today I'm gonna talk about Google's
+39:16
+multi lingual NMT system which enables zero shot translation.
+39:21
+So as we have seen in the lecture, this is the standard architecture for
+39:25
+an NMT system which you have an encoder and a decoder.
+39:28
+However, this thin architecture supports only bilingual translation, meaning
+39:32
+that we can have only one specific source language and one specific target language.
+39:36
+So what if you want to have a system that's able to do multilingual
+39:39
+translation?
+39:40
+Meaning that we can have multiple source languages and multiple target languages.
+39:44
+So previously people have proposed several different approaches.
+39:47
+The first one, they proposed to have multiple different encoders and
+39:51
+multiple different decoders.
+39:52
+Where each pair correspond to one specific pair of source and target languages.
+39:57
+And the second one that proposed to have a shared encoder that works for
+40:01
+one specific source language, but
+40:03
+have different decoders to decode into different target languages.
+40:07
+And they also have proposed the third one is they have
+40:11
+multiple different encoders to work for different source languages and
+40:15
+wants a single shared decoder to work for more specific target language.
+40:20
+So what's so special about Google's multilingual NMT system?
+40:25
+So first of all,
+40:26
+it's really simple because here we only need one single model that is able to
+40:30
+translate from different source languages to different target languages, and
+40:35
+because of the simplicity the system can trivially scale up to more language pairs.
+40:42
+And second, the system improves the translation quality for
+40:45
+low resource language.
+40:47
+So because the progress of the model are shared implicitly and so
+40:52
+the model is forced to generalize across language boundaries.
+40:55
+So it's observed that if we train the language that has very little training
+40:59
+data with a language pair that has a lot of training data in one
+41:04
+single model, the translation quality for
+41:06
+the low-resourced language is significantly improved.
+41:10
+And also the system is able to perform zero-shot translation.
+41:14
+Meaning that the model can inclusively translate for
+41:17
+the language pairs it has never seen during training time.
+41:20
+For example, if we train a model on Portuguese to English and
+41:24
+English to Spanish data, the model is able to
+41:29
+generate reasonable translation for Portuguese to Spanish directly.
+41:33
+Without seeing any data for the language pair during training time.
+41:38
+And this is the architecture for the models.
+41:42
+As we can see, this is kind of the standard architecture for
+41:45
+the state-of-the-art NMT system.
+41:47
+Where we have multiple stacked layers of LSTMs for both decoders and encoders and
+41:53
+those applied attention mechanism which we will talk about later in a lecture.
+41:57
+So what is the magic here that enables the system to do a multilingual translation?
+42:02
+So it turns out instead of trying to modify the architecture, they instead
+42:07
+modified the input data, by adding the special artificial token at the beginning
+42:13
+of every input sentence, to indicate what target language you want to translate to.
+42:17
+So for example, if you wanna translate from English to Spanish,
+42:20
+we simple add this <2es> token to indicate that Spanish is the target language.
+42:25
+And after adding this artificial token, we simply just put together
+42:29
+all of the multi-lingual data and just start training.
+42:35
+With this simple trick,
+42:37
+the system is able to surpass the state-of-the-art performance for
+42:41
+English to German, French to English, and German to English translation.
+42:46
+And they have comparable performance for English to French translation.
+42:51
+Both on the WMT benchmark.
+42:54
+So and here's a little more detail about a zero-shot translation.
+42:58
+The setting is like this.
+43:00
+So during training time we train a model on Portuguese to English and
+43:03
+English to Spanish data.
+43:05
+But during test time we ask the model to perform Portuguese to Spanish
+43:09
+translation directly.
+43:10
+And it's shown here that the model is able to have comparable
+43:14
+performance as the phrase based machine translation system.
+43:19
+And also the NMT system with bridging.
+43:22
+And also with a little bit of incremental training.
+43:24
+Meaning that we add a little bit of data for the Portuguese to Spanish translation.
+43:32
+The model is able to surpass all of the other models listed above.
+43:37
+And that's all, thank you.
+43:44
+[APPLAUSE] >> So
+43:45
+I think that actually is a really amazing result.
+43:48
+I mean, in some sense,
+43:53
+it's actually realizing a long-held dream of machine translation.
+43:58
+So a traditional problem with machine translation has
+44:02
+always been that if you'd like to be able to translate between a lot of languages,
+44:07
+or you're then in a product space of number of systems, right.
+44:11
+So if you'd like to support around 80 languages as Google does.
+44:15
+That if you wanna allow translation between any pairs straightforwardly you
+44:19
+have to build 6,400 machine translation systems.
+44:23
+And that's a lot of machine translation systems.
+44:26
+And they never quite did that.
+44:27
+That was a reference to bridging.
+44:29
+So if something was being bridged, what that effectively meant for
+44:33
+Google was you were translating twice via an intermediate
+44:36
+language where the intermediate language was normally English.
+44:39
+So the goal has for a long time has been in MT,
+44:42
+is to achieve this dream of an interlingua.
+44:46
+So that if you had an interlingua in the middle you have to translate each language
+44:51
+to and from the interlingua, so you only need 80 encoders and 80 decoders, so
+44:55
+it's then the number of languages.
+44:58
+And that has sort of never been very successful, which is why effectively
+45:03
+people just sort of build all of these bilingual systems but
+45:06
+this system is now sort of illustrating how you can actually have
+45:11
+the encodings of neural MT system be an effective interlingua.
+45:17
+Okay, so now on to the main technical content to get through today,
+45:22
+is introducing this idea of attention.
+45:25
+So what's the problem we want to deal with?
+45:28
+So if we're into the sort of vanilla sequence to sequence,
+45:31
+encoder-decoder model.
+45:33
+We have this problem because our only representation of
+45:39
+the input is this sort of one fixed-dimensional representation Y
+45:44
+which was sort of the state that our encoder was last in.
+45:50
+And so, we need to kind of carry that through
+45:54
+our entire generation of our translation sentence.
+45:58
+And that seems like it might be a difficult thing to do, and
+46:04
+indeed, what was shown was that was indeed a difficult thing to do and
+46:09
+so what people found is that this initial neural
+46:12
+machines translations systems worked well on short sentences.
+46:17
+But if you tried to use them to translate very long sentences, that their
+46:21
+performance started to tank and I'll show you some numbers on that later; And so
+46:27
+the idea that people came up with and this idea was actually first proposed for
+46:32
+vision but was then moved over and tried for neural
+46:37
+machine translation by Kyunghyun Cho and colleagues at Montreal, was to say,
+46:41
+well instead of saying that our Y that we generate
+46:46
+from is just the last hidden states, why don't we say all of the hidden states
+46:51
+of the entire encoding process are available to us.
+46:56
+And so we sort of have this pool of source states
+46:59
+that we can draw from to do the translation.
+47:02
+And so then when we're translating any particular word,
+47:06
+we then want to work out which of those ones to draw from.
+47:11
+So effectively, the pool of source states becomes kind
+47:16
+of like a random access memory which the neural network is then going to be able
+47:21
+to retrieve from as needed when it wants to do its translation.
+47:25
+And it'll find some stuff from it and use it for translating each word.
+47:31
+And so attention for neural machine translation is one specific
+47:35
+instantiation of this, but in general this sort of builds into a bigger concept that
+47:40
+has actually been a very exciting concept in recent neural networks research and
+47:46
+I know at least a couple of Groups are interested in doing for
+47:49
+their final projects is this idea of can we augment
+47:53
+neural networks with a memory on the side.
+47:57
+So that we cannot only lengthen our short term memory with an LSTM, but
+48:01
+we can actually have a much longer term memory that
+48:04
+we can access stuff from as we need it.
+48:06
+And attention is a simple form of doing that.
+48:09
+And then some of the more recent work like neural turing machines is trying to do
+48:14
+more sophisticated forms of read-write memories augmenting neural networks.
+48:19
+Okay, so if we want to retrieve as needed, you could think of that as saying,
+48:24
+okay, well, out of all of this pool of source states,
+48:27
+we want to be looking at where in the input we want to retrieve stuff from.
+48:33
+So effectively, after we've said, Je, and
+48:38
+we wanting to translate the next word.
+48:42
+We should be working out, well, where in here do
+48:45
+we want to be paying attention to decide what to translate next?
+48:49
+And if it's French, we wanna be translating the am next.
+48:52
+And so our attention model effectively sort of becomes like an alignment model.
+48:58
+'cause it's saying, well,
+49:00
+which part of the source are you next gonna be translating?
+49:03
+So you've got this implicit alignment between the source and the translation.
+49:08
+And that just seems a good idea, 'cause that's even what human translators do.
+49:13
+It's not that a human translator reads the whole of a big,
+49:16
+long sentence and says, okay, got it.
+49:18
+And then starts furiously scribbling down the translation, right?
+49:21
+They're looking back at the source as they translate, and
+49:25
+are translating different phrases of it.
+49:27
+And so Richard mentioned last week the idea that in training
+49:33
+statistical models that one of the first steps was you worked
+49:38
+out these word alignments between the source and the target.
+49:43
+And that was used to extract phrases that gave you kind of phrases to use in
+49:48
+a statistical phrase based system.
+49:50
+Here, we're not doing that, it's rather just at
+49:54
+translation time by process of using this attention model.
+49:59
+We're implicitly making connections between source and target,
+50:04
+which gives us a kind of alignment.
+50:06
+But nevertheless, it effectively means that we're building this end-to-end neural
+50:11
+machine translation system that's doing alignments and translation as it works.
+50:16
+So it achieves this NMT vision, and you do get these good alignments.
+50:22
+So we're using this kind of on the right structure where
+50:26
+we're sort of filling in where the alignments have occurred.
+50:31
+And so you can look at where attention was laid when you're producing
+50:37
+a translation, translating here from French to English.
+50:43
+And you can see that this model, which is a model from people at Montreal,
+50:46
+is doing a good job at deciding where to place attention.
+50:50
+So it's starting off with the agreement on the, and then the interesting part is
+50:56
+that sort of French typically has adjectival modifiers after the head down.
+51:01
+So this is the zone, economic, European,
+51:04
+which you have to flip in English to get the European economic area.
+51:08
+And so it's kind of correctly modelling that flip
+51:11
+in deciding where to pay attention in the source.
+51:14
+And then kind of goes back to a more monotonic linear order.
+51:19
+Okay, so that looks good, how do we go about doing that?
+51:24
+So what we're gonna be doing is we've started to generate, and
+51:28
+we wanna generate the next word.
+51:30
+And we want to use our hidden state to decide where to access
+51:36
+our random access memory, which is all the blue stuff.
+51:41
+And so, well we haven't yet generated the hidden state for the next word, so
+51:46
+it seems like our only good choice is to use, I think I skipped one.
+51:52
+Okay, the only good choice is to use
+51:55
+the previous hidden state as the basis of attention.
+51:58
+And that's what we do, and then what we're gonna do is come up with some
+52:04
+score that combines it and elements of the hidden state.
+52:10
+And commonly, people are only using the highest level of the hidden state for
+52:15
+attention, and decides where to pay attention.
+52:18
+And so this scoring function, will score each position and
+52:23
+saying, where to pay attention.
+52:25
+And I'll get back to the scoring functions in a minute.
+52:29
+And so the model that they proposed was, we get a score for
+52:33
+each component of the memory.
+52:36
+And then what we're gonna do is sort of build a representation
+52:41
+which combines all of the memories weighted by the score.
+52:46
+So what we're gonna do is we're going to say, okay,
+52:50
+we'll take those scores and we'll do our standard trick.
+52:54
+We'll stick them through a softmax function and
+52:58
+that will then give us a probability distribution of how much
+53:03
+attention to pay to the different places in the source.
+53:08
+And so then, we're going to combine, okay, then we're going
+53:13
+to combine together all of the hidden states of the encoder,
+53:18
+weighted by how much attention we're paying to it.
+53:22
+So that we're taking, these are each hidden state of the encoder,
+53:27
+the amount of attention you're paying to that position.
+53:31
+And then you're just calculating a weighted sum and
+53:34
+that then gives us a context vector.
+53:36
+So now rather than simply using the last hidden state
+53:40
+as our representation of all of meaning, we're using the entire of our
+53:45
+hidden states of the encoder as our representation of meaning.
+53:48
+And at different points in time we weight it differently
+53:52
+to pay attention in different places.
+53:55
+And so now what we're gonna do, is based on what we were.
+54:01
+This is going automatic on me.
+54:02
+Now what we're gonna do is based on what we were doing before.
+54:07
+And so the previous hidden state and the next and the previous word of the decoder.
+54:14
+But also conditioned on this context vector,
+54:18
+we're then gonna generate the next word.
+54:22
+Okay, so then the question is, well, how do we actually score that?
+54:29
+And at this point we need some kind of attention
+54:33
+function that decides how to work out the score.
+54:37
+And a very simple idea you could use for that is just to say, well,
+54:42
+let's take the dot product between the decoded hidden state and
+54:48
+an encoded the hidden state.
+54:50
+And we wanna find the ones that are similar, cuz that means we're in the right
+54:55
+ballpark of words that have the same meaning, and generate from that.
+54:59
+And that's a possible thing that you could do.
+55:02
+The one that was proposed by the people in Montreal was this bottom one.
+55:08
+Where we're effectively using a single layer of neural net, just like
+55:13
+the kind of functions that we've been using everywhere else inside our LSTM.
+55:18
+So we're taking the concatenation of the two hidden states.
+55:23
+We're multiplying the biometrics, putting it through a tanh function.
+55:28
+And then multiplying that by another vector, where both the V and
+55:31
+W are learned.
+55:33
+And using that as an attention function.
+55:35
+And so that's what they did in their work, and that worked pretty well.
+55:39
+In the work we did at Stanford, so principally Thang Luong's work, that we
+55:44
+proposed using a different attention function, which is the one in the middle.
+55:50
+Which is this bilinear attention function,
+55:53
+which has actually been quite successful and widely adopted.
+55:56
+So here, it's kind of like the top one where you're doing a dot product.
+56:00
+But you're sticking in between the dot product a mediating matrix W.
+56:06
+And so that matrix can effectively then learn how much weight to
+56:11
+put on different parts of the dot product.
+56:14
+To sort of have an idea of where to pay attention.
+56:17
+And that's actually turned out to be a model that works kind of well.
+56:22
+And I think there's a reason why it works kind of well.
+56:25
+Cuz what you would like to do is kind of have interaction
+56:29
+terms that look at h_t and h_s together.
+56:33
+And even the dot product kind of has this interaction between h_t and h_s.
+56:37
+And this is a more sophisticated way of getting an interaction between
+56:42
+h_t and h_s.
+56:43
+Whereas if you're using this model with only a single layer of neural network,
+56:49
+you don't actually get interactions between h_t and h_s.
+56:53
+Because you've got the sort of two parts of this vector and
+56:57
+each of them is multiplied by a separate part of this matrix.
+57:01
+And then you put it through a tanh, but that just rescales it element-wise.
+57:05
+And then you multiply it by a vector, but that just rescales it element-wise.
+57:09
+So there's no place that h_t and h_s actually interact with each other.
+57:14
+And that's essentially the same problem of the sort of classic result
+57:18
+that you can't get an xor function out of a one layer perceptron is
+57:22
+because you can't get the two things to interact with each other.
+57:27
+So, this is a very simple low parameter way
+57:30
+in which you can actually have interaction terms.
+57:33
+It seems to work really well for attention functions.
+57:36
+It's not the only way that you could do it.
+57:38
+Another way that you could do things that a couple of papers have used is to say,
+57:42
+well, gee, a one way neural net's just not enough.
+57:45
+Let's make it a two layer feedforward network.
+57:48
+And then we could have arbitrary interactions again like the xor model.
+57:52
+And a couple of people have also played with that.
+57:58
+Another thing that has been explored for attention that I'll just mention.
+58:02
+So the simple model of attention, you've got this attention function.
+58:06
+That spreads attention over the entire source encoding.
+58:11
+And you've got a weighting on it.
+58:13
+That's kind of simple, it's easy to learn.
+58:15
+It's a continuous, nice differentiable model.
+58:18
+It's potentially unpleasant computationally if you've got very long
+58:23
+sequences.
+58:24
+Because that means if you start thinking about your back prop algorithm that you're
+58:28
+back propagating into everywhere all the time.
+58:31
+So people have also looked some at having local attention models.
+58:35
+Where you're only paying attention to a subset of the states at one time.
+58:39
+And that's more of an exact notion of retrieving certain things from memory.
+58:44
+And that can be good, especially for long sequences.
+58:49
+It's not necessarily compellingly better just for the performance numbers so far.
+58:54
+Okay, so here's a chart that shows you how some of the performance works out.
+58:59
+So what we see is that this red model has no attention.
+59:05
+And so this shows the result that,
+59:08
+a no attention model works reasonably well up to sentences of about length 30.
+59:14
+But if you try and run a no attention machine translation system
+59:19
+on sentences beyond length 30.
+59:21
+Performance just starts to drop off quite badly.
+59:25
+And so in some sense this is the glass half full story.
+59:31
+The glass half full is actually LSTMs are just miraculous at remembering things.
+59:38
+I mean, I think quite to many peoples' surprise,
+59:41
+you can remember out to about length 30 which is actually pretty stunning.
+59:46
+But nevertheless, there's magic and there's magic.
+59:49
+And you don't get an infinite memory.
+59:51
+And if you're trying translate sentences that are 70 words long.
+59:55
+You start to suffer pretty badly with the basic LSTM model, oops, okay.
+60:02
+So then the models that are higher up is then showing models with attention,
+60:07
+and I won't go through all the details.
+60:11
+The interesting thing is that even for these shorter sentences.
+60:15
+Actually there are a lot of gains from putting attention into the models.
+60:18
+That it actually does just let you do a much better job of working out where
+60:23
+to focus on at each generation step.
+60:25
+And you translate much better.
+60:27
+But the most dramatic result is essentially these curves turn into flat
+60:32
+lines, there's a little bit of a peak here, maybe.
+60:35
+But essentially you can be translating out to 70 word sentences without your
+60:40
+performance going downhill.
+60:42
+And that's interesting.
+60:44
+The one thing that you might think freaky about all of these charts is that they all
+60:48
+go downhill for very short sentences.
+60:51
+That's sort of weird.
+60:52
+But I think it's sort of just a weirdo fact about the data.
+60:59
+That it turns out that the things that are in this kind
+61:03
+of data which is European Parliament data actually.
+61:07
+That are five word sentences.
+61:09
+They just aren't sentences, like, I love my mum,
+61:12
+which is a four word sentence that has a really simple grammatical structure.
+61:16
+That, when you're seeing five word things that they're normally
+61:21
+things like titles of x.
+61:23
+Or that there are half sentences that were cut off in the middle and
+61:26
+things like that.
+61:27
+So that they're sort of weirdish stuff and
+61:30
+that's why that tends to prove hard to translate.
+61:33
+Okay, here are just a couple of examples,
+61:36
+of giving you again some examples of translations.
+61:39
+So we've got a source, a human reference translation.
+61:43
+Then down at the bottom, we have the LSTM model.
+61:47
+And above it, it's putting in attention.
+61:50
+So for this sentence, it does a decent job,
+61:54
+the base model of translating it, except for one really funny fact.
+61:59
+It actually sticks in here a name that has nothing whatsoever to do with
+62:03
+the source sentence.
+62:04
+And that's something that you actually notice quite a bit in neural
+62:08
+machine translation systems.
+62:10
+Especially ones without attention.
+62:13
+That they are actually very good language models.
+62:16
+So that they generate sentences that are good sentences of the target language.
+62:22
+But they don't necessarily pay very much attention to what the source sentence was.
+62:27
+And so they kind of go, okay, I'm generating a sentence and
+62:30
+a name goes there, stick in some name.
+62:32
+And let's get on with generating, it's got nothing to do with the source sentence.
+62:36
+That gets better in the other example,
+62:38
+where it actually generates the right name.
+62:40
+That's an improvement.
+62:42
+Here's a much more complex example where there's various stuff going on.
+62:47
+One thing to focus on though, is that the source has this "not incompatible"
+62:52
+whereas the base model translates that as "not compatible",
+62:56
+which is the opposite semantics.
+62:59
+Whereas our one here we're then getting "the incompatible".
+63:05
+So not incompatible.
+63:07
+So that's definitely an improvement.
+63:09
+None of these translations are perfect.
+63:12
+I mean in particular one of the things that they do wrong is "safety and
+63:16
+security".
+63:17
+Where in the translation,
+63:19
+we have exactly the same words, so it's of the form A and A.
+63:23
+Now really safety and security have a fairly similar meaning.
+63:28
+So it's not actually so
+63:29
+unreasonable to translate either of those words with this word.
+63:33
+But clearly you don't want to translate safety and security as safety and safety.
+63:38
+[LAUGH] That's just not a very good translation.
+63:41
+So that could be better.
+63:43
+I'll go on.
+63:46
+Yeah.
+63:47
+So this idea of attention has been a great idea.
+63:53
+Another idea that's been interesting is the idea of coverage.
+63:57
+That when you're attending,
+63:58
+you want to make sure you've attended to different parts of the input, and
+64:03
+that was actually an idea that, sort of, again, first came up in Vision.
+64:08
+So, people have done Caption Generation,
+64:10
+where you're wanting to generate a caption that summarizes a picture.
+64:15
+And so one of the things you might wanna do
+64:18
+is when you're paying attention to different places,
+64:22
+you wanna make sure you're paying attention to the different main parts.
+64:26
+So you both wanna pay attention to the bird.
+64:29
+And you wanna pay attention to the background so you're producing
+64:32
+a caption that's something like "a bird flying over a body of water".
+64:38
+And so you don't want to miss important image patches.
+64:42
+And so that's an idea that people have also worked on in the neural MT case.
+64:48
+So one idea is an idea of doing sort of attention doubly, and
+64:53
+so you're sort of working out an attention in both directions.
+64:56
+So there's a horizontal attention and a vertical attention.
+65:01
+And you're wanting to make sure you've covered things in both directions.
+65:08
+Okay, so that's one idea.
+65:10
+And in general, something interesting that's been happening is in the last
+65:16
+roughly a year, I guess.
+65:18
+That essentially, people have been taking a number of
+65:21
+the ideas that have been explored in other approaches to machine translation and
+65:26
+building them into more linguistic attention functions.
+65:30
+So one idea is this idea of coverage.
+65:34
+But actually if you look in the older literature for word alignments, well there
+65:38
+are some other ideas in those older machine translation word alignment models.
+65:45
+Some of the other ideas were an idea of position.
+65:50
+So normally attention or alignment isn't completely sort of random in the sentence.
+65:57
+Normally although there's some reordering, stuff near the beginning of the source
+66:01
+sentence goes somewhere near the beginning of the translation, and stuff somewhere
+66:05
+near the end of the source sentence goes towards the end of the translation.
+66:09
+And that's an idea you can put in to your attention model as well.
+66:15
+And a final idea here is fertility.
+66:18
+Fertility is sort of the opposite of coverage.
+66:21
+It's sort of saying it's bad if you pay attention to the same place too often.
+66:27
+Because sometimes one word is gonna be translated with two words or
+66:32
+three words in the target language that happens.
+66:36
+But if you're translating one word with six words in your generated translation,
+66:41
+that probably means that you've ended up repeating yourself and
+66:45
+that's another of the mistakes of sometimes neural
+66:48
+machine translations systems can make, that they can repeat themselves.
+66:52
+And so people have started to build in those ideas of fertility as well.
+66:59
+Okay.
+67:00
+Any questions or people good with the attention?
+67:08
+Yeah?
+67:22
+So the question is that when we're doing the attention function,
+67:26
+we were just We were just doing it based on the hidden state.
+67:33
+And another thing that we could do is actually put in the previous word, the xt.
+67:39
+And also put that into the attention function.
+67:44
+I mean one answer is to say yes, of course you could.
+67:48
+And you could go off and try that.
+67:50
+And see if you could get value from it.
+67:55
+And it's not impossible you could.
+67:59
+I suspect it's less likely that that's really going to work
+68:03
+because I think a lot of the time, what you get with these LSTMs
+68:08
+is that the hidden state, to a fair degree.
+68:12
+Is still representing the word that you've just read in, but
+68:16
+it actually has the advantage that it's kind of a context-disambiguated
+68:20
+representation of the words.
+68:22
+So one of the really useful things that LSTMs do is that they're sort of very good
+68:28
+at word-sense disambiguation because you start with a word representation.
+68:33
+Which is often the kind of average of different senses and meanings of a word.
+68:38
+And the LSTM can use its preceeding context to decide,
+68:44
+In this context, I should be representing this word in this way.
+68:48
+And you kind of get this word sense disambiguation.
+68:51
+So I suspect most of the time that the hidden state
+68:56
+records enough about the meaning of the word and actually improves on it by some
+69:00
+of this using of context that I'm a little doubtful whether that would give gains.
+69:06
+On the other hand, I'm not actually aware of someone that's tried that.
+69:10
+So it's totally in the space of someone could try it and
+69:13
+see if you could get value from it.
+69:15
+Yes.
+69:21
+Yes, there's a very good reason to use an LSTM as your generator even if you're
+69:25
+going to do attention.
+69:26
+Which is, the most powerful part of these neural machine translation systems
+69:33
+remains the fact that you've got this neural language model as your generator
+69:38
+which is extremely powerful and good as a fluent text generator.
+69:44
+And that's still being powered by the LSTM of the decoder.
+69:50
+And so.
+69:51
+[INAUDIBLE] >> And no, I.
+69:54
+The power you get from the LSTM at better remembering the sort of longer
+69:59
+short-term memory is really useful as a language model for generation.
+70:03
+So I'm sure that that's still giving you huge value, and
+70:06
+you'd be much worse off without it.
+70:10
+Yeah.
+70:11
+I mean the thing that you could wonder, is in this picture I'm still feeding
+70:16
+the final state in to initialize the LSTM for the decoder.
+70:23
+Do you need to do that, or could you just cross that off and
+70:26
+start with a zero hidden state, and do it all with the attention model?
+70:31
+That might actually work fine.
+70:32
+Yeah?
+70:33
+>> [INAUDIBLE] >> That's a good question.
+70:41
+So where do I have that?
+70:44
+Here, okay, yeah.
+70:45
+So in this simple case, if you sort of are making a hard decision
+70:52
+to pay attention to only a couple of places,
+70:58
+that's a hard decision and so that then kills differentiability.
+71:04
+And so the easiest way to sort of keep everything nice and
+71:10
+simply differentiable is just to say, use global attention.
+71:15
+Put some attention weight on each position that's
+71:19
+differentiable the whole way through.
+71:21
+So if you're making a hard decision here, traditionally,
+71:26
+the most correct way to do this properly and
+71:29
+train the model is to say, okay, we have to do this as reinforcement learning.
+71:34
+'Cause, doing a reinforcement learning system lets you get
+71:38
+around the non-differentiability.
+71:40
+And then, you're in this space of deep reinforcement learning which has been
+71:44
+very popular lately.
+71:45
+And, there are a couple of papers that have used local attention,
+71:49
+which have done it using reinforcement learning training.
+71:53
+So in the paper that Thang did, that's not what he did.
+71:58
+He sort of, I think it's true to say that, to some extent, he sort of fudged
+72:03
+the non-differentiability but it seemed to work okay for him.
+72:07
+But, I mean, this is actually an area in which,
+72:10
+there's been some recent work, in which people have explored methods
+72:15
+which in some sense continuing this tradition of fudging by putting it
+72:21
+on the more of a theoretical footing and finding this works very well.
+72:26
+So, an idea that's been explored quite a bit in recent work is to say,
+72:31
+in the forward model we're going to be making some discreet
+72:35
+choices as to which positions to pay attention to.
+72:39
+In the backwards model, we¡¯re going to be using
+72:44
+a soft approximation of those decisions, and
+72:48
+we will then do the back propagation using that.
+72:53
+So that kind of idea is, You are working out, say, where to pay attention,
+72:58
+and you are choosing the states with the sort of a high need for
+73:02
+attention, is a hard decision, but in the backwards model you
+73:06
+are then having a sort of soft attention still and you are training with that.
+73:11
+And so, that leads into ideas like the Straight Through Estimator
+73:15
+which has been explored by Yoshua Bengio's group and
+73:19
+other recent ideas of Gumbel-Softmaxes, and things like that.
+73:24
+And that's actually, sort of been worked out as another way to explain,
+73:29
+another way to train these not really differentiable models,
+73:33
+which is in some ways easier than using reinforcement learning.
+73:40
+I'll go on.
+73:41
+There was one other last thing, I did want to sort of squeeze in for
+73:47
+the end of today, is I just wanted to say a little bit about what's.
+73:56
+Okay, so assuming that at source time, we've got our source sentence,
+74:03
+we encode it in some way that we're gonna make use of.
+74:09
+And, decoders, that really our decoders are just saying,
+74:14
+okay here's the meaning we want convey, produce a sentence,
+74:19
+that expresses that meaning and how can we do that decoding successfully.
+74:25
+And I just sort of wanted to mention for
+74:27
+couple minutes, what are the options and how do they work.
+74:30
+So, one thing in theory we could do is say,
+74:35
+okay, well, let's just explore
+74:39
+every possible sequence of words we can generate up to a certain length.
+74:43
+Let's score every one of them with our model and pick the best one.
+74:47
+So, we'd literally have an exhaustive search of possible translations.,
+74:53
+Well, that's obviously completely impossible to do.
+74:56
+Because, not only is that exponential in the length of what we generate,
+74:59
+we have this enormous vocabulary.
+75:01
+It's not even like we're doing exponential on a base of two or three.
+75:05
+We're doing exponential on the base of 100,000 or something like that.
+75:09
+So, that can't possibly work out.
+75:12
+So, the obvious idea and the first thing that people do is -- Sorry.
+75:20
+I'll get to the obvious one next.
+75:21
+The second thing, [LAUGH] the not quite so obvious but
+75:26
+the probabilistically nice and good thing to do is to do a sampling based approach.
+75:31
+Which is a sort of a succesive sampling.
+75:34
+So, it's sometimes referred to as Ancestral Sampling.
+75:38
+So, what we're doing then is we've generated up to word t-1 and
+75:43
+then saying okay.
+75:45
+Based on our model, we have a probability distribution over the t-th word.
+75:51
+And so, we sample from that probability distribution one symbol at a time.
+75:56
+And we keep on generating one word at a time,
+75:59
+until we generate our end of end of sentence symbol.
+76:03
+So, we generate a word and then based on what we have now we do
+76:08
+a probabilistic sample of the next word and we continue along.
+76:13
+So, if you are a theoretician that's the right practical thing to do
+76:18
+because if you are doing that,
+76:20
+you've gotten not only an efficient model of generating, unlike the first model, but
+76:25
+you've got one that's unbiased, asymptotically exact, great model.
+76:30
+If you're a practical person this is not a very great thing to do
+76:35
+because what comes out is very high variants and
+76:38
+it's different every time you decode the same sentence.
+76:42
+Okay, so the practical easy thing to do,
+76:45
+which is the first thing that everybody really does, is a greedy search.
+76:51
+So, we've generated up to the T minus one word.
+76:54
+We wanna generate the t-th word.
+76:57
+We use our model, we work out what's the most likely word to generate next,
+77:02
+and we choose it and then we repeat that over and
+77:06
+generate successive next words, so that's then a greedy search.
+77:13
+We're choosing best thing given the preceding subsequence.
+77:17
+But that, doesn't guarantee us the best whole sentence because we can
+77:22
+go wrong in any of a number of ways because of our greedy decisions.
+77:26
+So it's super-efficient.
+77:28
+But is heavily suboptimal.
+77:30
+So, if you want to do a bit better than that, which people commonly do,
+77:34
+the next thing that you think about trying is then doing a beam search.
+77:39
+So, for a beam search we're up to word t-1 and we say,
+77:44
+gee, what are the five most likely words to generate next.
+77:49
+And, we generate all of them and we have a beam of five.
+77:54
+And then, when we go on to generate word T plus one, we say for
+77:58
+each of those sequences up to length T, what are the five
+78:03
+most likely words to generate is the T plus first word and
+78:07
+we generate all of them and well then we've got 25 hypotheses and
+78:11
+if we kept on doing that, we'd again be exponential but with a smaller base.
+78:16
+But we don't wanna do that.
+78:17
+So, what we do is say, well out of those 25, which are the five best ones?
+78:23
+And we keep those five best ones.
+78:25
+And then, we generate five possibilities from each of those for
+78:29
+the T plus two time.
+78:31
+And so we maintain a constant size k hypotheses and
+78:35
+we head along and do things.
+78:39
+So as K goes to infinity, that becomes unbiased.
+78:44
+But in practice our K is small, so it is biased.
+78:48
+It doesn't necessarily monotonically improve as you increase K, but
+78:53
+in practice it usually does up to some point, at least.
+78:57
+It turns out that often there's a limit to how big you can go for
+79:00
+it improving, which might even be quite small.
+79:03
+Because sometimes, you actually tend to get worse
+79:05
+if your model is not very good and you explore things further down.
+79:09
+It's not as efficient, right?
+79:11
+That your efficiency is going down in K squared.
+79:15
+So, as soon as you're at a beam of 10 you're 2 orders of magnitude slower
+79:20
+than the greedy search, but nevertheless it gives good gains.
+79:24
+So, here are some results.
+79:28
+So this is from work again of Kyunghyun Cho's.
+79:32
+So, in the middle here we have the greedy decoding.
+79:36
+And, we're getting these numbers like 15.5 and 16.66,
+79:42
+so something I haven't actually done yet is explain the machine translation
+79:47
+evaluation, and that's something I'll actually do in the next lecture.
+79:51
+But big is good for these scores.
+79:55
+So, what you see is that if you sort of sample 50 translations and
+80:00
+go with the best one,
+80:02
+although that gives you some improvement over the greedy one best.
+80:07
+The amount of improvement it gives you isn't actually very much because
+80:12
+there's such a vast space that you're sampling from and
+80:15
+it's quite likely that most of your 50 examples are sampling something bad.
+80:20
+On the other hand, if you're using a fairly modest beam of size five or
+80:25
+ten, that's actually giving you a very good and
+80:28
+noticeable gain much bigger than you're getting from the ancestral sampling.
+80:34
+And so, that's basically the state of the art for
+80:37
+neural machine translation, is people do beam search with a small beam.
+80:41
+The good news about that actually is in statistical
+80:45
+phrase space machine translation, people always used a very large beam.
+80:50
+So people would typically use a beam size of size 100 or 150, and
+80:54
+really people would have liked to use larger.
+80:58
+Apart from where it's just computationally too difficult.
+81:01
+But what people found with neural machine translation systems
+81:05
+is small beams like 5 or 10 actually work extremely well and
+81:09
+conversely bigger beams often don't work much better.
+81:12
+Okay, and so that gives us sort of Beam Search with a small beam as the de facto
+81:17
+standard in NMT.
+81:19
+Okay, that's it for today, and we'll have more of these things on next Tuesday.

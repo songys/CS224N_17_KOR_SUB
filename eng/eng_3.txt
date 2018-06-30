@@ -1,0 +1,2424 @@
+00:00
+[MUSIC]
+00:04
+Stanford University.
+00:10
+>> Alright!
+00:11
+Hello, everybody.
+00:13
+Welcome to lecture three.
+00:14
+I'm Richard, and today we'll talk a little bit more about word vectors.
+00:18
+But before that, let's do three little organizational Items.
+00:23
+First we'll have our first coding session this week.
+00:27
+Next, the problem set one has a bunch of programming for
+00:31
+you, as the first and only one where you will do everything from scratch.
+00:36
+So, do get started early on it.
+00:39
+The coding session is mostly to help you chat with other
+00:42
+people go through small bugs.
+00:44
+Make sure you have everything set up properly, your environments and
+00:47
+everything, so you can get into the exciting deep learning parts right away.
+00:53
+Then there's the career fair, the computer science forum.
+00:56
+It's excited to help you find companies to work at, and talk about your career.
+01:04
+And then my first project advice office hour's today, I'll just grab a quick
+01:08
+dinner after this and then I'll be back here in the Huang basement to chat.
+01:12
+Mostly about projects, so we encourage you to think about your projects early and so
+01:16
+we'll start that today.
+01:19
+Very excited to chat with you if wanna just bounce off ideas in the beginning,
+01:22
+that will be great.
+01:25
+Any questions around organization, yes.
+01:29
+I think just like outside, yeah like, you can't miss it,
+01:33
+like right here in front of the class.
+01:38
+Any other organizational questions?
+01:46
+Yeah. He will hold office hours too.
+01:47
+And we have a calendar on the website, and
+01:50
+you can find all our office hours on the calendar.
+01:57
+Okay. We'll fix that.
+01:58
+We'll add the names of who's doing the office hours, especially for
+02:02
+Chris and mine All right, great.
+02:08
+So we'll finish word2vec.
+02:10
+But then where it gets really interesting is,
+02:12
+we're actually asked what word2vec really captures.
+02:16
+We have these objective functions we're optimizing.
+02:18
+And we'll take a bit of a look and analyze what's going on there.
+02:21
+And then we'll try to actually capture the essence of word2vec,
+02:25
+a little more effectively.
+02:27
+And then also look at our first analysis, of intrinsic and
+02:30
+extrinsic evaluations for word vectors.
+02:34
+So, it'll be really exciting.
+02:36
+By the end, you actually have a good sense of how to evaluate word vectors, and
+02:40
+you have at least two methods under your belt on how to train them.
+02:45
+So let's do a quick review of word2vec.
+02:47
+We ended with this following equation here, where we wanted to basically predict
+02:53
+the outside vectors from the center word, and
+02:57
+so lets just recap really quickly what that meant.
+03:01
+So let's say I have the beginning of a corpus, and it says something like,
+03:06
+I like deep learning,
+03:12
+or just and NLP.
+03:17
+Now, what we were gonna do is, we basically wanna compute the probability.
+03:21
+Let's say, we start with these word vectors in this is our first center word,
+03:26
+and that's deep.
+03:28
+So, we wanna first compute the probability of
+03:33
+the first outside word, I given the word deep and
+03:37
+that was something like the exponent here Of UO.
+03:43
+So the U vector is the outside word and so that's,
+03:48
+in our case, I here transposed the deep.
+03:52
+And then we had this big sum here and the sum is always the same,
+03:57
+given for a certain VC.
+03:59
+So that is the center word.
+04:01
+Now, how do we get this V and this U?
+04:03
+We basically have a large matrix here,
+04:08
+with all the different word vectors for all the different words.
+04:11
+So it starts with vector for aardvark.
+04:16
+And a and so on, all the way to maybe the vector for zebra.
+04:21
+And we had basically all our center words v in here.
+04:24
+And then we have one large matrix, where we have again, all the vectors
+04:30
+starting with aardvark and A, and so on, all the way to zebra.
+04:38
+And when we start in our first window through this corpus, we basically collect,
+04:44
+take that vector for deep here this vector V plug it in here and
+04:48
+then we wanna maximize this probability.
+04:54
+And now, we'll take the vectors for U for all these different words like I,
+04:59
+like, learning, and and.
+05:01
+So the next thing would be, I for like or the probability of like given deep.
+05:08
+And that'll be the exponent of U like transpose of v deep.
+05:15
+And again, we have to divide by this
+05:18
+pretty large sum over the entire vocabulary.
+05:20
+So, it's essentially little classification problems all over.
+05:23
+So that's the first window of this corpus.
+05:27
+Now, when we move to the next window, we basically move one over.
+05:33
+And now the center word is learning, and we wanna predict these outside words.
+05:41
+So now we'll take for this next, the second window here.
+05:46
+This was the first window, the second window.
+05:49
+We'll now take the vector V for learning and the U vector for like, deep and NLP.
+05:57
+So that was the skip gram model that we talked about in the last lecture,
+06:01
+just explained again with the same notation.
+06:05
+But basically, you take one window at a time, you move that window and
+06:08
+you keep trying to predict the outside words.
+06:11
+Next to the center word.
+06:14
+Are there any questions around this?
+06:15
+Cuz we'll move, yep?
+06:23
+That's a good question, so how do you actually develop that?
+06:26
+You start with all the numbers, all these vectors are just random.
+06:30
+Little small random numbers, often sampled uniformly between two small numbers.
+06:36
+And then, you take the derivatives with respect to these vectors in order to
+06:40
+increase these probabilities.
+06:44
+And you essentially take the gradient here, of each of these windows with SGD.
+06:50
+And so, when you take the derivatives that we went through in Latin last lecture,
+06:55
+with respect to all these different vectors here, you get this very,
+06:59
+very large sparse update.
+07:02
+Cuz all your parameters are essentially all the word vectors.
+07:06
+And basically these two matrices, with all these different column vectors.
+07:10
+And so let's say you have 100 dimensional vectors, and
+07:14
+you have a vocabulary of let's say 20,000 words.
+07:18
+So that's a lot of different numbers that you have to optimize.
+07:22
+And so these updates are very, very large.
+07:25
+But, they're also very sparse cuz each window,
+07:27
+you usually only see five words if your window size is two.
+07:33
+yeah? >> [INAUDIBLE]
+07:36
+>> That's a good question.
+07:37
+We'll get to that once we look at the evaluation of these word vectors.
+07:44
+This cost function is not convex It doesn't matter,
+07:50
+sorry, I should repeat all the questions, sorry for the people on the video.
+07:52
+So the first question was, how do we choose the dimensionality?
+07:55
+We'll get to that very soon.
+07:58
+And then, this question here.
+08:00
+Was how do we start?
+08:01
+And how much does it matter?
+08:03
+It turns out most of the objective functions, pretty much almost of them in
+08:08
+this lecture, are not convex, and so initialization does matter.
+08:13
+And we'll go through tips and
+08:14
+tricks on how to circumvent getting stuck in very bad local optima.
+08:20
+But it turns out in practice, as long as you initialize with small
+08:23
+random numbers especially in these word vectors, it does not tend to be a problem.
+08:30
+All right, so we basically run SGD, it's just a recap of last lecture.
+08:34
+Run SGD, we update now our cost function here at each
+08:39
+window as we move through the corpus, right?
+08:43
+And so when you think about these updates and you think about implementing that,
+08:47
+which you'll very soon for problem set one, you'll realize well,
+08:50
+if I have this entire matrix, this entire vector here, sorry.
+08:55
+This vector of all these different numbers and
+08:57
+I explicitly actually keep around these zeros,
+08:59
+you have very, very large updates, and you'll run out of memory very quickly.
+09:04
+And so what instead you wanna do is either have very
+09:06
+sparse matrix operations where you update only specific columns.
+09:11
+For this second window, you only have to update the outside vectors for
+09:16
+like, deep and NLP and inside vector for learning.
+09:20
+Or you could also implement this as essentially a hash where you have keys and
+09:26
+values.
+09:26
+And the values are the vectors, and the keys are the word strings.
+09:33
+All right, now, when I told you this is the skip-gram model,
+09:37
+I actually kind of lied a little bit to teach it to you one step at a time.
+09:43
+It turns out when you do this computation here,
+09:48
+the upper part is pretty simple, right?
+09:50
+This is just the hundred-dimensional vector, and
+09:52
+you multiply that with another hundred-dimensional vector.
+09:54
+So that's pretty fast.
+09:56
+But at each window, and again you go through an entire corpus, right?
+10:00
+You do this one step at a time, one word at a time.
+10:03
+And for each window, you do this computation.
+10:05
+And you do also this gigantic sum.
+10:07
+And this sum goes over the entire vocabulary.
+10:09
+Again, potentially 20,000 maybe even a million different words
+10:14
+in your whole corpus.
+10:16
+All right, so each window,
+10:18
+you have to make 20,000 times this inner product down here.
+10:23
+And that's not very efficient.
+10:25
+And it turns out, you also don't teach the model that much.
+10:28
+At each window you say, deep learning, or learning does not co-occur with zebra.
+10:35
+It does not co-occur of aardvark.
+10:36
+It does not co-occur with 20,000 other words.
+10:39
+And it's kind of repetitive, right?
+10:40
+Cuz most words don't actually appear with most other words, it's pretty sparse.
+10:44
+And so the main idea behind skip-gram is a very neat trick, which is we'll just train
+10:50
+a couple of binary logistic regressions for the true pairs.
+10:53
+So we keep this idea of wanting to optimize and
+10:57
+maximize this inner product of the center word and the outside words.
+11:01
+But instead of going through all,
+11:03
+we'll actually just take a couple of random words and say,
+11:05
+how about these random words from the rest of the corpus don't co-occur.
+11:11
+And this leads us to the original objective function of the skip-gram model,
+11:15
+which sort of as a software package is often called Word2vec.
+11:19
+And the original paper title was Distributed Representations of Words and
+11:23
+Phrases, and their compositionality.
+11:25
+And so the overall objective function is as follows.
+11:27
+Let's walk through this slowly together.
+11:30
+Basically, you go again through each window.
+11:33
+So T here corresponds to each window as you go through the corpus,
+11:38
+and then we have two terms here.
+11:39
+The first one is essentially just a log probability of these two center words and
+11:44
+outside words co-occurring.
+11:47
+And so the sigmoid here is a simple element wise function.
+11:50
+We'll become very good friends.
+11:51
+We'll use the sigmoid function a lot.
+11:53
+You'll have to really be able to take derivatives of it and so on.
+11:57
+But essentially what it does, it just takes any real number and
+12:00
+squashes it to be between zero and one.
+12:02
+And that's for you learning people, good enough to call it a probability.
+12:06
+If you're reading statistics, you wanna have proper measures and so on,
+12:09
+so it's not quite that much, but it's a number between zero and one.
+12:12
+We'll call it a probability.
+12:13
+And then we basically can call this here a term that we basically wanna
+12:19
+maximize the log probability of these two words co-occurring.
+12:25
+Any questions about the first term?
+12:30
+This is very similar to before, but then we have the second term here.
+12:33
+And the original description was this expected value here.
+12:37
+But really, we can have some clear notation that essentially just shows that
+12:41
+we're going to randomly sub sample a couple of the words from the corpus.
+12:45
+And for each of these,
+12:47
+we will essentially try to minimize their probability of co-occurring.
+12:52
+And so one good exercise is actually for
+12:56
+you in preparation for midterms.
+13:00
+And what not to prove to yourself that one of sigmoid
+13:05
+of minus x is the same as one minus sigmoid of x.
+13:11
+That is a nice little quick proof to get into the zone.
+13:14
+And so basically this is one minus the probability of this.
+13:18
+So we'd subsample a couple of random words from our corpus instead of going through
+13:22
+all the different ones saying an aardvark doesn't appear.
+13:24
+Zebra doesn't appear with learning and so on.
+13:26
+We'll just sample five, or ten, or so, and then we minimize their probabilities.
+13:33
+And so usually, we take and
+13:34
+this is again a hyperparameter, one that will have to evaluate how much it matters.
+13:39
+I will take k negative samples for
+13:41
+the second part here of the objective functions for each window.
+13:45
+And then we minimize the probability that these random words appear
+13:49
+around the center word.
+13:51
+And then the way we sample them is actually from a simple uniform or
+13:55
+unigram distribution here.
+13:56
+We basically look at how often do the words generally appear, and
+14:00
+then we sample them based on that.
+14:01
+But we also take the power of three-fourth.
+14:03
+It's kind of a hacky term.
+14:04
+If you play around with this model for long enough, you say, well,
+14:08
+maybe it should more often sample some of these rare words cuz otherwise,
+14:12
+it would very, very often sample THE and A and other stop words.
+14:16
+And would probably never, ever sample aardvark and zebra in our corpus,
+14:20
+so you take this to the power of three-fourth.
+14:25
+And you don't have to implement this function,
+14:27
+we'll just give it to you cuz you kind of have to compute the statistics
+14:31
+of how often each word appears in the corpus.
+14:33
+But we'll give this to you in the problem set.
+14:37
+All right, so any questions around the skip-gram model?
+14:40
+Yeah?
+14:46
+That's right, so the question is, is it a choice of how to define p of w?
+14:53
+And it is a choice, you could do a lot of different things there.
+14:57
+But it turns out a very simple thing, like just taking the unigram distribution.
+15:02
+How often does this word appear works well enough.
+15:05
+So people haven't really explored more complex versions than that.
+15:19
+That's a good question.
+15:20
+Should we make sure that the random samples here
+15:24
+aren't the same as exactly this word?
+15:28
+Yes, but it turns out that the probability for a very large corpora is so
+15:32
+tiny that the very, very few times that ever happens is kind of irrelevant.
+15:36
+Cuz we randomly sub-sample so much that it doesn't change.
+15:48
+Orders of magnitude for which part?
+15:51
+K, it's ten.
+15:53
+It's relatively small, and it's an interesting trade-off that
+15:56
+you'll observe in actually several deep learning models.
+15:59
+Often, As you go through the corpus, you could do an update after each window,
+16:04
+but you could also say let's go through five windows collect the updates and
+16:08
+then make a really, a step in your...
+16:10
+Mini batch of your stochastic gradient descent and
+16:12
+we'll go through a lot these kind of options later in the class.
+16:17
+All right, last question on skip gram What does Jt(theta) represent?
+16:25
+It's a good question.
+16:26
+So theta is often a parameter that we use for all the variables in our model.
+16:33
+So in our case here for the skip-gram model,
+16:35
+it's essentially all the U vectors and all the V vectors.
+16:39
+Later on, when we call, we'll call a theta,
+16:42
+it might have other parameters of the neural network, layers and so on.
+16:46
+And J is just our cost function and T is at the Tth time step or
+16:50
+the Tth window as we go through our corpus.
+16:53
+So in the end, our overall objective function that we actually optimize is
+16:56
+the sum of all of them.
+16:57
+But again, we don't wanna do one large update of the entire corpus, right?
+17:02
+We don't wanna go through all the windows, collect all the updates and
+17:06
+then make one gigantic step cuz that usually doesn't work very well.
+17:12
+So, good question I think, last lecture we talked a lot about minimization.
+17:16
+Here, we have these log probabilities and in the paper you wanna maximize that.
+17:24
+And it's often very intuitive, right?
+17:25
+Once you have probabilities, you usually wanna maximize the probability
+17:29
+of the actual thing that you see in your corpus happening.
+17:32
+And then other times,
+17:33
+when we call it a cost function, we wanna minimize the cost and so on.
+17:39
+All right so, in word2vector's, another model,
+17:43
+which you won't have to implement unless you want to get bonus points.
+17:46
+But we will ask you to take derivatives of, and so
+17:49
+it's good to understand it at least in a very simple conceptual level.
+17:53
+And it's very similar to the skip-gram model.
+17:57
+Basically, we want to predict
+18:00
+the center word from the sum of the surrounding words.
+18:04
+So very simply here, we sum up the vector of And of NLP and of deep and
+18:08
+of like and we have the sum of these vectors.
+18:10
+And then we have some inner products with just the vector of the inside.
+18:14
+And basically that's called the continuous bag of words model.
+18:18
+You'll learn all about the details and the definition of that in the problem set.
+18:23
+So what actually happens when we train these word vectors, right?
+18:27
+We optimize this objective function and we take gradients and
+18:31
+after a while, something kind of magical happens to these word vectors.
+18:37
+And that is that they actually start to cluster around similar kinds of meaning,
+18:43
+and sometimes also similar kinds of syntactic functions.
+18:47
+So when we zoom in, and again, this is, usually these vectors are 25 to even
+18:53
+500 or thousand dimensional, this is just a PCA visualization of these vectors.
+18:58
+And what we'll observe is that Tuesday and Thursday and
+19:03
+weekdays cluster together, number terms cluster together,
+19:08
+first names cluster together and so on.
+19:12
+So basically, words that appear in similar context turn out to
+19:16
+often have dissimilar meaning as we discussed in previous lecture.
+19:19
+And so they essentially get similar vectors
+19:24
+after we train this model for a sufficient number of sets.
+19:30
+All right, let's summarize word2vec.
+19:33
+Basically, we went through each word in the corpus.
+19:36
+We looked at the surrounding words in the window.
+19:38
+We predict the surrounding words.
+19:40
+Now, what we are essentially doing there is
+19:43
+trying to capture the coocurrence of words.
+19:46
+How often does this word cooccur with the other word?
+19:49
+And we did that one count at a time.
+19:51
+It's like, I see the deep and learning happen.
+19:56
+I make an update to both of this vectors.
+19:58
+And then you go over the corpus and then you probably will eventually see deep and
+20:02
+learning coocurring again and you make again a separate update step.
+20:06
+When you think about that, it's not very efficient, right?
+20:08
+Why now we just go to the entire corpus once, count how often this deep and
+20:12
+learning cooccur, of these two words cooccur, and then we make one
+20:18
+update step that captures the entire count instead of one sample at the time.
+20:25
+And, yes we can do that and
+20:27
+that is actually a method that came historically before word2vec.
+20:33
+And there are different options of how we can do this.
+20:36
+The simplest one or
+20:37
+the one that is similar to word2vec at least is that we again use a window around
+20:41
+each word and we basically just go through the entire corpus.
+20:45
+We don't update anything, we don't do any SGD.
+20:47
+We just collect the counts first.
+20:49
+And once we have the counts, then we do something to that matrix.
+20:53
+And so when we look at just the window of length maybe two,
+20:56
+like in this example here, or maybe five, some small window size around each word,
+21:01
+what we'll do is we'll capture, not just the semantics, but
+21:05
+also some of the syntactic information of each word.
+21:07
+Namely, what kind of part of speech tag is it.
+21:10
+So verbs are going to be closer to one another.
+21:13
+Then the verbs are to nouns, for instance.
+21:18
+If, on the other hand, we look at co-occurrence counts that aren't just
+21:21
+around the window, but entire document, so I don't just look at each window.
+21:25
+But i say, this Word appears with all these other words in this entire Wikipedia
+21:30
+article, for instance, or this entire Word document.
+21:33
+Then, what you'll capture is actually more topics, and this is often
+21:39
+called Latent Semantic Analysis, a big popular model from a while back.
+21:44
+And basically what you'll get there is, you'll ignore the part of
+21:48
+speech that you ignore any kind of syntactic information and just say,
+21:53
+well swimming and boat and water and weather and the sun,
+21:56
+they're all kind of appear in this topic together, in this document together.
+22:01
+So we won't go into too many details for these cuz they turn out for
+22:05
+a lot of other downstream tasks like machine translation or so and
+22:08
+we really want to use these windows, but it's good knowledge to have.
+22:12
+So let's go over a simple example of what we would do if we had a very small
+22:18
+corpus and wanna collect these windows and then compute word vectors from that.
+22:44
+So it is technically not cosine cuz we are not normalizing over the length, and
+22:48
+technically we are not optimizing inner products of these probabilities and so on.
+22:51
+But continue.
+23:00
+That's right. So the question is,
+23:01
+in all these visualizations here, we kind of look at Euclidean distance.
+23:05
+And it's true, we're actually often are going to use inner products
+23:10
+kinds of similarities.
+23:12
+So yes, in some cases, Euclidean distance works reasonably well still,
+23:17
+despite not doing this in fact we'll see one evaluation that is entirely based or
+23:22
+partly based on Euclidean distances and partly inner products.
+23:25
+So it turns out both work well despite our objective function only having this.
+23:30
+And even more surprising there're a lot of things that work quite well on this
+23:33
+despite starting with this kind of objective function.
+23:41
+We often yeah, so if despite having only this inner product optimizations,
+23:45
+we will actually also do often very well in terms of Euclidean distances.
+23:50
+Yep.
+23:54
+Well, it get's complicated but there are some interesting relationships between
+23:59
+the ratios of the co-occurence counts We don't have enough time to dive into
+24:04
+the details, but if you are interested in that I will talk about a paper.
+24:07
+I mentioned the title of the paper in five or ten slides, that will help
+24:12
+you understand that a little better and gain some more intuition, yep.
+24:15
+All right, so, window based co-occurrence matrices.
+24:20
+So, let's say, we have this corpus here, and
+24:22
+that's to find our window length as just 1, for simplicity.
+24:26
+Usually, we have more commonly 5 to 10 windows around there.
+24:30
+And we assume we have a symmetric window so,
+24:34
+we don't care if a word is to the left or to the right of our center word.
+24:38
+And we have this corpus.
+24:39
+So, this is essentially what a window based co-occurrence matrix would be, for
+24:44
+this very, very simple corpus.
+24:46
+We just look at the word I and then, we look at which words appear next to I.
+24:51
+And so, we look at I, we see like twice so, we have number two here.
+24:56
+And we see enjoy once so, we put the count one here.
+25:00
+And then, we know we have the word like.
+25:02
+And so, like co-occurs twice with the word I on it's left and
+25:07
+once with deep and once with NLP.
+25:09
+And so, this is essentially we go through all the words in a very large corpus and
+25:14
+we compute all these counts, super simple.
+25:17
+Now, you could say, well, that's a vector already, right?
+25:20
+You have a list of numbers here and that list of numbers now represents that word.
+25:24
+And you already kinda capture things like, well, like and enjoy have some overlap so,
+25:29
+maybe they're more similar.
+25:30
+So, you already have a word vector, right?
+25:32
+But now, it's not a very ideal word vector for a couple of reasons.
+25:36
+The first one is, if you have a new word in your vocabulary,
+25:39
+that word vector changes.
+25:41
+So, if you have some downstream machine learning models now to take that
+25:44
+vector's input, they always have to change and there's always some parameter missing.
+25:48
+Also, this vector is going to be very high-dimensional.
+25:51
+Of course, for this tiny corpus, it's small but generally,
+25:54
+we'll have tens of thousands of words.
+25:56
+So, it's a very high-dimensional vector.
+25:58
+So, you'll have sparsity issues if you try to train a machine learning model
+26:01
+on this afterwards and that moves up in a much less robust downstream models.
+26:07
+And so, the solution to that is lets again have the similar idea to word2vec and
+26:12
+have just don't store all of the co occurrence counts, every single number.
+26:16
+But just store most of the important information,
+26:19
+the fixed small number of dimensions, similar to word2vec,
+26:22
+those will be somewhere around 25 to 1,000 dimensions.
+26:26
+And then, the question is okay, how do we now reduce the dimensionality,
+26:29
+we have these very large co-occurrence matrices here.
+26:32
+In the realistic setting, we'll have 20,000 by 20,000 or even a million by
+26:36
+a million, very large sparse matrix, how do we reduce the dimensionality?
+26:41
+And the answer is we'll just use very simple SVD.
+26:44
+So, who here is familiar with singular value decomposition?
+26:49
+All right, good, the majority of people, if you're not then,
+26:52
+I strongly suggest you go to the office hours and brush up on your linear algebra.
+26:59
+But, basically, we'll have here this X hat matrix, which is
+27:04
+going to be our best rank k approximation to our original co-occurrence matrix X.
+27:10
+And we'll have basically these three simple matrices with orthonormal columns.
+27:18
+U we often call also our left-singular vectors and we have here S the diagonal
+27:23
+matrix containing all the singular values usually from largest to smallest.
+27:28
+And we have our matrix V here, our orthonormal rows.
+27:32
+And so, in code, this is also extremely simple,
+27:36
+we can literally implement this in just a few lines, if we have,
+27:41
+this is our corpus here, and this is our co-occurrence matrix X.
+27:46
+Then, we can simply run SVD with one line of Python code and
+27:51
+then, we get this matrix U.
+27:54
+And now, we can take the first two columns here of U and plot them, right?
+28:02
+And if we do this in the first two dimensions here, we'll actually get
+28:07
+similar kinda visualization to all this other ones I've showed you, right?
+28:12
+But this is a few lines of Python code to create that kinda word vector.
+28:18
+And now, it's kinda reading tea leaves, none of these dimensions we can't really
+28:23
+say, this dimension is noun, the verbness of a word, or something like that.
+28:29
+But as you look at these long enough,
+28:32
+you'll definitely observe some kinds of patterns.
+28:35
+So for instance, I and like are very frequent words in this corpus and
+28:40
+they're a little further to the left so, that's one.
+28:42
+Like and enjoy are nearest neighbors in this space so
+28:46
+that's another observation, they're both verbs, and so on.
+28:50
+So, the things that were being liked, flying and
+28:54
+deep and other things are closer together and so on.
+28:58
+So, such a very simple method you get a first approximation to what word
+29:02
+vectors can and should capture.
+29:07
+Are there any questions around this SVD method in the co-occurrence matrix?
+29:18
+It's a good question, is the window always symmetric?
+29:20
+And the answer is no, we can actually evaluate asymmetric windows and
+29:25
+symmetric windows, and I'll show you the result of that in a couple of slides.
+29:32
+All right, now, once you realize, wow, this is so simple and it works kinda well,
+29:36
+and you're a researcher, you always wanna try to improve it a little bit.
+29:40
+And so, there are a lot of different hacks that we can make to this co-occurrence
+29:44
+matrix.
+29:44
+So, instead of taking the raw counts, for instance, as you do this, you realize,
+29:49
+well, a lot of representational power in this word vectors is now captured
+29:55
+by the fact that the and he and
+29:58
+has and a lot of other very, very frequent words co-occur with almost all the nouns.
+30:03
+Like the appears in the window of pretty much every noun out there.
+30:08
+And it doesn't really give us that much information that it does over and over and
+30:12
+over again.
+30:13
+And so, one thing we can do is actually just cap it and say,
+30:17
+all right, whatever the co-occurs with the most, and a lot of other
+30:21
+one of these function words, we'll just maximize the count at 100.
+30:26
+Or, I know some people do this also, we just ignore a couple of the most
+30:30
+frequent words cuz they really, we have a power law distribution or
+30:33
+Zipf's law where basically, the most frequent words appear much,
+30:37
+much more frequently than other words and then, it peters out.
+30:40
+And then, there's a very long tail of words that don't appear that often but
+30:46
+those very rare words often have a lot of semantic content.
+30:51
+Then, another way we can change this,
+30:54
+the way we compute these counts is by not counting all the words equally.
+30:58
+So, we can say, well,
+30:59
+words that appear right next to my center word get a count of one.
+31:03
+Or words that appear and they're five steps away,
+31:05
+five words away only you get a count of 0.5.
+31:08
+And so, that's another hack we can do.
+31:10
+And then, instead of counts we could compute correlations and set them to 0.
+31:14
+You get the idea, you can play a little around with this matrix of co-occurrence
+31:19
+counts in a variety of different ways and sometimes they help quite significantly.
+31:25
+So, in 2005, so quite a long time ago, people used this SVD method and
+31:30
+compared a lot of different
+31:33
+ways of hacking the co-occurrence matrix and modifying it.
+31:38
+And basically found quite surprising and awesome results.
+31:42
+And so, this is another way we can try to visualize
+31:45
+this very high dimensional space.
+31:46
+Again, these vectors are usually around 100 dimensions or so, so
+31:50
+it's hard to visualize it.
+31:51
+And so, instead of projecting it down to just 2D, here they just choose a couple of
+31:55
+words and look at the nearest neighbours and which word is closest To
+32:00
+what other word and they find that wrist and ankle are closest to one another.
+32:04
+And next closest word is shoulder.
+32:06
+And the next closest one is arm and so on.
+32:09
+And so different extremities cluster together, we'll see different
+32:13
+cities clustering together, and American cities are closer to one another than
+32:18
+cities from other countries, and country names are close together, and so on.
+32:22
+So it's quite amazing, right?
+32:23
+Even with something as simple as SVD around these windows,
+32:27
+you capture a lot of different kinds of information.
+32:32
+In fact it even goes to syntactic and
+32:35
+chromatical kinds of patterns that are captured by this SVD method.
+32:40
+So show, showed, shown or take, took, taken and so
+32:45
+on are all always together in often similar kinds of patterns.
+32:52
+And it goes further and even more semantic in the verbs that
+32:58
+are very similar and related to these kinds of nouns.
+33:04
+Often appear even in roughly similar kinds of Euclidean distances.
+33:09
+So, swim and swimmer, clean and janitor, drive and driver, teach and teacher.
+33:17
+They're all basically have a similar kind of vector difference.
+33:25
+And intuitively you would think well they appear,
+33:28
+they often have similar kinds of context in which they appear.
+33:33
+And there's some intuitive sense of why, why this would happen,
+33:36
+as you're trying to capture these co-occurrence counts.
+33:45
+Does the language matter?
+33:47
+Yes, in what way?
+33:52
+Great question.
+33:53
+So if it was German instead of English.
+33:56
+So it's actually a sad truth of a lot of natural language processing research that
+34:01
+the majority of it is in English.
+34:03
+And a few people do this.
+34:05
+It turns out this works for a lot of other languages.
+34:08
+But people don't have as good evaluation metrics often for
+34:11
+these other languages and evaluation data sets which we'll get to in a bit.
+34:15
+But we would believe that it works for pretty much all languages.
+34:19
+Now there's a lot of complexity because some languages like Finnish or German have
+34:24
+potentially a lot of different words, cuz they have much richer morphology, right?
+34:28
+German has compound nouns.
+34:30
+And so you get more and more rare words, and
+34:33
+then the rarer the words are, the less good counts you have of them,
+34:38
+and the harder it is to use this method in a vanilla way.
+34:43
+Which eventually in the limit will get us to character-based
+34:46
+natural language processing, which we'll get to in a couple weeks.
+34:49
+But in general, this works for pretty much any language.
+34:52
+Great question.
+34:54
+So now, what's the problem here?
+34:56
+Well SVD, while being very simple and
+34:59
+one nice line of Python code, is actually computationally not always great,
+35:03
+especially as we get larger and larger matrices.
+35:07
+So we essentially have this quadratic cost here in the smaller dimension.
+35:12
+So either if it's a word by word co-occurrence matrix or
+35:15
+even a word by document, we'd assume this gets very, very large.
+35:18
+And then it also gets hard to incorporate new words or documents into,
+35:23
+into this whole model cuz you have to rerun this whole PCA or sorry,
+35:28
+the SVD, singular value decomposition.
+35:31
+And then on top of that SVD, and
+35:33
+how we optimize that is quite different to a lot of the other downstream deep
+35:37
+learning methods that we'll use like neural networks and so on.
+35:40
+It's a very different kind of optimization.
+35:42
+And so the word to vec objective function is similar to SVD,
+35:45
+you look at one window at a time.
+35:47
+You make an update step.
+35:48
+And that is very similar to how we optimize most of the other models in this
+35:52
+lecture and in deep learning for NLP.
+35:55
+And so basically what we came with with post-doc and
+35:59
+Chris' group, so Jeffery Pennington, me and
+36:02
+Chris, is a method that tries to combine the best of both worlds.
+36:07
+So let's summarize what the advantages and
+36:10
+disadvantages are of these two different kinds of methods.
+36:13
+Basically we have these count based methods based on SVD and
+36:16
+the co-occurence matrix.
+36:18
+And we have the window-based or
+36:19
+direct prediction methods like the Skip-Gram model.
+36:24
+The advantages of PCA is that it's relatively fast to train,
+36:28
+unless the matrix gets very, very large but
+36:31
+we're making very efficient usage of the statistics that we have, right?
+36:35
+We only have to collect the statistics once, and we could in theory,
+36:38
+throw away the whole corpus.
+36:39
+And then we can try a lot of different things on just these co-occurence counts.
+36:44
+Sadly, when you do this, it captures mostly word similarity,
+36:49
+and not various other patterns that the word2vec model, captures and
+36:53
+we'll show you what those are in evaluation.
+36:56
+And we give often disproportionate importance to these large counts.
+37:00
+And we can try various ways of lowering the importance
+37:04
+that these function words and very frequent words have.
+37:08
+The disadvantage of the Skip-Gram of model is that
+37:13
+it scales with a corpus size, right?
+37:16
+You have to go through every single window,
+37:18
+which is not very efficient, and henceforth you also don't really make very
+37:23
+efficient usage of the statistics that you have overall, of the data set.
+37:28
+However we actually get, in may cases,
+37:30
+much better performance on downstream tasks.
+37:32
+And we don't know yet,
+37:33
+those downstream tasks, that's why we have the whole lecture for this whole quarter.
+37:36
+But for a variety of different problems like an entity recognition or
+37:40
+part of speech tagging and so on.
+37:42
+Things that you'll implement in the problem sets,
+37:44
+it turns out the Skip-Gram like models turn out to work slightly better.
+37:49
+And we can capture various complex patterns, some of
+37:52
+which are very surprising and we'll get to in the second part of this lecture.
+37:56
+And so, basically,
+37:57
+what we tried to do here is combining the best of both of these worlds.
+38:02
+And the result of that was the GloVe model, our Global Vectors model.
+38:07
+So let's walk through this objective function a little bit.
+38:09
+Again, theta here will be all our parameters.
+38:13
+So in this case, again, we have these U and these V vectors.
+38:16
+But they're even more symmetric now,
+38:18
+we basically just go through all pairs of words that might ever co-occur.
+38:23
+So we go through these very large co-occurrence matrix that
+38:26
+we computed in the beginning and we call P here.
+38:29
+And for each pair of words in this entire corpus,
+38:33
+we basically want to minimize the distance between the inner
+38:38
+product here, and the log count of these two words.
+38:43
+So again, this is just this kind of matrix here that we're going over.
+38:48
+We're going over all elements of this kind of co-occurrence matrix.
+38:53
+But instead of running the large SVD,
+38:56
+we'll basically just optimize one such count at a time here.
+39:02
+So I have the square of this distance and
+39:05
+then we also have this term here, f, which allows us to weight even
+39:09
+lower some of these very frequent kinds of co-occurrences.
+39:14
+So the, for instance, will have the maximum amount that we can weigh it
+39:18
+inside this overall objective function.
+39:24
+All right,
+39:25
+so now what this allows us to do is essentially we can train very quickly.
+39:28
+Cuz instead of saying, all right, we'll optimize that deep and learning co-occur
+39:32
+in one window, and then we'll go in a couple windows later, they co-occur again.
+39:35
+And we update again, with just one say or
+39:38
+a deep learning co-occur in this entire corpus.
+39:40
+Which could now be in all of Wikipedia or in our case, all of common crawl.
+39:44
+Which is most of the Internet, that's kind of amazing.
+39:47
+It's a gigantic corpora with billions of tokens.
+39:50
+And we just say, all right, deep and
+39:52
+learning in these billions of documents co-occur 536 times or something like that.
+39:57
+Probably now a lot more often.
+39:58
+And then we'll just optimize basically This inner product to be closed and
+40:03
+it's value to the log of that overall account.
+40:11
+And because of that, it scales to very large corpora.
+40:14
+Which is great because the rare words appear not very often and
+40:18
+just build hours to capture even rarer like the semantics of very rare words.
+40:23
+And because of the efficient usage of the statistics, it turns out
+40:27
+to also work very well on small corpora and even smaller vector sizes.
+40:34
+So now you might be confused because individualization,
+40:37
+we keep showing you a single vector but here, we again, just like with the skip
+40:41
+gram vector, we have v vector, it's the outside vectors and the inside vectors.
+40:46
+And so let's get rid of that confusion and
+40:50
+basically tell you that there are a lot of different options of how you get,
+40:54
+eventually, just a single vector from having these two vectors.
+40:57
+You could concatenate them but
+40:59
+it turns out what works best is just to sum them up.
+41:02
+They essentially both capture co-occurence counts.
+41:04
+And if we just sum them, that turns out to work best in practice.
+41:09
+And so, that also destroys some of the intuitions of why
+41:13
+certain things should happen, but it turns out in practice this works best, yeah?
+41:17
+>> [INAUDIBLE] >> What are U and
+41:21
+V again, so U here are again just the vectors of all the words.
+41:25
+And so here, just like with the skip-gram, we had the inside and the outside vectors.
+41:30
+Here, u and v are just the vectors in the column and the vectors in the row.
+41:34
+They're essentially interchangeable and because of that,
+41:37
+it makes even more sense to sum them up.
+41:39
+You could even say, well, why don't you just have one set of vectors?
+41:43
+But then, you'd have a more, a less well behaved objective function here,
+41:48
+because you have the inner product between two of the same sets of parameters.
+41:54
+And it turns out, in terms of the optimization having the separate vectors
+41:57
+during optimization and combining them at the very end just was much more stable.
+42:07
+That's right.
+42:08
+Even for skip-gram, that's the question.
+42:10
+Is it common also time for skip-gram to sum them up?
+42:12
+It is. And it's a good, it's good whenever you
+42:15
+have these choices and they seem a little arbitrary, also, for all your projects.
+42:19
+The best thing to always do is like, well, there are two things.
+42:22
+You could just come to me and say, hey what should I do?
+42:25
+X or Y?
+42:26
+And the true answer,
+42:27
+especially as you get closer to your project and to more research and
+42:31
+novel kinds of applications, the best answer is always, try all of them.
+42:37
+And then have a real metric a quantitative of measure of how well all of them do and
+42:42
+then have a nice little table in your final projects
+42:46
+description that tells you very concretely what it is.
+42:50
+And once you do that many times, you'll gain some intuitions,
+42:53
+and you'll realize alright, for the fifth project, you just realized well summing
+42:56
+them up usually works best, so I'm just going to continue doing that.
+43:00
+Especially as you get into the field,
+43:01
+it's good to try a lot of these different knobs and hyperparameters.
+43:05
+>> [INAUDIBLE] >> That's right,
+43:11
+they're all in the same scale here.
+43:13
+Really they are quite interchangeable, especially for the Glove model.
+43:34
+Is that a question?
+43:35
+Alright I will try to repeat it.
+43:36
+So in theory here you're right.
+43:39
+So the question is does the magnitude of these vectors matter?
+43:46
+Good paraphrase?
+43:46
+And so you are right.
+43:49
+It does.
+43:50
+But in the end you will see them basically in very similar contexts, a lot of times.
+43:56
+And so in this log here,
+44:00
+they will eventually have to capture the log count, right?
+44:03
+So they will have to go to a certain size of what these log counts usually are.
+44:09
+And then the model just figures out that they are in the end
+44:12
+roughly in the same place.
+44:14
+There's nothing in the optimization that pushes some vectors to get really,
+44:18
+really large, except of course, the vectors of words that appear very
+44:21
+frequently, and that's why we have exactly this term here,
+44:24
+to basically cap the importance of the very frequent words.
+44:45
+Yes, so the question is, and I'll just phrase it the way it is, which is right.
+44:51
+The skip-gram model tries to capture co-occurrences one window at a time.
+44:57
+And the Glove model tries to capture the counts of the overall statistics
+45:01
+of how often these words appear together, all right.
+45:06
+One more question?
+45:06
+I think there was one.
+45:10
+No?
+45:11
+Great.
+45:11
+So now we can look at some fun results.
+45:14
+And, basically, we found, the nearest neighbors for
+45:19
+frog were all these various words.
+45:21
+And we're first a little worried, but then we looked them up.
+45:24
+And realize, alright, those are actually quite good.
+45:25
+So you'll see here even for very rare words, Glove will give you very,
+45:30
+very good nearest neighbors in this space.
+45:34
+And so next, we will do the evaluation, but
+45:36
+before that we'll do a little intermission with Arun.
+45:42
+Take it away.
+45:47
+>> [SOUND] Cool, so we've been talking about word vectors.
+45:52
+I'm gonna take a brief detour to talk about Polysemy.
+45:57
+So far we've seen that word vectors encode similarity, we see that
+46:01
+similar concepts are even distributed in Euclidean space near each other.
+46:06
+And the question I want you to think about is, what do we do about polysemy?
+46:11
+Suppose you have a word like tie.
+46:12
+All right, tie could mean something like a tie in a game.
+46:16
+So maybe it should be near this cluster.
+46:21
+Over here. It could be a piece of clothing, so
+46:24
+maybe it should be near this cluster, or
+46:26
+it could be an action like braid twist, should be near this cluster.
+46:31
+Where should it lie?
+46:33
+So this paper by Sanjeev Arora and
+46:37
+the entire group, they seek to answer this question.
+46:41
+And one of the first things they find is that if
+46:45
+you have an imaginary you could split up tie into these polysemous vectors.
+46:50
+You had tie one every time you talk about this sport event.
+46:53
+Tie two every time you talked about the garment of clothing.
+46:57
+Then, you can show that the actual tie that is a combination of
+47:02
+all of these words lies in the linear superposition of all of these vectors.
+47:07
+You might be wondering, how is this vector close to all of them, but
+47:11
+that's because we're projecting this into a 2D plane and so
+47:15
+it's actually closer to them in other dimensions.
+47:19
+Now that we know that this tie lies near or
+47:23
+in the plane of the different senses we might be curious to find out,
+47:29
+can we actually find out what the different senses of a word are.
+47:33
+Suppose we can only see this word tie, could we computationally find out
+47:38
+to some core logistics that tie had a meaning about sport clothing etc.
+47:45
+So the second thing that they're able to show is that there's an algorithm
+47:47
+called sparse coding.
+47:49
+That is able to recover these.
+47:51
+I don't have time to discuss exactly what sparse coding how the algorithm works but
+47:55
+let me describe the model.
+47:56
+The model says that every word vector you have is composed as
+48:01
+the sum of a small selected number of what are called context vectors.
+48:08
+So these context vectors, there are only 2,000 that they found for
+48:11
+their entire corpus, are common across every word.
+48:14
+But every word like tie is only composed of a small
+48:17
+number of these context vectors.
+48:19
+So, the context vector could be something like sports, etc.
+48:22
+There's some noise added in, but that's not very important.
+48:26
+And so, if you look at the type of output that you get for something like tie,
+48:30
+you see something to do with clothing, with sports.
+48:34
+Very interestingly you also see output about music.
+48:37
+Some of you might realize that actually makes sense.
+48:41
+And now, we might wonder how this is qualitative.
+48:45
+Is there a way we can quantitatively evaluate how good the senses we
+48:48
+recover are?
+48:50
+So it turns out, yes you can, and here's the sort of experimental set-up.
+48:56
+So, for every word that was taken from WordNet,
+49:00
+a number of about 20 sets of related senses were picked up.
+49:05
+So, a bunch of words that represent that sense, like tie, blouse, or
+49:09
+pants, or something totally unrelated, like computer, mouse, and keyboard.
+49:14
+And so now they asked a bunch of grad students, because they're guinea pigs, to
+49:19
+differentiate if they could find out which one of these words correspond to tie.
+49:24
+And they also asked the algorithm if it could make that distinction.
+49:28
+The interesting thing is that,
+49:31
+the performance of this method that I alluded to earlier, is about at
+49:35
+the same level as the non-native grad students that they had surveyed.
+49:40
+Which I think is interesting.
+49:42
+The native speakers do better on the task.
+49:46
+So in summary, word vectors can indeed capture polysemy.
+49:50
+It turns out these polysemies, the word vectors,
+49:53
+are in the linear superposition of the polysemy vectors.
+49:56
+You can recover the senses that a polysemous word has wIth sparse coding.
+50:01
+And the senses that you recover are almost as good as
+50:05
+that of a non-native English speaker.
+50:07
+Thank you.
+50:08
+>> Awesome, thank you Arun.
+50:09
+>> [APPLAUSE] >> All right,
+50:15
+so now on to evaluating word vectors.
+50:18
+So we've had gone through now a bunch of new machinery.
+50:23
+And you say, well, how well does this actually work?
+50:25
+I have all these hyperparameters.
+50:27
+What's the window size?
+50:29
+What's the vector size?
+50:30
+And we already came up with these questions.
+50:32
+How much does it matter how do we choose them?
+50:35
+And these are all the answers now.
+50:37
+Well, at least some of them.
+50:39
+So, in a very high level, and this will be true for a lot of your projects as well,
+50:43
+you can make a high level decision of whether you will have an intrinsic or
+50:48
+an extrinsic evaluation of whatever project you're doing.
+50:52
+And in the case of word vectors, that is no different.
+50:56
+So intrinsic evaluations are usually on some specific or intermediate subtask.
+51:01
+So we might, for instance, look at how well do these vector differences or vector
+51:06
+similarities and inner products correlate with human judgments of similarity.
+51:10
+And we'll go through a couple of these kinds of evaluations in
+51:13
+the next couple of slides.
+51:15
+The advantage of intrinsic evaluations is that they're going to be very fast
+51:18
+to compute.
+51:19
+You have your vectors,
+51:20
+you run them through this quick similarity correlation study.
+51:24
+And you get a number out and you then can claim victory very quickly.
+51:28
+And then or you can modify your model and try 50,000 different little knobs and
+51:33
+combinations and tune this very quickly.
+51:37
+It sometimes helps you really understand very quickly how your system works, what
+51:42
+kinds of hyperparameters actually have an impact on this metric of similarity,
+51:46
+for instance.
+51:48
+However, there's no free lunch here.
+51:51
+It's not clear, sometimes, if your intermediate or
+51:55
+intrinsic evaluation and improvements actually carry out to be a real
+51:59
+improvement in some task real people will care about.
+52:02
+And real people is a little tricky definition.
+52:05
+I guess real people,
+52:06
+usually we'll assume are like normal people who want to just have
+52:09
+a machine translation system or a question answering system or something like that.
+52:14
+Not necessarily linguists and
+52:15
+natural language processing researchers in the field.
+52:18
+And so, sometimes you actually observe people trying to
+52:22
+optimize their intrinsic evaluations a lot.
+52:25
+And they spent years of their life optimizing them.
+52:28
+And other people later find out, well, it turns out those improvements on your
+52:32
+intrinsic task, when I actually applied your better word vectors or
+52:35
+something to name entity recognition or part of speech tagging or
+52:38
+machine translation, I don't see an improvement.
+52:41
+So then the question is, well, how useful is your intrinsic evaluation task?
+52:45
+So as you go down this route, and a lot of you will for their projects,
+52:49
+you always wanna make sure you establish some kind of correlation between these.
+52:53
+Now, the extrinsic one is basically evaluation on a real task.
+52:56
+And that's really where the rubber hits the road, or
+53:00
+the proof is in the pudding, or whatever.
+53:02
+The problem with that is that it can take a very long time.
+53:05
+You have your new word vectors and you're like,
+53:07
+I took the Pearson correlation instead of the raw count of my core currents matrix.
+53:10
+I think that's the best thing ever.
+53:13
+Now I wanna evaluate whether that word vector really helps for
+53:16
+machine translation.
+53:17
+And you say, all right, now I'm gonna take my word vectors and
+53:19
+plug them into this machine translation system.
+53:21
+And that turns out to take a week to train.
+53:24
+And then you have to wait a long time, and now you have ten other knobs, and
+53:27
+before you know it, the year is over.
+53:28
+And you can't really just do that every time you have a tiny,
+53:32
+little improvement on your first early word vectors, for instance.
+53:36
+So that's the problem, it takes a long time.
+53:40
+And then often people will often make the mistake of tuning a lot of different
+53:44
+subsystems.
+53:44
+And then they put it all together into the full system, the real task,
+53:49
+like machine translation.
+53:51
+And something overall has improved,
+53:53
+but now it's unclear which part actually gave the improvement.
+53:56
+Maybe two parts where actually, one was really good, the other one was bad.
+54:00
+They cancel each other out, and so on.
+54:01
+So you wanna basically, when you use extrinsic evaluations,
+54:05
+be very certain that you only change one thing that you came up with, or
+54:09
+one aspect of your word vectors, for instance.
+54:12
+And if you then get an improvement on your overall downstream task,
+54:15
+then you're really in a good place.
+54:18
+So let's be more explicit and
+54:20
+go through some of these intrinsic word vector evaluations.
+54:25
+One that was very popular and came out just very recently
+54:30
+with the word2vec paper was these word vector analogies.
+54:35
+Where basically they found, which was initially very surprising to
+54:40
+a lot of people, that you have amazing kinds of semantic and syntactic analogies
+54:46
+that are captured through these cosine distances in these vectors.
+54:51
+So for instance, you might ask, what is man to woman and
+54:56
+the relationship of king to another word?
+55:00
+And basically a simple analogy.
+55:03
+Man to woman is like king to queen.
+55:06
+That's right.
+55:07
+And so it turns out that, when you just take vector of woman,
+55:11
+you subtract the vector of man, and you add the vector of king.
+55:15
+And then you try to find the vector that has the largest cosine similarity.
+55:21
+It turns out the vector of queen is actually that vector that has
+55:26
+the largest cosine similarity to this term.
+55:31
+And so that is quite amazing, and it works for
+55:34
+a lot of different kinds of very intuitive patterns.
+55:38
+So, let¡¯s go through a couple of them.
+55:40
+So you'd have similar things like, if sir to madam is similar as man to woman,
+55:45
+or heir to heiress, or king to queen, or emperor to empress, and so on.
+55:50
+So they all have a similar kind of relationship that is captured very well
+55:56
+by these cosine distances in this simple Euclidean Subtractions and additions.
+56:05
+It goes even more specific.
+56:06
+You have similar kinds of companies and their CEO names.
+56:11
+And you can take company, title, minus CEO plus other company, and
+56:15
+you get to the vector of the name of the CEO of that other company.
+56:21
+And it works not just for semantic relationships but also for
+56:24
+syntactic relationships, so slow, slower, or slowest in these glove
+56:29
+things has very similar kind of differences and so
+56:34
+on, to short, shorter, and shortest, or strong, stronger, and strongest.
+56:39
+You can have a lot of fun with this and people did so here are some even more fun
+56:44
+ones like Sushi- Japan + Germany goes to bratwurst, and so on.
+56:50
+Which as a German, I'm mildly offended by.
+56:53
+And of course, it's very intuitive in some ways.
+56:59
+But it's also questionable.
+57:00
+Maybe it should have been [INAUDIBLE] or whatever.
+57:02
+Other typical German foods.
+57:08
+While this is very intuitive and for some people, in terms of the actual
+57:13
+semantics that are captured here, you might really wonder why this has happened.
+57:18
+And there is no mathematical proof of why this has to fall out but
+57:23
+intuitively you can kind of make sense of it a little bit.
+57:27
+Superlatives for instance might appear next to certain words,
+57:33
+very often, in similar kinds of ways.
+57:37
+Maybe most, for instance, appears in front of a lot of superlative.
+57:43
+Or barely might appear in front of certain words like slower or shorter.
+57:52
+It's barely shorter than this other person.
+57:55
+And since in these vectors you're capturing these core occurrence accounts,
+58:00
+as you take out, basically one concurrence you subtract that one concurrence
+58:05
+intuitively it's a little hand wavy.
+58:07
+There's no like again here this is not a nice mathematical proof but
+58:11
+intuitively you can see how similar kinds of words appeared and you subtract those
+58:16
+counts and hence you arrive in similar kinds of places into vector space.
+58:20
+Now first you try a couple of these, and you're surprised that this works well.
+58:25
+And then you want to make it a little more quantitative.
+58:27
+All right, so
+58:28
+this was a qualitative sub sample of some words where this works incredibly well.
+58:33
+It's also true that when you really play around with it for
+58:36
+a while, you'll find something things that are like
+58:38
+Audi minus German goes to some crazy sushi term or something.
+58:42
+It doesn't always make sense but
+58:44
+there are a lot of them where it really is surprisingly intuitive.
+58:48
+And so people essentially then came up with a data set to try to see
+58:53
+how often does it really appear and does it really work this well?
+58:58
+And so they basically collected this Word Vector Analogies task.
+59:02
+And these are some examples.
+59:04
+You can download all of them on this link here.
+59:06
+This is, again, the original word2vec paper that discovered and
+59:10
+described these linear relationships.
+59:13
+And they basically look at Chicago and Illinois and Houston Texas.
+59:16
+And you can basically come up with a lot of different analogies
+59:20
+where this city appears in that state.
+59:23
+Of course there are some problems and as you optimize this metric more and
+59:27
+more you will observe like well maybe that city name actually appears in
+59:32
+multiple different cities and different states have the same name.
+59:35
+And then it kind of depends on your corpus that you're training on whether or
+59:38
+not this has been captured or not.
+59:40
+But still, a lot of people, it makes a lot of sense for
+59:43
+most of them to optimize these at least for a little bit.
+59:47
+Here are some other examples of analogies that are in this data set that are being
+59:51
+captured, and just like the capital and the world, of course you know as those
+59:56
+change if it doesn't change in your corpus that's also problematic.
+60:01
+But in many cases the capitals of countries don't change, and so
+60:04
+it's quite intuitive and here's some examples of syntactic relationships and
+60:09
+analogies that are basically in this data set to evaluate.
+60:13
+We have several thousands of these analogies and
+60:16
+now, we compute our word vectors, we've tuned some knob,
+60:19
+we changed the hyperparameter instead of 25 dimensions, we have 50 dimensions and
+60:23
+then we evaluate which one is better for these analogies.
+60:28
+And again, here is another syntactic one with past tense kinds of relationships.
+60:33
+Dancing to danced should be like going to went.
+60:37
+Now, we can basically look at a lot of different methods, and we don't know all
+60:41
+of these in the class here, but we know the skip gram SG and the Glove model.
+60:46
+And here is the first evaluation that is quantitative
+60:52
+and basically looks at the semantic and the syntactic relationships, and
+60:56
+then just average, in terms of the total.
+60:59
+And just says, how often is exactly this relationship true,
+61:05
+for all these different analogies that we have here in the data set.
+61:09
+And it turns out that when both of these papers came out in 2013 and
+61:17
+14 basically GloVe was the best at capturing these relationships.
+61:22
+And so we observe a couple of interesting things here.
+61:24
+One, it turns out sometimes more dimensions
+61:28
+don't actually help in capturing these relationships better, so
+61:33
+thousand dimensional vectors work worst than 300 dimensional vectors.
+61:38
+Another interesting observation and that is something that is somewhat sadly true
+61:42
+for pretty much every deep learning model ever is more data will work better.
+61:48
+If you train your word vectors on 42 billion tokens,
+61:52
+it will work better than on 6 billion tokens.
+61:55
+By you know, 4% or so.
+61:58
+Here we have the same 300 dimensions.
+62:01
+Again, we only want to change one thing to understand whether that one change
+62:05
+actually has an impact.
+62:07
+And we'll see here a big gap.
+62:17
+It's a good question. How come the performance
+62:19
+sometimes goes down?
+62:20
+It turns out it also depends on what you're training your word vectors on.
+62:26
+It turns out, Wikipedia for instance, is really great because Wikipedia has very
+62:30
+good descriptions of all these capitals in all the world.
+62:33
+But now if you take news, and let's say if you take US news and in US news you might
+62:38
+not have Abuja and Ashgabat mentioned very often.
+62:43
+Well, then the vectors for those words will also not
+62:46
+capture their semantics very well and so you will do worse.
+62:49
+And so some not, bigger is not always better it also depends on the quality
+62:53
+of the data that you have.
+62:55
+And Wikipedia has less misspellings than general Internet texts and so on.
+62:59
+And it's actually a very good data set.
+63:01
+And so here are some of the evaluations and we have a lot of
+63:06
+questions of like how do we choose this hyperparameter the size and so on.
+63:10
+This is I think a very good and careful analysis that Geoffrey had done here three
+63:16
+years ago on a variety of these different hyperparameters that we've observed and
+63:21
+kind of mentioned in passing.
+63:23
+And so
+63:24
+this is also a great sort of way that you should try to emulate for your projects.
+63:30
+Whenever I see plots like this I get a big smile on my face and
+63:34
+your grades just like improve right away.
+63:36
+>> [LAUGH] >> Unless
+63:37
+you make certain mistakes in your plots.
+63:39
+But let's go through them.
+63:41
+Here we look at basically the symmetric context, the asymmetric context is
+63:46
+where we only count words that have happened after the current word.
+63:51
+We ignore the things that's before but it turns out symmetric usually works better
+63:54
+and so a vector dimension here is a good one to evaluate.
+63:59
+It's pretty fundamental how high dimensional.
+64:01
+Should these be.
+64:03
+And we basically observe that when they're very small
+64:06
+it doesn't work as well in capturing these analogies but then after around 200,
+64:11
+300 it actually kind of peters out and then it doesn't get much better.
+64:15
+In fact, over all it's pretty flat between 300 and 600.
+64:21
+And this is good.
+64:22
+So, the main number we often look at here is the overall accuracy and
+64:26
+that's in red here.
+64:27
+And that's flat.
+64:29
+So, one mistake you could make when create such a plot is you
+64:34
+can prove you have some hyperparameter and you have some kind of accuracy.
+64:39
+This could be the vector size, and you create a nice plot and
+64:42
+you say look, things got better.
+64:45
+And then my comment if I see a plot like this would be,
+64:49
+well why didn't you go further in this direction?
+64:51
+It seems to just be going up and up.
+64:53
+Like, so that is not good.
+64:56
+You should find your plots until they actually kind of peter out, and
+64:59
+you say all right now, I really found the optimum value for this hyperparameter.
+65:05
+So, another important thing to evaluate here
+65:11
+is the window's size, and there are sometimes considerations around this.
+65:16
+So word vectors for instance, maybe the 200 worked
+65:21
+here slightly better than, or 300 works slightly better than 200.
+65:25
+But, larger word vectors also means more RAM, right?
+65:28
+Your software now needs to store more data.
+65:32
+And you need to, you might want to ship it to the cellphone.
+65:36
+And now yes you might get 2% improvement on this intrinsic task.
+65:42
+But you also have 30% higher RAM requirements.
+65:46
+And maybe you say, well, I don't care about those 2% or
+65:48
+so improvement in accuracy on this intrinsic task.
+65:51
+I still choose a smaller word vector.
+65:53
+So, that's a legit argument, but in general here,
+65:56
+we're just trying to optimize this metric.
+66:00
+And so we wanna look at carefully what these are.
+66:02
+All right, now, window's size, again this is how many words to the left and
+66:06
+to the right of each of the center words do we wanna predict and
+66:12
+compute the counts for.
+66:14
+Turns out around eight or so, you get the highest.
+66:18
+But again that also increases the complexity and the training time.
+66:23
+The longer the windows are,
+66:25
+the more times you have to compute these kind of expressions.
+66:30
+And then for asymmetric context,
+66:32
+it's actually slightly different windows size that works best.
+66:37
+All right, any question around these evaluations?
+66:44
+Great.
+66:45
+Now, it's very hard actually, to compare glove and the skip gram model,
+66:50
+cuz they're very different kinds of training regimes.
+66:54
+One goes through the one window at a time,
+66:56
+the other one first computes all the counts, and then works on the counts.
+67:01
+So this is kind of us trying to do well and
+67:05
+answer a reviewer question of when you compare them directly.
+67:09
+So what we did here is we looked at the Negative Samples.
+67:11
+So remember, we had that sum and the objective function for
+67:14
+the skip gram model of how many words we want to push down the probability of
+67:18
+cuz they don't appear in that window and so
+67:21
+that is one way to increase training time, and in theory do better on that objective.
+67:28
+Versus different iterations of how often do we go over this cocurrence
+67:33
+counts to optimize each pair in the cocurrence matrix for GloVe.
+67:38
+And in this evaluation GloVe did better
+67:40
+regardless of how many hours you sort of trained both models.
+67:45
+And this is more data helps, that the argument already made.
+67:52
+Especially Wikipedia.
+67:55
+So here Gigaword is I think mostly a news corpus.
+67:57
+So news, despite being more actually it does not work quite as well, overall, and
+68:05
+especially not for semantic, relationships and analogies,
+68:11
+but Common Crawl, which is a super large data set of 42 billion tokens, works best.
+68:18
+All right, so now these amazing analogies of king minus man plus woman and
+68:21
+so on were very exciting.
+68:25
+Before that, people used often just correlation judgements.
+68:30
+So basically they asked a bunch of people, often grad students,
+68:35
+to give on a scale of one to ten, how similar do you think these two words are?
+68:41
+So tiger and cat, when you ask three or five humans on a scale from one to ten
+68:45
+how similar they are, they might say, one might say seven, the other eight,
+68:50
+the other six or something like that and then you average.
+68:53
+And then you get basically a score here of similarities our computer and
+68:57
+internet are seven.
+68:58
+But stock and CD are not very similar at all.
+69:02
+So a bunch of people will say on a scale from one to ten, it's only 1.3 on average.
+69:06
+>> [INAUDIBLE] >> And now,
+69:10
+we could try to basically say all right.
+69:13
+We want to train word vectors such that the vectors have a high correlation and
+69:19
+their distances be it cosine similarity or Euclidian distance,
+69:24
+or you can try different distance metrics too and look at how close they are.
+69:29
+And so here's one such example.
+69:31
+You take the word of Sweden and you look in terms of cosine similarity and
+69:36
+you basically find lots of words that are very, very close by or
+69:40
+have the largest cosine similarity and
+69:46
+you basically get Norway and Denmark to be very close by.
+69:50
+And so, if you have a lot of these kinds of data sets and this one,
+69:55
+WordSim353 has basically 353 such pairs of words.
+70:00
+And you can look at how well
+70:04
+do your vector distances correlate with these human judgements.
+70:09
+So the higher the correlation,
+70:12
+the more intuitive we would think are the distances in this large vector space.
+70:17
+And again, Glove does very well here across a whole host of
+70:22
+different kinds of datasets like the WordSim 353 and,
+70:27
+again, the largest training dataset here did best for Glove.
+70:32
+Any questions on word vector similarities and correlations?
+70:38
+No, good, all right.
+70:40
+Now, basically, intrinsic's evaluations have this huge problem, right?
+70:47
+We have these nice similarities, but who knows?
+70:49
+Maybe that doesn't actually improve the real tasks that we care about in the end.
+70:53
+And so the best kinds of evaluations, but again they are very expensive,
+70:57
+are those on real tasks or at least subsequent kinds of downstream tasks.
+71:02
+And so one such example is named entity recognition.
+71:04
+It's a good one cuz it's relatively simple.
+71:07
+But it's actually useful enough.
+71:09
+You might want to run a named entity recognition system over a bunch of
+71:12
+your corporate emails.
+71:14
+To understand which person is in relationship to what company, and
+71:17
+where do they live and the locations of different people and so on.
+71:21
+It's actually a useful system to have, a named entity recognition system.
+71:26
+And basically we'll go through the actual models for
+71:29
+doing a named entity recognition in the next lecture.
+71:34
+But as we plug in different word vectors into these
+71:37
+downstream models that we'll describe in the next lecture we'll observe that for
+71:41
+many of them GloVe vectors again do very, very well on these downstream tasks.
+71:48
+All right. Any questions on extrinsic methods?
+71:50
+We'll go through the actual model that works here later.
+72:10
+That's right.
+72:11
+Well, so you're not optimizing anything here, you're just evaluating.
+72:16
+You're not training anything.
+72:17
+You've trained your word vectors with your objective function from skip-gram, and
+72:21
+you fix them, and then you just evaluate them.
+72:24
+And so what you're evaluating here now is you look at for instance Sweden and
+72:28
+Norway, and they have a certain distance between them, and
+72:33
+then you want to basically look at the human
+72:37
+measure of how similar do humans think these two words are.
+72:41
+And then you want these kinds of human judgements of similarity to correlate well
+72:46
+with the cosine distances of the vectors.
+72:50
+And when they correlate well, you think, the vectors are capturing
+72:53
+similar kinds of intuitions that people have, and hence they should be good.
+72:57
+And again, intuitively it would make sense that if Sweden
+73:01
+has good cosine similarity and you plugged it into some other downstream system,
+73:05
+that that system will also get better at capturing named entities.
+73:09
+Because maybe at training time it sees the vector of Sweden and
+73:13
+at test time it sees the vector of Norway and
+73:16
+at training time you told that Sweden is a location, and so a test time it might
+73:19
+be more likely to correctly identify Norway or Denmark also as a location.
+73:24
+Because they're actually close by in the vector space.
+73:28
+And we'll go actually through example of how we train word vectors and so
+73:32
+on in the next lecture.
+73:33
+Or train downstream tasks.
+73:35
+So I think we have until 5:50, so we got 8 more minutes.
+73:40
+So, let's look briefly at simple, single word classification.
+73:47
+So you know we talked about these word vectors and I basically showed
+73:54
+you the difference between starting with these very simple co-occurrence counts and
+73:58
+these very sparse large vectors versus having small dense vectors like Word2vec.
+74:04
+And so the major benefits are basically that because similar words cluster
+74:09
+together, we'll be able to classify and be more robust in classifying
+74:17
+different kinds of words that we might not see in the training data set.
+74:22
+So for instance, because countries cluster together and
+74:25
+our goal is to classify location words then we'll do better if we initialize
+74:29
+all these country words to be in a similar part of the vector space.
+74:35
+It turns out later we'll actually fine tune these vectors too.
+74:39
+So right now we learned an unsupervised objective function.
+74:43
+It's unsupervised in the sense that we don't have human labels that we assigned
+74:47
+to each input, we just basically took a large corpus of words, and
+74:52
+we learned with these unsupervised objective functions.
+74:56
+But other tasks where that doesn't actually work as well.
+74:59
+So for instance sentiment analysis turns out to not be a great downstream task for
+75:06
+some word vectors because good and bad might actually appear in similar contexts.
+75:12
+I thought this movie was really good or bad.
+75:16
+And so when your downstream task is sentiment analysis
+75:19
+it turns out that maybe you can just initialize your word vectors randomly.
+75:23
+So this is kind of a bummer after listening to us for
+75:26
+many hours on how word vectors should be trained.
+75:30
+But fret not, it's in many cases word vectors are helpful as your first step for
+75:35
+your deep learning model, just not always.
+75:38
+And again, that will be something that you can evaluate.
+75:41
+Can I just initialize my words randomly or
+75:43
+should I initialize them with the Word2vec or the glove model.
+75:47
+So as we're trying to classify words, what we'll use is the softmax.
+75:52
+And so you've seen this equation already in the very beginning in the first slide
+75:56
+of the lecture.
+75:57
+But we'll change the notation a little bit because all the math that will follow
+76:02
+will be easier to go through with this kind of notation.
+76:06
+So this is going to be the softmax that we'll optimize.
+76:11
+It's essentially just a different word term for logistic regression.
+76:15
+And we'll in many cases, have generally a matrix W here for our different classes.
+76:22
+So x, for instance, could be in a simplest form, just a word vector.
+76:27
+We're just trying to classify different word vectors with no context of just like,
+76:31
+are these locations or not.
+76:32
+It's not very useful, but just for pedagogical reasons, let's assume x,
+76:37
+our input here, is just a word vector.
+76:39
+And I want to classify, is it a location, or is it not a location.
+76:43
+And then we give it basically, these different kinds of word vectors that we
+76:47
+compute it, for instance, for Sweden and Norway, and then we want to classify is
+76:52
+now Finland, Switzerland, and also a location, yes or no.
+76:56
+So that's the task.
+76:58
+And so our softmax here might just have in the simplest case two,
+77:04
+two doesn't really make sense so let's say we have multiple different classes and
+77:09
+each class has one row vector here.
+77:12
+And so this notation y is essentially the number of rows that we have,
+77:18
+so the specific row that we have.
+77:20
+And we have here inner product with this rho vector times this column vector x.
+77:26
+And then we normalize just like we always do for
+77:30
+logistic regression to get an overall vector here for
+77:35
+all the different classes that sums to 1.
+77:38
+So W in general for classification will be a C by d dimensional matrix.
+77:44
+Where d is our input and C is the number of classes that we have.
+77:50
+And again, logistic regression, just a different term for softmax classification.
+77:57
+And the nice thing about the softmax is that it will generalize well above for
+78:03
+multiple different classes.
+78:05
+And so, basically this is also something we've already covered.
+78:11
+So the loss function will use a similar term for all the subsequent lectures.
+78:15
+Loss function, cost function and objective functions, we kind of use interchangeably.
+78:20
+And what we'll use to optimize the softmax is the cross entropy loss.
+78:25
+And so I feel like the last minute,
+78:29
+I'll just give you one extra minute, cuz if we start now, it'll be too late.
+78:33
+So that's it, thank you.
+78:36
+>> [APPLAUSE]

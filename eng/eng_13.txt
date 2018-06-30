@@ -1,0 +1,2468 @@
+00:00
+[MUSIC]
+00:04
+Stanford University.
+00:07
+>> Network, there's actually a whole class, I think next quarter,
+00:11
+on just networks for computer vision.
+00:14
+Where they've really changed the entire field.
+00:17
+In NLP, they've had some impact but not as much,
+00:19
+which is why we don't have the entire lecture on just CNNs.
+00:22
+But they are an interesting model family.
+00:24
+They are paralyzable, they're very good on GPUs, and so we'll sort of look into
+00:30
+them in detail today, understand hopefully by the end why they're so useful.
+00:34
+And fast to implement on GPUs but really also give you at least some intuition,
+00:40
+to be honest there's much less intuition behind some of these very advanced CNN
+00:44
+architectures compared to even some of the recurrent networks and LSTMs that we had.
+00:49
+So we'll actually start today with a mini tutorial of Azure and GPUs,
+00:54
+we wanna encourage you all to really get started on that as soon as possible.
+01:00
+Also, thanks everybody for filling out the survey I think this one is one
+01:05
+of the important take away messages, which is overall what do you think of the pace.
+01:11
+We're very happy to see that the majority are quite happy with the pace.
+01:16
+It's kind of impossible with such a large class to not be too fast and
+01:20
+not too slow for 100% of everybody, since people have vastly different backgrounds.
+01:26
+Very sorry for the little less than a third I think, for
+01:30
+whom it's too fast, I hope today will be, not quite as fast.
+01:36
+And hopefully, in office hours and so on we can make up for some of that.
+01:41
+So we'll talk about a couple of different CNN variants.
+01:45
+We'll have a fun research highlight on character-aware neural language models.
+01:50
+And then, we'll actually also look a little bit into tips and tricks that
+01:53
+are slightly more practical, and you'll observe that these practical details and
+01:59
+tricks actually making this particular CNN architecture work are super important and
+02:03
+without it you really lose 10% or so of accuracy.
+02:08
+Look at it a little critically.
+02:10
+At some of the evaluations that are going on in the field, and
+02:14
+then I will compare a couple of different models which will lead us to
+02:18
+a very new model called the quasi-recurrent neural network for treaty,
+02:22
+which just came out a couple of months ago.
+02:25
+With that, I¡¯ll do one organization slide before we go onto Azure.
+02:28
+So project advice office hours, I would really encourage everybody who¡¯s doing
+02:33
+a project to now come to project advice office hours every week.
+02:37
+I¡¯ve asked groups that I¡¯m mentoring personally to also
+02:40
+As a server requirement.
+02:42
+Not all the groups were able to come every week.
+02:45
+I encourage you all to come.
+02:46
+I am keeping track of whether you're there.
+02:51
+So also for everybody who basically is still undecided whether they should
+02:56
+move on with their project, you'll see kind of where PA4 folks should be
+03:01
+at in the next week or so, where you have to have run some baselines on
+03:06
+your data set by now if you're doing your final project.
+03:09
+If you don't even have your dataset ready yet, you can't even run a simple,
+03:14
+let's say, bag of vectors, kinda baseline, it's starting to be really worrisome,
+03:19
+so definitely make sure you start running your experiments.
+03:22
+Some simple things, baselines, could be just any, just could be your regressions.
+03:26
+You download some code somewhere, but
+03:28
+you need to make sure you have your data set ready.
+03:30
+Otherwise, it'll be too late.
+03:33
+And for PA4 folks we actually enforce that with
+03:36
+a little additional deadline just to make sure you're really all.
+03:40
+Going to be able to run it cuz this is not one of those things that you can
+03:44
+cram really hard and you work 10x and so you make 10x to progress
+03:48
+because your experiments will take a day to run and so you run for one day.
+03:52
+Turns out at the end you had a bug and
+03:54
+then the deadline was there and you have nothing.
+03:56
+So it happens every year.
+03:58
+And we really want to make sure it doesn't happen this year even
+04:01
+though we're a bigger class.
+04:02
+So we'll talk about that soon.
+04:05
+Also, in terms of positive motivation, there's actually going to be a really
+04:10
+awesome poster session that we're putting together,
+04:13
+we have corporate sponsors that give us some money, and
+04:16
+they will allow us to basically give out price, have prices for you.
+04:20
+We'll make it public, so hopefully a lot of folks will show up and
+04:24
+check out your research.
+04:25
+It's a lot of excitement both from various companies, VCs, if you have a really
+04:30
+awesome poster, who knows, at the end you may have some funding for your start up.
+04:35
+And we'll have food also, very nice catering, so should be really fun poster
+04:40
+session, so hopefully you can be very excited about that and your projects.
+04:45
+Yeah?
+04:47
+Will there be enough food for everybody?
+04:48
+>> [LAUGH] >> It¡¯s a good question.
+04:51
+We¡¯ll spend thousands and
+04:52
+thousands of dollars on food we hope there will be enough food for everybody.
+04:56
+Schein is organizing it she's nodding.
+04:58
+Yes.
+05:03
+Any other organizational questions around the Poster Areas Project.
+05:10
+All right, then take it away on the GPU side.
+05:14
+>> [INAUDIBLE].
+05:15
+>> Nope, you're good.
+05:17
+>> All right, everyone.
+05:18
+This is just intended to be a short public service announcement basically
+05:21
+about how to get started with Azure and why you should get started with Azure.
+05:26
+By now, every team should have received an email to at least one of your team
+05:30
+members, probably to your Stanford, one of your Stanford emails, and you'll have this
+05:35
+message which is basically an invitation to join our CS224N subscription.
+05:39
+And using following the instructions of this email you should sign up for
+05:43
+basically GPU access.
+05:45
+So far only 161 people have signed up or teams have signed up out of the 311,
+05:50
+and essentially we want this number to increase because everyone
+05:54
+should be using GPUs for reasons that we'll cover very shortly.
+05:59
+And if you have any issues signing up,
+06:02
+then please report the problems that you have to Piazza post 1830,
+06:07
+which has the form, also screenshotted there and we'll help you, essentially,
+06:12
+through any of the problems that you have with their subscriptions, cool.
+06:16
+So then, more important question that we're gonna go over is why should you
+06:19
+really care about the GPUs.
+06:20
+Well, first, yesterday we actually announced the milestone for
+06:24
+the final project and the homework.
+06:27
+It's intended to be something very quick and easy,
+06:29
+just a paragraph of what you've done.
+06:30
+But we expect you to have used I always experimented with running some code on
+06:35
+a GPU like that and
+06:36
+this will be worth essentially 2% of your final grade just if you do it or not.
+06:41
+But really down there the better reason of why you should be using GPU's
+06:45
+is GPU's will train your models much, much faster over a much, much larger data set.
+06:52
+And specifically, Microsoft has offered us,
+06:54
+I think 311 MB6 instances on their 0 cloud.
+06:58
+These use Tesla GPU's, M60, if you're interested in the model.
+07:02
+The specifications are, they have a huge number of CUDA cores,
+07:06
+a huge amount of graphics memory, and they cost a huge amount of money each.
+07:11
+You also get a nice CPU,
+07:12
+as well as a lot of system memory, to go along with your Instance.
+07:16
+And the key takeaway here is that these ar not your
+07:19
+average hardware that you have in your local machine.
+07:23
+There's gonna be way more power, in terms of the CPU, in terms of the GPU, and
+07:26
+in terms of well, even for the gaming whatever hardware you have at home.
+07:32
+And the speed-ups will be 10 to 20, maybe even 100,
+07:35
+depending on the libraries that you're running.
+07:38
+So in conclusion, please do get started on Azure as soon as possible, fill out
+07:42
+the form if you run into subscription issues, come to office hours or
+07:46
+file support tickets if you have technical problems such as not being able to etc.
+07:51
+And then, also see our step-by-step guide to just get started with the process.
+07:57
+For Homework 4,
+07:59
+The full assignment handout will go over essentially all the details.
+08:02
+But decent models will take a long time to train.
+08:05
+They'll take one hour plus per epoch, even on a strong GPU,
+08:09
+such as the previously described ones.
+08:12
+If you don't deal with a GPU, you'll be spending a week, basically,
+08:14
+just to train a baseline model.
+08:17
+And for the final project, if your project is sufficiently challenging that needs,
+08:23
+well, you have enough data or your problem is sufficiently challenging, you really do
+08:28
+want to use a GPU if you want to receive a good score in this class.
+08:31
+And that would be all.
+08:33
+>> Cool. Thanks, James.
+08:37
+And by decent model he also means decent implementations, so if your
+08:40
+implementations isn't super well-optimized it will take you even longer.
+08:44
+So again, not something you can cram on in the last couple of days of the class.
+08:50
+All right, any questions about Azure or [INAUDIBLE]?
+08:59
+What if we're not in the same group between homework three and four?
+09:21
+So recurrent neural networks were pretty awesome and are pretty awesome
+09:25
+actually and a lot of times the default model, but they have some issues.
+09:30
+Namely, they can't really capture phrases in isolation.
+09:36
+They can really only capture a phrase given it's left side context.
+09:41
+So what do we mean by this?
+09:43
+If I want to have just a representation of my birth, in this whole sentence,
+09:49
+well recurrent network will always go from left to right.
+09:54
+And so, that phrase vector up there isn't going to just capture my birth,
+09:58
+it will also capture the country of.
+10:00
+And so, sometimes when you have simple classification problems
+10:03
+you might actually just want to identify that there's a certain word or
+10:07
+phrase in that over all document and just try to give
+10:10
+the fact that that phrase exist in your overall document to somewhere higher up in
+10:15
+the final classifier that actually needs to classify this.
+10:18
+But here, you will always go from left to right or
+10:20
+even if you have a bidirectional one, you go from right to left.
+10:24
+But then you have the same problem, but on the other side.
+10:27
+Namely, the intermediate,
+10:29
+the words in the center of a longer document might get lost.
+10:32
+You really have to keep track of them through every iteration.
+10:36
+And, of course, if you're using LSTMs are better at doing that,
+10:38
+they're better able to say, don't turn on the forget gate,
+10:43
+keep some things around, keep certain units on when you see something.
+10:46
+But it requires a lot of the model to be able to do that perfectly.
+10:51
+And so, in many of the cases you will see your classifiers only at the very end,
+10:55
+once it has read the whole sentence and that is not the issue cuz now,
+11:00
+again, the grading has to flow through this.
+11:02
+And despite all the [INAUDIBLE] and LSTM, it's even hard for them to keep very
+11:06
+complex kinds of relationships alive over many, many different time steps.
+11:13
+So that's one issue with RNNs that CNNs are trying to resolve.
+11:20
+Now, the main idea here is instead of computing a single representation of
+11:25
+vector at every time step that captures basically the context on the left so
+11:30
+far what if we could just compute a phrase vector for
+11:33
+every single phrase that we have in this sentence.
+11:37
+So if we have here the phrase a country of my birth, we might compute
+11:41
+in the very first step of this kinds of convolutional networks if vector for
+11:46
+the country just this two words in isolation.
+11:50
+Just country of my birth so basically compute a vector for
+11:56
+all the by grams in the sentence and then another one maybe for
+11:59
+all the trigrams, country of my birth, the country.
+12:04
+And then, for all the fourgrams, the country of my birth.
+12:08
+So hoping that if this was, for instance,
+12:11
+sentiment classification, that one of these said, not very good, for instance.
+12:15
+And then, if we captured that vector and we kind of will try to eventually.
+12:20
+Handle and push that vector all the way to a softmax through some
+12:24
+other forms that I'll describe soon.
+12:26
+But that is basically the idea of the very first layer
+12:29
+of a convolutional network for NLP.
+12:32
+And this will basically compute
+12:35
+these phrase vectors regardless of whether that is a grammatical phrase.
+12:38
+So we know from parsing, for instance, certain phrases like a country
+12:43
+of is not really a proper noun phrase, it's sort of an odd,
+12:48
+ungrammatical chunk but this motto really doesn't care linguistic or
+12:54
+cognitive possibility in any kind of way for language.
+12:57
+And so, people don't read sentences that way, but you might be
+13:02
+able to eventually compute several of these representations in parallel.
+13:06
+And that's going to be a big advantage.
+13:09
+So once we compute all these vectors,
+13:13
+we'll group them after, but we'll get to that in a second.
+13:17
+So you might ask, what is convolution, anyway?
+13:20
+And so, here is a very simple definition for any convolutional operator.
+13:26
+So let's look at the simplest case of a 1d discrete convolution
+13:31
+of a filter over another function, at a specific point in time.
+13:37
+You'll basically have a filter size, here M, and
+13:41
+you'll basically multiply just a filter at different locations of this input.
+13:47
+And so, in computer vision, that will help us to extract very meaningful
+13:52
+features such as edges from an image and eventually more complex features.
+13:57
+And for 2d example, which you'll observe a lot in computer vision, we have this
+14:02
+really great animation here from the Stanford Unsupervised Feature Learning and
+14:07
+Deep Learning wiki page.
+14:09
+So imagine you had an image that you see here in green.
+14:12
+And that image, let's say, is only binary.
+14:15
+The first row of this image is 1, 1, 1, 0, 0 and the second row of pixels
+14:20
+of this binary image is 0, 1, 1, 1, 0 and so on, and you have a filter.
+14:25
+And this filter here has number that you'll see in the small red font here, and
+14:31
+I¡¯ll turn the animation off for a second so we can look at it without moving.
+14:37
+Now, the filter here is basically 1, 0, 1, 0, 1, 0, 1, 0, 1.
+14:44
+And now every time step of the convolution,
+14:48
+we¡¯re going to multiply the numbers of the filter with the numbers off the image.
+14:55
+We multiply, again, the red numbers from the filter with the,
+15:00
+images, with the image values and that will result,
+15:03
+basically multiply all of them then we sum them up.
+15:07
+So very simple in our product if we were to vectorize these three by three blocks
+15:12
+into, and nine dimensional vector and we just have a simple inner product
+15:16
+between those two vectors or we just multiply them here and then sum them up.
+15:21
+So one times one plus one times zero plus one times one and so on will sum to four.
+15:27
+And we'll basically move this filter one time step,
+15:31
+one pixel at a time across the image.
+15:37
+So let's look again, this looks like basically multiply all the numbers and
+15:42
+then sum them up.
+15:43
+And then, we'll move one down, and again move from left to right.
+15:49
+Any questions, yeah?
+15:56
+That's a great question.
+15:57
+What would be the equivalent of a pixel in LP and
+15:59
+yes, you're exactly right, it will be a word vector.
+16:03
+Before I jump there,
+16:04
+are there any more questions about the general definition of convolution, yeah?
+16:10
+How do we decide on the convolution?
+16:13
+So how do we decide what matrix it is?
+16:16
+The matrix of the convolution of filter here,
+16:19
+these red numbers are actually going to be learned.
+16:21
+So you have an input and then you do back propagation through a network,
+16:25
+we'll get to eventually it'll have the same kind of cross entropy error,
+16:28
+that we have for all the other ones.
+16:29
+It'll have a softmax and
+16:31
+we're going to basically back propagate through this entire architecture, and
+16:34
+then we'll actually update the weights here in this particular example in red.
+16:38
+After they started with some random initialization.
+16:40
+And then we'll update them and they'll change.
+16:42
+And what's kind of interesting in computer vision,
+16:44
+which I won't go into too many details in this class, but in computer vision they
+16:48
+learn eventually to detect certain edges in the first layer.
+16:52
+In the second layer they'll learn to detect certain combinations of edges like
+16:56
+corners, and the third layer they will learn to basically detect and
+17:01
+have a very high activation, these guys here.
+17:04
+A very high activation when you see
+17:09
+more complex patterns like stripes and things like that.
+17:11
+And as you go higher up through convolution networks and computer vision,
+17:14
+you can actually very nicely visualize what's going on, and
+17:17
+you identify, like the fifth layer some neurons actually fire when,
+17:21
+they see a combination of eyes and a nose and a mouth.
+17:25
+Sadly, for NLP we don't have any of that.
+17:27
+It's one of the reason's they're not quite as popular in NLP.
+17:30
+Yep.
+17:33
+Sure, so you have here m, you filter.
+17:35
+So in the 1d case, that'll just be, f and
+17:39
+g are just a single number, and now you're going to move over f.
+17:44
+So imagine this was just one dimension.
+17:47
+And so you move from minus M to M, as in for the nth time step,
+17:52
+you're going to multiply the filter, g[m] here,
+17:56
+over this function input, and basically go one times step, and
+18:01
+you sum up this product between the two numbers at each time step.
+18:06
+Does that make sense?
+18:08
+So you go from minus m, which if this is minus and
+18:12
+this is minus, so you start head of n, n time steps away, and
+18:17
+then you keep multiplying the numbers until you have the whole sum.
+18:23
+And then you have your convolution at that discrete time step n.
+18:26
+>> [INAUDIBLE] >> That's right, m is your window size.
+18:33
+And we'll go over the exact examples for NLP in much more detail.
+18:36
+Yeah.
+18:39
+How do we figure out the window size?
+18:41
+We'll actually have a bunch of window sizes, so maybe this is a good side way
+18:44
+to talk about the actual model that we'll use for NLP.
+18:48
+So this is going to be the first and
+18:50
+most simple variant of a convolutional network for NLP.
+18:53
+You can [INAUDIBLE] go to town and towards the end they'll,
+18:56
+show you some examples of how we can embellish this architecture a lot more.
+19:01
+This one is based on a really seminal paper by Collobert and Weston from 2011.
+19:05
+And then the very particular model in its various queuing details,
+19:10
+came from Kim from just three years ago.
+19:13
+Basically the paper title is, a Convolutional Neural Network for
+19:16
+Sentence Classification.
+19:18
+All right, so as with every model out there, whenever you wanna write down your
+19:21
+equations, no worries, we're not gonna go into a lot more derivatives today.
+19:25
+Actually no derivatives,
+19:27
+cuz all the math is really similar to math we've done before.
+19:30
+But it's really still important to identify very clearly your notation.
+19:34
+So let's start.
+19:36
+As the question was correctly asked, we'll actually start with word vectors.
+19:39
+So we'll have at every time step, I will have a word vector Xi.
+19:44
+And that will be here for us now a k dimensional vector.
+19:49
+And then we'll represent the entire sentence through a concatenation.
+19:54
+So we'll use this plus and
+19:58
+circle symbol, for concatenating the vectors of all the words.
+20:03
+And so we'll describe the entire sentence, which we'll have for
+20:08
+our definition here, n-many words to be X from one to n.
+20:12
+And that will be the concatenation of the first to the nth word vector.
+20:17
+Yeah.
+20:21
+Great question, are word vectors concatenated length-wise?
+20:23
+Yes.
+20:24
+For now we'll assume they're all concatenated as a long row.
+20:34
+All right now we'll introduce this additional notation here, so
+20:38
+we don't just go from one to n, but we might actually want to extract specific
+20:43
+words in the range, from time step i to time step i plus j,
+20:46
+or in general some other number of time steps.
+20:50
+So if I have, for instance x two to four, then I'll take the second, the third,
+20:54
+and the fourth word vector, and
+20:56
+I just have a long vector with just those three word vectors concatenated together.
+21:04
+I'll let that sink in, cuz it's all very simple but
+21:07
+we just need to make sure we keep track of the notation.
+21:11
+So in general, our convolutional filter here will be a vector w
+21:16
+of parameters, that we're going to learn with our standard
+21:20
+stochastic gradient descent-type optimization methods.
+21:25
+And we'll define this convolutional filter here,
+21:29
+in terms of its window size and of course the word vector size.
+21:33
+So h times k, so this is just a vector, it's not a matrix.
+21:37
+There's no times in between the two.
+21:39
+But let's say we want to have a convolutional filter that at
+21:42
+each time step, looks at three different word vectors and tries to combine
+21:46
+them into a single number, or some kind of feature representation.
+21:50
+What we'll then do is, basically have a three
+21:55
+times number of dimensions of each word vector filter.
+22:00
+So I have a very simple example here.
+22:04
+Let's say we have two dimensional word vectors, of course just for
+22:07
+illustration they'll usually be 50 dimensional or so.
+22:10
+Let's say we have two dimensional word vectors, and
+22:12
+we look at three different words in concatenation at each time step,
+22:17
+we'll basically have a six dimensional w here.
+22:27
+All right.
+22:30
+So now how do we actually compute anything and why is it a neural network?
+22:36
+We'll have some non-linearity here eventually.
+22:39
+Okay but before we get there, let's look at again,
+22:43
+we have our convolutional filter, goes looks at h words at each time step.
+22:48
+And again note that w here is just a single vector; just as
+22:53
+our word vectors are also concatenated into a single vector.
+22:56
+And now in order to compute a feature at one time step for this,
+23:01
+what we're going to do is basically just have an inner product of this w vector of
+23:06
+parameters, times the i-th time step plus our window size.
+23:12
+So in this case here, we're going to in the c one for
+23:16
+instance, we'll have W times x one two, one two three.
+23:22
+So we have here three, so one plus three minus one goes to three.
+23:23
+So we basically just have the concatenation of those word
+23:28
+vectors in our product.
+23:31
+Simple sort of multiplication and sum of all the element wise.
+23:39
+Elements of these vectors.
+23:40
+Then usually, we'll have our standard bias term and
+23:44
+we'll add a non-linearity at the end.
+23:52
+Any questions about.
+24:11
+That's a great question.
+24:12
+So, as you do this, the question is don't the words in the middle appear more often.
+24:17
+So here, actually show this example, and I have actually an animation, so
+24:21
+you are jumping a little bit ahead.
+24:22
+So what happens for instance, at the very end here, and
+24:26
+the answer will just come have zeros there for the end.
+24:31
+We'll actually call this a narrow convolution and
+24:37
+where you can actually have wide convolutions which we'll get to later,
+24:39
+but yes, you're right the center words will appear more often,
+24:44
+but really the filters can adapt to that because you learn
+24:48
+sort of how much you want to care about any particular input in the filter.
+24:59
+Okay, so let's define this more carefully so
+25:01
+we can think through the whole process, yeah?
+25:22
+So the question is,
+25:23
+rephrase it a little bit, what happens when we have different length sentences?
+25:28
+And there will actually be in two slides a very clever answer to that.
+25:32
+Which is at some point we'll add a pooling operator,
+25:36
+which will just look at the maximum value across everything.
+25:39
+We'll get to that in a second.
+25:40
+And it turns out the length
+25:43
+of the sentence doesn't matter that much once we do some clever pooling.
+25:51
+How's the size of the filtering affecting the learning?
+25:54
+Actually quite significantly.
+25:55
+One, the longer your filter is the more computation you have to do and
+26:00
+the longer context you can capture.
+26:02
+So for instance if you just had a one d filter it would just multiply and
+26:05
+matrix with every word vector and it actually would,
+26:07
+you wouldn't gain much, because it would just transform all the word vectors, and
+26:12
+you may as well store transformed word vectors.
+26:20
+As you go to longer filters, you'll actually be able to capture more phrases,
+26:24
+but now you'll also more likely to over-fit your model.
+26:28
+So that will actually be, the size of your filter will be hyperparameter, and
+26:33
+there are some tricks.
+26:33
+Namely, you have multiple filters for multiple lengths,
+26:35
+which we'll get to in a second, too, that will allow you to get rid of that.
+26:42
+Alright, so, let's say again here, we have our sentence,
+26:47
+now we have all these possible windows or length h,
+26:51
+starting at the first word vector, going to this, and so on.
+26:56
+And now what the means is, since we do this computation here at every time step,
+27:02
+we'll have basically what we call a feature map.
+27:06
+And we will capitalize this here as having a vector
+27:10
+of lots of these different c values.
+27:12
+And again, each c value was just taking that same w and
+27:16
+having inter-products with a bunch of the different windows at each time stamp.
+27:21
+Now, this c vector is going to be a pretty long, n-h+1 dimensional vector.
+27:26
+And it's actually going to be of different length,
+27:32
+depending on how many words we have.
+27:35
+Which is a little odd, right?
+27:38
+Because in the end, if we want to plug it into a softmise classifier,
+27:42
+we would want to have a fixed dimensional vector.
+27:47
+But, intuitively here, we'll just, again, multiply each of these numbers and
+27:52
+our w here with the concatenation, and remove along.
+27:56
+Turns out we'll zero pad.
+27:58
+And if you now think carefully, you'll actually realize, well, I kind of cheated
+28:02
+because really that's what we really should've done also on the left side.
+28:04
+So on the left side we will actually also zero pad the sentence.
+28:08
+So we do exactly the same in the beginning at the end of the sentence.
+28:16
+All right, now, because we have a variable length vector at this point, and we want
+28:21
+to have eventually a fixed dimensional feature vector that represents that whole
+28:26
+sentence, what we'll now do is introduce a new type of building block that we haven't
+28:31
+really looked at that much before, namely, a pooling operator or pooling layer.
+28:37
+And in particular, what we'll use here is a so-called max-over-time or
+28:42
+max pooling layer.
+28:44
+And it's a very simple idea,
+28:45
+namely that we're going to capture the most important activation.
+28:49
+So as you have different elements figured computed for every window,
+28:54
+you have the hope that the inner product would be particularly large for
+28:58
+that filter, if it sees a certain kind of phrase, all right?
+29:03
+So, namely, if you have, let's say your word vectors are relatively normalized,
+29:08
+if you do an inner product, you would want to have a very large cosine
+29:13
+similarity between the filter and the certain pattern that you're looking for.
+29:16
+And that one filter would only be good at picking up that pattern.
+29:20
+So for instance, you might hope all your positive words
+29:23
+are in one part of the vector space and now you have a two dimensional,
+29:28
+sorry a two word vector, sorry.
+29:33
+A filter size of length two that looks at bigrams, and
+29:37
+you want to ideally have that filter be very good and
+29:40
+have a very large inner product with all the words that are positive.
+29:44
+And that would then be captured by having one of these numbers be very large.
+29:49
+And so what this intuitively allows you to do is, as you move over it and
+29:55
+you then in the end max pool, if you just have one word pair,
+29:59
+one biagram that it has a very large activation for that particular filter w,
+30:04
+you will basically get that to your c hat here.
+30:09
+And it can ignore all the rest of the sentence.
+30:12
+It's just going to be able to pick out one particular bigram very,
+30:17
+very accurately, or a type of bigram.
+30:19
+And because word vectors cluster and
+30:22
+where similar kinds of words have similar kinds of meaning,
+30:25
+you might hope that all the positive words will activate a similar kind of filter.
+30:31
+Now the problem with this is, of course, that that is just a single number, right?
+30:34
+C hat is just a maximum number here of all the elements in this vector.
+30:39
+So I would just be five.
+30:42
+So that could be one activation.
+30:44
+If we use a relu nonlinearity here, this will just be a single number.
+30:49
+So c hat is just that.
+30:54
+Now of course, we want to be able to do more than just find one particular type of
+30:59
+bigram or trigram, we want to have many more features that we can extract.
+31:04
+And that's why we're going to have multiple filters w.
+31:07
+So instead of just convolving a single feature w,
+31:09
+we'll convolve multiple of them.
+31:12
+And as we train this model,
+31:14
+eventually we hope that some of the w filters will fire and be very active and
+31:20
+have very large inter-products with particular types of bigrams or
+31:25
+trigrams, or even four grams.
+31:32
+So it's also very useful to have some filters that only pick out bigrams and
+31:36
+you can actually get quite far with that.
+31:38
+But then maybe you have someone, some examples where you say for
+31:43
+sentiment again very simply example it's not very good or risk missing
+31:48
+a much originality and now you want to have diagrams in filters
+31:53
+of length K times 3.
+31:58
+And so, we can have multiple different window sizes and at the end, each time we
+32:02
+convolve that filter and we do all these inner products at each time step.
+32:07
+We'll basically max pool to get a single number for that filter for that sentence.
+32:22
+If we have different filters of different lengths,
+32:25
+how do we make sure they learn different feature?
+32:27
+Of same length or different lengths, yeah.
+32:29
+Of same length, how do we make sure they learn different features?
+32:33
+Well, they all start at different random initializations, so
+32:37
+that helps to break up some symmetry.
+32:39
+And then actually we don't have to do anything in particular
+32:42
+to make sure that happens, it actually just happens.
+32:45
+So as we do SGD, from the random initializations,
+32:48
+different filters will move and start to pick up different patterns in order
+32:52
+to maximize our overall objective function.
+32:54
+Which we'll get to, it'll just be logistic regression.
+33:01
+They would probably still learn different values, yeah.
+33:03
+You update so in the beginning, well, if they're exactly the same,
+33:08
+basically, as you pool, right, you will eventually pick,
+33:13
+during backpropagation, the max value here.
+33:17
+The max value will come, eventually, from a specific filter.
+33:20
+And if they have the exact same, one, you would never do it.
+33:24
+But two, if you did, they would have the exact same value.
+33:27
+And then your computer will have to choose, randomly, one to be the max.
+33:32
+And if they're just the same, whatever, it'll pick one and
+33:35
+then it'll backpropagate through that particular filter.
+33:38
+And then,
+33:38
+they're also going to be different in the iteration of your optimization algorithm.
+33:43
+Yeah?
+33:45
+>> Is there a reason why we do the max [INAUDIBLE]?
+33:49
+>> Is there a reason why we do the max?
+33:51
+So in theory nothing would prevent us from using min too.
+33:55
+Though we in many cases use rectified linear units which will be max 0x.
+34:01
+And so max pooling makes a lot more sense cuz min will often just be 0.
+34:06
+And so, we've rallies together,
+34:08
+it makes the most sense to use the max pooling layer also.
+34:16
+Could we use average pooling?
+34:18
+It's actually not totally crazy, there are different papers that explore
+34:22
+different pooling schemes and there's no sort of beautiful mathematical reason
+34:27
+of why one should work better but intuitively what you're trying to do here
+34:32
+is you try to really just fire when you see a specific type of engram.
+34:36
+And when you see that particular type of engram,
+34:38
+cuz that filter fired very strongly for it, then you wanna say this happened.
+34:42
+And you want to give that signal to the next higher layer.
+34:47
+And so that is particularly easy if you choose a specific single value versus
+34:52
+averaging, where you kind of conglomerate everything again.
+34:55
+And the strong signal that you may get from one particular unigram, or bigram, or
+34:59
+trigram, might get washed out in the average.
+35:15
+Great question, so once we have a bunch of different c hats from each of the filters,
+35:19
+how do we combine them?
+35:21
+And the answer will be, we'll just concatenate all them.
+35:23
+We'll get to that in a second.
+35:32
+Yeah, so the main idea is once you do max pooling one of the values will
+35:37
+be the maximum and then all of the other ones will basically have 0 gradients cuz
+35:42
+they don't change the layer above, and then you just flow your gradients
+35:46
+through the maximum value that triggered that filter.
+36:17
+So the question is, doesn't that make our initialization very important, and
+36:21
+lead to lots of downstream problems?
+36:22
+And the answer is yes, so likewise if you, for
+36:25
+instance, initialize all your filter weights such as your rectified
+36:29
+linear units all return zero then, you're not gonna learn anything.
+36:34
+So you have to initialize your weights such that in the beginning,
+36:38
+most of your units are active and something will actually happen.
+36:41
+And then the main trick to, or the way, the reason why it doesn¡¯t hurt
+36:47
+a ton to have these different randomizations, you have lots filters.
+36:52
+And each filter can start to pick up different kinds of signals during
+36:56
+the optimization.
+36:57
+But, in general, yes, these models are highly non-convex and
+37:01
+if you initialize them incorrectly, they won¡¯t learn anything.
+37:04
+But we have relatively stable initialization
+37:06
+schemes at this point that just work in most cases.
+37:12
+Great questions, all right I like it.
+37:16
+All right, so we basically now have, we're almost at the final model.
+37:23
+But there's another idea here And
+37:26
+that combines what we've learned about word vectors, but extends it a little bit.
+37:32
+And namely, instead of representing the sentence only as a single concatenation
+37:38
+of all the word vectors, we'll actually start with two copies of that.
+37:41
+And then we're going to backpropagate into
+37:45
+one of these two channels and not into the other.
+37:49
+So why do we do this?
+37:51
+Remember we had this lecture where I talked about the television and
+37:54
+the telly, and as you back-propagate into word vectors,
+37:58
+they start to move away from their Glove or word2vec initialization.
+38:01
+So again, just quick recap, word vectors are really great.
+38:05
+We can train them on a very large unsupervised scope so
+38:07
+they capture semantic similarities.
+38:09
+Now if you start backpropagating your specific task into the word vectors,
+38:14
+they will start to move around.
+38:16
+When you see that word vector in your supervised classification problem in that
+38:21
+dataset.
+38:21
+Now what that means is as you push certain vectors that you see
+38:25
+in your training data sets somewhere else,
+38:27
+the vectors that you don't see in your training data set stay where they are and
+38:32
+now might get misclassified if they only appear in the test set.
+38:35
+So by having these two channels We'll basically try to have some of the goodness
+38:40
+of really trainings,
+38:41
+the first copy of the word vectors to be really good on that task.
+38:45
+But the second set of word vectors to stay where they are, have the good, nice,
+38:49
+general semantic similarities in vector space goodness that we have from unlarge
+38:53
+and supervised word vectors.
+38:59
+And in this case here, both of these channels are actually going to be added to
+39:03
+each of the CIs before we max-pool, so we will pool over both of those channels.
+39:08
+Now, the final model, and this is the simplest, one I'll get to you in a second.
+39:14
+Is basic just concatenating all this c hats,
+39:18
+so remember each c hats was one max pool filter.
+39:24
+And we have this case here that say m many filters.
+39:29
+And so our final feature vector for
+39:31
+that sentence, has just an r n-dimensional vector,
+39:36
+where we have m many different filters that we convolved over the sentence.
+39:41
+And then we'll just plug that z directly into softmax, and
+39:45
+train this with our standard logistic regression cross entropy error.
+39:50
+All right, we had a question?
+39:59
+By having two copies of the work vectors, are we essentially doubling the size?
+40:04
+Well, we're certainly doubling the memory requirements of that model.
+40:08
+And we just kinda assume, you could think of it as doubling the size of
+40:12
+the word vectors, and then the important part is that only the second half of
+40:16
+the word vectors you're going to back propagate into for that task.
+40:28
+That's right, we can use the same convolutional weights, or
+40:31
+you can also use different convolutional weights, and then filter, and
+40:34
+you can have multiple, and this model will have many of them actually.
+40:38
+It could have 100 bigram filters, 100 trigram filters,
+40:44
+maybe 24 filters, and maybe even some unigram filters.
+40:50
+So you can have a lot of different hyper parameters on these kinds of models.
+40:53
+So quickly.
+41:11
+For a given sentence does the convolutional matrix stay the same?
+41:15
+So this matrix is the only matrix that we have.
+41:19
+This is just our standard soft matrix and
+41:21
+then before we had these w filters, these vectors.
+41:26
+And yes each w is the same as you convolve it over all the windows of one sentence.
+41:38
+So lots of inner products for a bunch of concatenated word vectors,
+41:43
+and then you max pool, find the largest value from all the n-grams.
+41:48
+And that's a CNN layer and
+41:54
+a pooling layer.
+41:57
+Now, here's graphical description of that.
+42:02
+Here, instead of concatenating them, this just kind of simplified this, so
+42:09
+imagine here you have n same notation.
+42:15
+We have n many words in that sentence, and each word has
+42:20
+k as a k dimensional feature vector, or word vector associated with it.
+42:25
+So these could be our glove or other word to vector initializations, and
+42:31
+now this particular model here shows us two applications of a bigram filter and
+42:36
+one of a trigram filter.
+42:39
+So here this bigram filter looks at the concatenation of these two vectors and
+42:46
+then max pool them into a single number.
+42:53
+And as you go through this,
+42:55
+you'll basically get lots of different applications.
+43:01
+And you basically, for each of the features,
+43:05
+you'll get one long set of features, and
+43:09
+then you'll get a single number after max pooling over all
+43:14
+these activations from [INAUDIBLE] grand positions.
+43:22
+So you see here for instance so the bigram filter is this channel and
+43:28
+then we'll basically max pool.
+43:31
+Over that, again, notice how here they use indeed the same filter on the second word
+43:36
+vector channel, the one we might back propagate into.
+43:39
+But they will all basically end up in here.
+43:42
+So just, again, inner products plus bias and non linearity and
+43:47
+then we'll max pool all those numbers into a single number up there.
+43:51
+And now, a different namely this guy up there.
+43:55
+The trigram also convolves over that sentence and basically combines a bunch of
+44:00
+different numbers here and then gets max pooled over a single number there.
+44:25
+Great question.
+44:25
+So do we always max pool over particularly,
+44:30
+just a set of features that are all coming from the same filter.
+44:35
+And the answer is in this model we do, and
+44:37
+it's the simplest model that actually works surprisingly well.
+44:40
+But there are going to be, right after our quick research highlight,
+44:44
+a lot of modifications and tweaks that we'll do.
+44:48
+There are no more questions, let's do the research highlight and
+44:53
+then we'll get to how to tune that model should be on.
+44:57
+>> Hello? >> Yeah.
+44:57
+It's cool.
+45:01
+>> So hi, everyone, my name's Amani and today I thought I would share with you
+45:04
+a very interesting paper called Character-Aware Neural Language Models.
+45:08
+So on a high level as the title implies the main goal of this paper is to come up
+45:11
+with a powerful and
+45:12
+robust language model that effectively utilizes subword information.
+45:15
+So to frame this in a broader context,
+45:17
+most prior neural language models do not really include the notion that words that
+45:21
+are structurally very similar should have very similar representations in our model.
+45:25
+Additionally, many prior neural language models suffered from a rare-word problem.
+45:28
+Where the issue is that if we don't really see a word that often or at all in our
+45:31
+dataset then it becomes very hard to come up with an accurate representation for
+45:35
+that word.
+45:36
+And this can be very problematic in languages that have long tail
+45:39
+frequency distributions or in domains where vocabulary is constantly changing.
+45:43
+So to address some of these problems, the authors propose the following model,
+45:46
+where essentially we will read in our inputs at the character level,
+45:49
+but then we will make our predictions still at the word level.
+45:52
+So let's dive a little bit deeper into the model and
+45:53
+see exactly what's happening here.
+45:56
+So the first thing we do is that we take our input,
+45:57
+and we break it apart into a set of characters.
+46:00
+Where for each character,
+46:01
+we associate it with an embedding that we learned during training.
+46:04
+We then take the convolutional network and take its filters and
+46:06
+convolve them over them the embeddings to produce a feature map.
+46:09
+And finally, we apply max pooling over time, which intuitively is selecting out
+46:13
+the dominant n-grams or substrings that were detected by the filters.
+46:17
+We then take the output of the convolutional network, and
+46:20
+pipe it into a highway network.
+46:21
+Which we're going to use to essentially model the interactions between various
+46:25
+n-grams.
+46:25
+And you can think of this layer as being very similar to an LSTM memory cell,
+46:29
+where the idea is that we want to transform part of our input, but
+46:31
+also keep around and memorize some of the original information.
+46:36
+We then take the output of the highway network and pipe it into a single timeset
+46:40
+of LSTM, which is being trained to produce sequence given the current inputs.
+46:44
+And the only thing different to note here is that we're using hierarchical softmax
+46:48
+to make predictions due to the very large output vocabulary.
+46:52
+So let's analyze some of the results.
+46:53
+So as we can see here from the table on the right,
+46:55
+the model is able to obtain comparable performance with state of the art
+46:58
+methods on the data set while utilizing fewer parameters in the process.
+47:03
+What's also really remarkable is I was able to outperform its word level and
+47:06
+working level counterparts across a variety of other rich languages,
+47:09
+such as Arabic, Russian, Chinese, and French.
+47:13
+While using, again, fewer parameters in the process because now
+47:17
+we don't have to have an embedding for every single word in our vocabulary but
+47:20
+now only for every single character that we use.
+47:24
+We can also look at some of the qualitative results to see what is it
+47:26
+the results is exactly learning.
+47:28
+So in this table we have done, is that we have extracted the intermediate
+47:30
+representations of words at various levels of the network and
+47:33
+then computed their nearest neighbors.
+47:36
+And what we find is that, after applying the CNN, we are grouping together words
+47:39
+with strong sub-word similarity and that after applying the highway network,
+47:43
+we are also now grouping together words that have strong semantic similarities.
+47:46
+So now the word Richard is close to no other first names.
+47:52
+We can also look and see how it handles noisy words.
+47:55
+So in this case, the model is able to effectively handle the word look
+47:59
+with a lot of O's in between, which it has never seen before.
+48:01
+But it is now able to assign it to reasonable nearest neighbors.
+48:05
+And on the plot on the right, what we see is that if we take the in-grammar
+48:09
+presentations learned by the model and plot them with PCA.
+48:11
+We see that it is able to isolate the ideas of suffixes, prefixes, and
+48:14
+hyphenated words.
+48:16
+Which shows that, at its core, the model really is learning something intuitive.
+48:20
+So in conclusion, I wanna sort of highlight a few key takeaway points.
+48:23
+The first is that this paper shows that it is possible to use inputs other than
+48:27
+word embeddings to obtain superlative performance on language modeling.
+48:30
+While using fewer parameters in the process.
+48:32
+Second it shows that,
+48:33
+it demonstrates the effectiveness of CNNs in the domain to language modeling.
+48:37
+And shows that, in this case, the CNNs and
+48:39
+Highway Network are able to extract which types of semantic and
+48:41
+orthographic information from the character level inputs.
+48:45
+And finally, what's most important is that this paper is combining the ideas of
+48:49
+language modelings, CNNs,
+48:50
+LTMs, hierarchical softmax, embeddings all into one model.
+48:53
+Which shows that basically we can treat the concepts that we've learned over
+48:56
+the course of the quarter as building blocks.
+48:58
+And learn to compose them in very interesting ways to produce
+49:01
+more powerful or more nuanced models.
+49:03
+And that is a very useful insight to have as you approach some of your own projects,
+49:07
+not only in the class, but also beyond.
+49:09
+And with that, I would like to conclude and thank you for your attention.
+49:12
+>> [APPLAUSE] >> Character models are awesome.
+49:19
+Usually when you have a larger downstream task, like question answering or
+49:22
+machine translation, they can give you 2 to 5% boost in accuracy.
+49:27
+Sadly, when you run any kind of model over characters,
+49:31
+you think you have a sentence or document with 500 words.
+49:34
+Well, now you have a sequence of 500 times maybe 5 or
+49:40
+10 characters, so now you have a 5,000 dimensional time sequence.
+49:45
+And so when you train your model with character levels,
+49:50
+think extra hard about how long it will take you to run your experiments.
+49:54
+So it's kind of a very clear,
+49:56
+sort of accuracy versus time tradeoff in many cases.
+50:03
+All right, so I mentioned the super simple model where we really just
+50:07
+do a couple of inner products, over a bunch of these filters,
+50:10
+find the max, and then pipe all of that into the softmax.
+50:14
+Now that by itself doesn't work to get you into state-of-the-art performance so
+50:19
+there are a bunch of tricks that were employed by Kim In 2014.
+50:23
+And I'm going to go through a couple of them since they apply to a lot of
+50:28
+different kinds of models that you might wanna try as well.
+50:32
+The first one is one that I think we've already covered, dropout, but
+50:35
+we did right?
+50:37
+But it's a really neat trick and you can apply it lots of different contexts.
+50:42
+And its actually differently applied for convolutional networks and
+50:45
+recurrent neural networks.
+50:47
+So it's good to look at another application here for
+50:50
+this particular convolution neural network.
+50:53
+So just to recap, the idea was to essentially randomly mask or dropout or
+50:58
+set to 0 some of the feature weights that you have in your final feature vector.
+51:03
+And in our case that was z,
+51:04
+remember z was just a concatenation of the max built filters.
+51:09
+And another way of saying that is that we're going to create a mask vector r.
+51:14
+Of basically, random Bernoulli distributed variables with
+51:19
+probability that I would probability p set to 1.
+51:24
+And probably 1 minus p set to 0.
+51:27
+And so what this ends up doing is to essentially delete
+51:31
+certain features at training time.
+51:33
+So as you go through all your filters, and you actually had a great biagram.
+51:37
+And another good biagram, it might accidentally or
+51:40
+randomly delete one of the two biagrams.
+51:43
+And what that essentially helps us to do
+51:46
+is to have the final classifier not overfit to say, it's only positive for
+51:50
+instance if I see these exact two biagrams together.
+51:53
+Maybe it's also positive if I see just one of the biagrams.
+51:58
+So another way of saying that is that it will prevent co-adaptation
+52:03
+of these different kinds of features.
+52:05
+And it's a very, very useful thing.
+52:06
+Basically every state-of-the-art model out there that you'll observe,
+52:11
+hopefully somewhere in its experimental section it will tell you how much it
+52:16
+dropped out of weights and what exactly the scheme of dropout was.
+52:20
+Cuz you can dropout, for instance, through recurrent neural network,
+52:24
+you can dropout the same set of features at every time step or
+52:26
+different sets of features at every time step.
+52:29
+And it all makes a big difference actually.
+52:31
+So this is a great paper by Geoff Hinton and a bunch of collaborators from 2012.
+52:39
+Now, if you carefully think through what happens here, well, at training time,
+52:43
+we're basically, let's say it's 0.5, probability p is 0.5.
+52:47
+So half of all the features are randomly getting deleted at training time.
+52:51
+Well then, the model is going to get used to seeing a much smaller
+52:56
+in norm feature vector z or had a more product here or time z.
+53:01
+And so, basically at test time, when there's no dropout,
+53:05
+of course at test time, we don't want to delete any features.
+53:09
+We want to use all the information that we have from the sentence,
+53:12
+our feature vector z are going to be too large.
+53:15
+And so what we'll do is, in this care here,
+53:17
+we'll actually scale the final vector by the Bernoulli probability p.
+53:22
+So, our Ws here, the softmax weights,
+53:24
+are just going to be multiplied, and essentially halved.
+53:28
+And that way,
+53:29
+we'll end up in the same order of magnitude as we did at training time.
+53:36
+Any questions about dropout?
+53:49
+What's the intuition?
+53:50
+So some people liken dropout to assembling models.
+53:53
+And intuitively here you could have, let's say,
+53:57
+deterministically you were dropping out the first half of all your filters.
+54:03
+And you only train one model on the first half of the filters, and
+54:06
+you train the second model on the second half of the filters.
+54:09
+And then in the end you average the two.
+54:12
+That's kind of similar, but
+54:14
+in a very noisy variant of what you end up doing with dropout.
+54:19
+And so, in many cases this can give you like 2%-4% improved accuracy.
+54:24
+And when we look a the numbers, you'll notice that it's those 2%-4% that gets you
+54:28
+that paper published and people looking at your method.
+54:31
+Whereas if it's 4% below, it's getting closer and
+54:35
+closer to a very simple back or forwards model with discrete counts.
+54:46
+Is it possible to dropout the link instead of the node?
+54:50
+So you could actually dropout some of the weight features as well.
+54:54
+And yes, there is actually another variant of dropout.
+54:58
+There's the filter weight dropout and there is the activation dropout.
+55:03
+So in this case here we have activation dropout.
+55:06
+And they have different advantages and disadvantages.
+55:09
+I think it's fair to say that, especially for NLP,
+55:13
+the jury is still out on which one should you always use.
+55:16
+I think the default, you just filter out and the original dropout is just
+55:21
+to set to 0 randomly the activations and not the filter reads.
+55:27
+All right, now, one last question.
+55:39
+So basically, this will have a certain norm.
+55:43
+And at training time, the norm of this is essentially, say halved if you have
+55:48
+a probability of p To multiply the features with zero.
+55:56
+And so what that means is that, overall, this matrix vector product will have
+56:02
+a certain size and a certain certainty also, once you apply the softmax.
+56:07
+And if you don't wanna basically be overly confident in anything,
+56:10
+you wanna scale your W because at test time you will not drop out anything.
+56:16
+You will have the full z vector, not half of all the values of the z vector.
+56:20
+And so at test time you wanna use as much information you can get from z.
+56:24
+And because of that, you now have a larger norm for z.
+56:28
+And hence, you're going to scale back W, so
+56:31
+that the multiplication of the two ends up in roughly the same place.
+56:43
+Very good question, so what's the softmax here?
+56:45
+So, basically z was our vector for some kind of sentence.
+56:49
+And I use the example sentiment because that is one of the many tasks that
+56:53
+you could do with this.
+56:54
+So, generally sentence classification, or document classification,
+56:59
+are the sort of most common task that you would use this model for.
+57:03
+We'll go over a bunch of examples in three slides or so and a bunch of data sets.
+57:11
+Awesome, so
+57:12
+now there's one last regularization trick that this paper by Kim used in 2014.
+57:16
+It's actually not one that I've seen anywhere else.
+57:19
+And so I don't think we'll have to spend too much time on it but they
+57:22
+essentially also constrain the l2 norm of the wave vectors of each of the classes.
+57:27
+So we have here, remember this is our softmax weight matrix W and
+57:31
+c dot was the row for the cth class.
+57:36
+And they basically have this additional scheme here where whenever the norm
+57:41
+of one of the rows for one of these classes is above a certain threshold, S.
+57:45
+Which is another hyperparameter they'll select,
+57:47
+it will rescale it to be exactly S.
+57:49
+So basically they'll force the model to never be too certain and
+57:52
+have very large weights for any particular class.
+57:55
+Now it's a little weird cuz in general we have l2 regularization on all
+57:59
+the parameters anyway.
+58:02
+But they saw a minor improvement.
+58:04
+It's actually the only paper that I can remember in recent years that does that,
+58:08
+so I wouldn't overfit too much on trying that.
+58:10
+Now, it's important to set back and think carefully.
+58:16
+I described this model and I described it very carefully but when you think about
+58:20
+it, you now have a lot of different kinds of tweaks and hyperparameters.
+58:25
+And you have to be very conscious in all your projects and every application in
+58:29
+industry and research and everywhere of what your hyperparameters really are.
+58:34
+And which ones actually matter to your final performance, how much they matter.
+58:38
+And in an ideal world,
+58:40
+you'll actually run an ablation where maybe you have these two word vectors.
+58:45
+The ones you back propagate into and then the ones you don't back propagate into.
+58:47
+How much does that actually help?
+58:49
+Sadly, in very few examples, people actually properly ablate,
+58:55
+and properly show you all the experiments they ran.
+58:57
+And so let's go over the options and the final hyperparameters that Kim chose for
+59:04
+this particular convolutional neural network model.
+59:09
+The one amazing thing is they actually had the same set of hyperparameters for
+59:12
+a lot of the different experiments.
+59:14
+A lot of these are sentiment analysis,
+59:17
+subjectivity classification, as most of the experiments here.
+59:21
+But they had the same set of hyperparameters, which is not very common.
+59:25
+Sometimes you also say, all right, here are all my options.
+59:28
+And now, for every one of my datasets,
+59:30
+I will run cross-validation over all the potential hyperparameters.
+59:34
+Which, if you think about it, is exponential, so it would be too many.
+59:39
+So then, the right thing to often do is actually to set boundaries for
+59:43
+all your hyperparameters.
+59:44
+And then, randomly just sample in between those boundaries.
+59:48
+So for instance, let's say you might have 100 potential feature maps for
+59:52
+each filter, for each window size.
+59:56
+Now you say, all right, maybe I'll have between 20 and 200.
+59:59
+And you just say, for each of my cross-validation experiments,
+60:03
+I will randomly sub sample a number between 20 and 200.
+60:06
+Then, I'll run experiments with this number of filters
+60:09
+on my developments split and I'll see how well I do.
+60:12
+And you say I have maybe 100 experiments of this kind.
+60:15
+You'll quickly notice that, again, why you need to start your project early.
+60:19
+Cuz your performance will also depend highly on your hyperparameters.
+60:23
+And if you don't have time to cross-validate,
+60:25
+you may lose out on some of the accuracy.
+60:27
+And especially as you get closer to potentially state-of-the-art results,
+60:31
+which I think some of the groups will.
+60:33
+That last couple percent that you can tweak and squeeze out of your model with
+60:38
+proper hyperparameter search can make the difference between having
+60:42
+a paper submission or having a lot of people be very excited about your model.
+60:46
+Or ignoring it, sadly.
+60:48
+Yep.
+60:53
+Great question.
+60:55
+Do you do that sampling for one hyperparameter at a time or not?
+60:58
+In the end, in the limit, it doesn't matter which scheme you use.
+61:03
+But in practice, you set the ranges for all your hyperparameters and
+61:06
+then you sample all of them for each of your runs.
+61:09
+And it's very,
+61:10
+very counterintuitive that that would work better than even a grid search.
+61:14
+Where you say, all right, instead of having 100 feature maps and
+61:18
+randomly sample between 20 and 200.
+61:20
+I'm gonna say, I'm gonna try it for 20, 50, 75, 100, 150, or
+61:25
+200, or something like that.
+61:26
+And then I just multiply all these six or so
+61:29
+options with all the other options that I have.
+61:33
+It quickly blows up to a very, very large number.
+61:36
+Let's say each of these you try five different options,
+61:40
+that's five to the number of many hyperparameters that you have.
+61:45
+Which if you have ten parameters or so that's 5 to the 10,
+61:48
+that's impossible to run a proper grid search on all these hyperparameters.
+61:53
+It turns out computationally and through a variety of different experiments,
+61:57
+I think the papers by Yoshua Bengio and some of his students a couple years ago.
+62:01
+That random hyperparameter search, works surprisingly well, and
+62:04
+sometimes even better than a relatively fine grid search.
+62:13
+Until you run out of money on your GPU.
+62:17
+Or until the paper deadline comes around or
+62:19
+the class project deadline comes around, yeah.
+62:21
+In the perfect setting,
+62:22
+you have the final model that you think has all the ingredients that you'd want.
+62:28
+And then you can let it run until you run out of resources.
+62:32
+Either or time, or money, or GPU time,
+62:34
+or you annoy all your co-PhD students, such as I did a couple years ago.
+62:39
+[LAUGH] Fortunately, we learned at some point to have, what is it,
+62:43
+preemptable jobs, so that I could run, use the entire cluster.
+62:47
+But then when somebody else wants to use the machine,
+62:51
+it'll just put my job into the cache, onto memory, or even save it to disk and
+62:55
+anybody else can kinda sort of come in.
+62:58
+But yeah, ideally you¡¯ll run with all the computational resources you have.
+63:01
+And, of course,
+63:02
+this is depending on how much you care about that last bit of accuracy.
+63:06
+For some of the papers it can really matter, for
+63:08
+some applications if your work in medicine.
+63:11
+You try to classify breast cancer or something really serious, of course,
+63:14
+you want to squeeze out as much performance as you possibly can.
+63:18
+And use as many computational resources to run more hyperparameters.
+63:26
+So there are actually some people who tried various
+63:30
+interesting Bayesian models of Gaussian processes to try to
+63:35
+identify the overall function into hyperparameter space.
+63:40
+So you basically run a meta optimization.
+63:43
+Where instead of optimizing over the actual parameters w of your model,
+63:48
+you've run an optimization over the hyperparameters of those models.
+63:53
+Can do that, it turns out The jury is sort of out, but
+63:57
+a lot of people now say just do a random hyperparameter search.
+64:01
+It's very surprising, but that is, I think,
+64:04
+what the current type of hypothesis is for being the best way to do it.
+64:14
+You can't.
+64:15
+So the question is how do we make sure the same set of hyper parameters
+64:18
+end up with the same results?
+64:19
+They never do, and some people, this gets,
+64:24
+we could talk a lot about this, this is kind of fun.
+64:25
+This is like the secret sauce in some ways of the learning, but some people also say,
+64:30
+I'm going to run the same model with the same hyper parameters five times, and
+64:34
+then I'm going to average and ensemble those five models, because they're all end
+64:38
+up in a different local optimum and that assembling can also often help.
+64:42
+So at the end of every project that you're in, if you have 100 models that you've
+64:46
+trained, you could always take the top 5 models that you've had over the course of
+64:52
+your project, and ensemble that, and you'd probably squeeze out another 1 or 2%.
+64:55
+But again, probably don't have to go that far for your class projects.
+64:59
+It's only if it really matters and you're down some application,
+65:03
+medical applications or whatever, to need to do that.
+65:06
+And in many cases what you'll observe is in papers in competitions,
+65:11
+people write this is my best single model and this is my best ensemble model.
+65:15
+And then in the best ensemble model you can claim state of the art and
+65:18
+the best single model might be sometimes also the best single model, but
+65:21
+sometimes you also have a more diverse setup model,
+65:23
+so all right last question about assembling and crazy model header.
+65:27
+[BLANK
+65:32
+AUDIO] Great question.
+65:38
+Why does ensembling still work?
+65:40
+And shouldn't we just have a better single model?
+65:42
+You're totally right.
+65:43
+There are various ML researchers who say, I don't like ensembling at all.
+65:47
+We should just work harder on better single models.
+65:49
+And dropout is actually one such idea that you can do there, other optimization,
+65:55
+ideas that try to incorporate that, yeah you're right.
+66:00
+In some ways, what that means is we still don't have the perfect optimization
+66:04
+algorithms that properly explore the energy landscape of our various models.
+66:11
+All right, so let's go over the extra hyperparameters that they used here.
+66:15
+So basically we want to find all these hyperparameters on the dev set.
+66:21
+Super important,
+66:21
+you get minus 10% if I see you run on the final test set all your hyperparameter
+66:26
+optimization, because that means you're now overfitting to your final test set.
+66:31
+One of the number one 101 machine learning rules.
+66:33
+Never run all your hyperparameter across validation on your final test set.
+66:38
+That's the one thing you want to run maybe once or twice, it can ruin your entire
+66:42
+career if you do that and you publish it, it's never worth it.
+66:46
+Don't do it.
+66:47
+All right, so on the development set, on your development test set, your, or
+66:52
+sometimes called dev set, we or Kim here tried various different nonlinearities and
+66:58
+in the end chose the rectify linear unit.
+67:00
+So that's actually very common,
+67:01
+and nowadays you almost don't have to run and try that.
+67:04
+You just use rally as the default.
+67:07
+He had try grams, four grams and five grams for the various filter sizes.
+67:12
+Somewhat surprising, note by grams, that surprised me.
+67:16
+He had 100 different feature maps for each of these sizes.
+67:20
+So 100 tri-gram filters, 100 4-gram filters, and 100 5-gram filters.
+67:24
+So the more you have,
+67:25
+the more likely each of them can capture different kinds of things.
+67:29
+So if you have, for instance, just a simple sentiment classifier, you can
+67:33
+have 100 shots at trying to capture various types of negation, for instance.
+67:39
+Then drop out just simple in the middle half of the time
+67:43
+all the features are set to zero.
+67:46
+He chose for this funky regularization trick, s equals three.
+67:52
+Somewhat surprising your mini batch size will often also change
+67:55
+your performance significantly.
+67:58
+So, you don't usually want to have gigantic mini batch sizes for
+68:01
+most NLP models.
+68:03
+So here you had a mini batch size of 50.
+68:06
+During mini batch SGD training and to use the word vectors
+68:11
+pre-trained on a large corpus and you had 300 dimensional word vectors.
+68:16
+So that was a lot of hyper parameter search you can think that was going on in
+68:20
+the background here, yeah.
+68:30
+Wouldn't a higher mini batch size guarantee that we have less noise
+68:32
+while training?
+68:33
+The answer is yes, but you actually want the noise.
+68:37
+You have a very nonconvex objective function here.
+68:41
+And, what dropout does in SGD is to actually introduce noise so
+68:46
+that you're more likely to explore the energy landscape, instead of just being
+68:49
+very certain about being stuck in one of the many local optimi that you have.
+68:53
+So, a lot of optimization tricks and
+68:56
+training tricks of neural networks in the last couple years can
+69:00
+be described as adding noise into the optimization process.
+69:04
+And now, this one here's also super important during training,
+69:06
+how do you select your best model?
+69:08
+So one option is you just let it run, and at the very end you take that last output.
+69:14
+But what you'll often observe is a pattern like this.
+69:18
+Let's say you start training.
+69:21
+So these are your iterations, and this might be your accuracy or your f1 score,
+69:26
+your wu score, your blue score, whatever you're using for your model.
+69:30
+And now, you'll often observe something like this, as you train over time.
+69:39
+And now, if you take just the very last one, maybe here.
+69:43
+Maybe that wasn't as good as this random spot that as it did stochastic
+69:48
+gradient descent, it found just a randomly really good spot on your dev set, and
+69:52
+so what Kim does and what actually a lot of people do
+69:55
+is during training you keep checking the performance here.
+69:58
+Again this is your development accuracy and
+70:02
+then you pick the one with the highest accuracy and
+70:05
+you set those weights to be the weights for that particular experiment.
+70:11
+And another side trick, just because they're fun, you can also sample multiple
+70:14
+times, and then ensemble those weights or average those weights.
+70:17
+And that sometimes also works better, all right.
+70:19
+Still some black magic.
+70:22
+All right, so that was a lot of good details for how you tune Junior models.
+70:27
+So here now some of the results, so here we basically have only sadly in this whole
+70:32
+paper four implementations, and four of the options that are really carefully
+70:36
+outlined and all the other hyperparameters we don't know how important they were or
+70:41
+the variance of them.
+70:42
+Yeah?
+70:48
+You can do both.
+70:50
+So you can average the weights, which is very counter-intuitive,
+70:53
+but also often works.
+70:55
+If you average the predictions, now you have to keep around and
+70:58
+say you have an ensemble of the four top models,
+71:00
+you have to keep around your model size times four, which is very slow and
+71:04
+not that great, so it's less commonly done, especially not in practice.
+71:10
+Sorry, can I define appellation?
+71:13
+So an appellation study is essentially a study where you start with
+71:17
+your fancy new model that you described in all its details.
+71:20
+And then you say how much did each of the components actually matter to my final
+71:25
+accuracy that I describe in my abstract.
+71:28
+So let's say we have a cool deep learning model with five-layer LSTMs, and
+71:33
+some attention mechanisms, and some other clever ways of
+71:37
+reversing the input in machine translation, for instance, and so on.
+71:41
+And now you say, all right, overall this model got me a roster of 30 or 25.
+71:47
+Now [BLANK AUDIO] as a practitioner, I, when I read that paper and
+71:53
+even as a researcher, I want to know well, you mentioned five tricks,
+71:57
+which of the five were actually the ones that got you to 25?
+72:01
+Was it? Yeah?
+72:02
+You want to know because you might not want to use that entire model but
+72:05
+you want to use that one trick.
+72:07
+So in this case here for instance, he has this regularization trick.
+72:10
+And he has the dropout.
+72:12
+How much did the dropout actually help, versus this trick?
+72:16
+Which one should I now use in my downstream task.
+72:19
+In this paper here, and I don't want to single him out,
+72:21
+this is really, sadly, very common in the field.
+72:26
+Nobody give you a nice plot for every single hyper parameter that says for
+72:30
+this hyper parameter let's say dropout p between zero and one,
+72:35
+this was my accuracy.
+72:39
+Yeah, so the appellation would say I will take out one particular modeling decision.
+72:46
+So let's say in his case, for instance.
+72:48
+The application here is do we need to multichannel two word vectors.
+72:52
+One you back probe into one you don't, or do we only have a static channel as in
+72:57
+we keep he called static here just keeping the word vectors fixed in the beginning
+73:01
+versus having only a single channel where we back propagate into the word vectors
+73:05
+versus having both of the word vector sets.
+73:09
+And this is the ablation he does here.
+73:12
+The ablation over should we have two sets of work vectors or not?
+73:16
+And as you can see here, well, it actually, sometimes it buys you 0.7 and
+73:20
+here 0.9 or so, but sometimes it also hurts.
+73:25
+So here having the two channels actually hurt by 0.4.
+73:29
+These are relatively small data sets, all of them, so
+73:31
+the variance is actually relatively high.
+73:34
+And the first, the simplest one,
+73:36
+is you actually just have random word vectors, and you back-propagate into them,
+73:41
+and you just learn the word vectors as part of your task.
+73:44
+So no pre-training of word vectors whatsoever.
+73:47
+That's actually fine, if you have a gigantic training dataset.
+73:50
+So if you do machine translation on five gigabytes of,
+73:54
+don't do it for your project.
+73:55
+I hope we discouraged everybody from trying that.
+73:57
+But if you do machine translation on a very,
+73:59
+very large corpus, it turns out you can just have random word vectors.
+74:02
+And you have so much data on that task, that as you back propagate into them and
+74:07
+update them with SGD, they will become very good as well.
+74:24
+That's totally right.
+74:24
+So, Arun correctly points out and
+74:27
+mention this like this is actually very small datasets and so, there's very
+74:32
+little statistical significance between most of these results here.
+74:36
+Maybe SST, 0.9.
+74:38
+I forgot all the various thresholds of statistics, assuming against, for
+74:41
+the various papers.
+74:42
+I think this one might be significant.
+74:45
+But certainly, MPQA for instance, is a very small data set.
+74:48
+So this 0.1 difference is not statistically significant
+75:09
+Great question, so the question is, as you do this,
+75:14
+let's say you had your full data set.
+75:18
+You say, this is my training data.
+75:21
+This is my development split and this is my final test split, and
+75:25
+we had properly randomized them in some way.
+75:29
+Now, if I choose based on my development split and this development accuracy here,
+75:36
+then this model is only trained on this.
+75:41
+And only in sort of some meta kind of way, used that dev split.
+75:45
+Now, what you could also do and what you should always do if you have and
+75:48
+actual convex problem, which, sadly, we don't have in this class very much,
+75:53
+what you would do is you find your best hyper parameter setting and
+75:57
+then you'll actually retrain with that whole thing all the way until convergence.
+76:01
+Which if you have a convex problem, it's great.
+76:03
+You know you have a global optimum, and you probably have a better global optimal
+76:05
+because you used you entire trained data set.
+76:08
+Now, it turns out in many cases, because there can be a lot of variance,
+76:13
+In your training for these very non-convex neural network models.
+76:17
+It helps a little bit to just ignore that final,
+76:22
+that deaf part of your data set, and just use it to only choose the highest point.
+76:28
+But yeah, it's largely because it's a non-convex problem, great question.
+76:36
+All right, we have four more minutes.
+76:39
+So, one of the problems with this comparison here, was actually that
+76:44
+the dropout for instance gave it two to four percent accuracy improvement.
+76:48
+And overall, and you'll see this in a lot of deep learning papers,
+76:52
+they make claims about, this is the better model.
+76:55
+Sadly, when you look at it there are some models here that they're comparing to
+77:00
+that came out after or before dropout was invented.
+77:04
+So we can be very certain that some models from pre-2014 didn't use any of
+77:12
+the kinds of tricks like dropout and hence the comparisons actually kind of flop.
+77:18
+And sadly, you'll observe this in most papers.
+77:20
+Almost very, very few people in the community will go re-run with the newest
+77:27
+and fanciest optimization tricks like Dropout or add in better optimizers and
+77:32
+so on and reimplement all the baseline models of previous authors, and
+77:37
+then have a proper comparison run the same amount of cross validation on
+77:41
+the second best model and other people's models, and
+77:44
+then have a really proper scientific study to say this is the actual better model
+77:49
+versus this model came out later, had the benefit of a lot of optimization tricks.
+77:53
+And hence came out on top.
+77:55
+So you'll see that a lot,
+77:57
+and it's in some ways understandable because it takes a long time to reproduce
+78:02
+ten other people's results and then start tuning them.
+78:05
+But you have to take a lot of these with a grain of salt,
+78:08
+because the optimization, as we see here, makes a big difference.
+78:12
+So two to four percent, when you look at even some of my old papers, four
+78:17
+precent is the difference between whether this model is the better one or not.
+78:25
+Still, it is kind of a very cool architecture, this convolutional network.
+78:30
+The fact that it can do so well overall.
+78:32
+Something that is quite remarkable.
+78:34
+It's relatively simple, and the nice thing is, with these filters,
+78:38
+each of the filters is essentially independent, right?
+78:40
+We run max pooling over each of the filters independently,
+78:44
+so each filter can be run on one core of your GPU.
+78:48
+And so despite having 300 different filters,
+78:53
+you can run all of those 300 in parallel, maximum peril.
+78:56
+And then you have very quickly it can compute that one feature back there and
+79:00
+pipe it into the softmax.
+79:01
+So that is actually a huge advantage of these kinds of models.
+79:06
+Now, we don't have that much time left, so I'm not going to go into too many details,
+79:10
+but you can really go to town and put together
+79:14
+lots of convolutions on top of pooling layers in a variety of different ways.
+79:19
+We spend a lot of time trying to gain intuitions of why this LSTM
+79:22
+node gate has this effect.
+79:24
+I don't think we have a good chance of going here in the third CNN layer and
+79:28
+having some intuition of why it's this kind of layer versus another.
+79:32
+They're really, they really get quite unwieldy.
+79:35
+You can have various kinds of convolution, so
+79:37
+those are in some sense hyper parameters.
+79:40
+You can ignore basically zero pad the outside or
+79:46
+you can just not run anything that would require an outside multiplication and
+79:50
+only run convolutions when you have for the insides.
+79:54
+Basically this is the narrow versus the white convolution.
+79:57
+You can eventually run the convolution also, not over the times steps, but
+80:02
+in later layers over the feature maps.
+80:04
+So they're a lot of different options.
+80:06
+And at some point there's no more intuition of,
+80:09
+why should you do this in the third layer of these texts CNN?
+80:16
+One of the most exciting applications was actually to take such a CNN,
+80:20
+have various pooling operations, and in the end,
+80:23
+take that as input to a recurrent neural network for machine translation.
+80:28
+So this was one of the first deep learning machine translation models from 2013 that
+80:33
+actually combined these fast parallelizable CNNs,
+80:37
+with a recurrent neural network to do the machine translation that we've seen.
+80:41
+So, we've essentially described just model entirely in a lecture before,
+80:45
+but now we're replacing the encoder part,
+80:48
+instead of having an LSTM here we have a CNN here, and
+80:51
+we give that as an input to all the time steps at the decoder part of the model.
+80:58
+Very cool model.
+80:59
+Now, probably I'll end on this slide and we'll maybe talk about
+81:04
+this quasi recurring neural networks that combines the best of both recurrent and
+81:08
+convolutional models.
+81:09
+For another lecture, but basically you now know some of the most important and
+81:14
+most widely used models for deep learning for NLP.
+81:17
+We have the bag of vectors,
+81:19
+surprisingly works quite well when you combine it with a couple of relu layers.
+81:24
+And can actually even in some benchmarks beat this convolutional network
+81:27
+that we just described.
+81:28
+So very good base line to run for
+81:30
+a variety of different projects that we're discussing.
+81:33
+We've discussed the window model already where we have basically
+81:37
+a very clean model to classify words in their context.
+81:42
+Now we know the Convolutional Neural Networks and
+81:44
+we had a lot of variants of Recurrent Neural Networks.
+81:48
+So, hopefully, you have most of the tools on Thursday.
+81:50
+Chris will talk about Recursive Neural Networks or
+81:53
+tree structured Recursive Neural Networks that will be much more grammatically and
+81:57
+linguistically plausible, but also have some downsides.
+82:00
+All right, thank you.

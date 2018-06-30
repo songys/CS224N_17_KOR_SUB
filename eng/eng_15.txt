@@ -1,0 +1,2314 @@
+00:00
+Stanford University.
+00:07
+>> So we are now heading to the crucial end phase of the semester,
+00:13
+so I guess we're now at the start of week nine.
+00:18
+So first of all if I just do sort of reminders.
+00:22
+Obviously everyone should keep working on their final projects- assignment 4s.
+00:28
+A couple of just notes on that.
+00:31
+So on Thursday we're just going to talk about dynamic memory networks.
+00:35
+While they are only one of several ways that you could go about approaching
+00:39
+assignment 4.
+00:39
+They'll certainly be relevant material if you are doing assignment 4 because,
+00:45
+it's an instance of the kind of architectures of sort of attention based
+00:49
+architectures that people can use for tasks like the reading comprehension
+00:55
+question/answering, like the squad data sets, so watch out for that.
+01:00
+We've been trying to keep money in people's Azure accounts,
+01:04
+actually a Microsoft rep Kristine is here right now if you need to pester her.
+01:09
+[LAUGH] Pester her about any problems, and
+01:12
+you're certainly contact us on Piazza if they're any issues, and
+01:17
+we've been trying to be proactive at keeping things restocked.
+01:21
+I know it's slightly frustrating if you go out of money and it then locks you out and
+01:26
+we need to reset it, but we're doing our best.
+01:29
+Okay, and it's great that there are now lots of people that are clearly very
+01:33
+actively using it and doing stuff.
+01:35
+And that's super, we are very pleased to see that all happening.
+01:39
+Okay, then for assignment four, so for
+01:42
+the assignment four submissions, we're doing submissions on CodaLab,
+01:47
+which is conveniently tied right into Azure as well.
+01:52
+And so for assignment four we've set up a leaderboard,
+01:56
+at least when I looked this morning it only had one submission from Chris, and
+02:01
+the people who set up the leaderboard.
+02:03
+And they were only getting 2% on squad, so if you can get higher than 2%
+02:08
+on squad at least temporarily you could be top of the leaderboard.
+02:12
+[LAUGH] And so I hope people can try that out.
+02:16
+And so, a couple of Percy Liang's RAs have been very
+02:21
+actively working at helping us out of doing this
+02:26
+CodaLab-Azure integration for using an assignment four.
+02:32
+So big thank you to Percy and his RAs.
+02:36
+And so, they've also made a couple of videos on
+02:40
+how to use CodaLab that there's short videos.
+02:43
+There was an announcement about it on Piazza, so have a look about those.
+02:47
+Okay so, then moving right along for today's lecture, so
+02:52
+for today's lecture, I'm gonna talk about coreference.
+02:55
+So when we did the mid quarter survey, one of
+03:00
+the things that a whole bunch of people complained about was that, we actually
+03:05
+weren't doing much linguistics and natural language content in this class.
+03:11
+So today, it's getting a little bit late since it's the start of week nine.
+03:15
+I've actually got a try to have some more linguistic content
+03:20
+in the first half before going back to deep learning models for the same.
+03:25
+I think that sort of comment in the mid-quarter evaluations
+03:30
+was completely fair because the reality was in the first half of the class.
+03:34
+It really was sort of just about all deep learning models all the time.
+03:38
+I mean, I'm not sure I've yet worked out the perfect solution to that because
+03:42
+the fact of the matter was we kind of felt when organizing the class.
+03:46
+That we were sort of on this treadmill where we had to get through more stuff in
+03:49
+time for our next assignment.
+03:52
+And so that is what it is, but over the last couple of weeks, we'll try and
+03:56
+have a bit more NLP content as we go along,
+04:03
+Coreference Resolution is an instance of a task.
+04:08
+And it's really the only one that we're going to look at in any depth here.
+04:12
+Where we're working on a larger level of a text so
+04:16
+that we're not longer just trying to look at an individual sentence and say,
+04:20
+what's the subject and the object and parsing or is this a company name.
+04:25
+Where we're trying to make sense of a bigger text and
+04:29
+work out what's going on about that.
+04:31
+And it's not the entirety of understanding long text but
+04:34
+it's sort of one of the most prominent things you need to do as you go along.
+04:38
+So when we're doing coreference resolution, the first thing that we're
+04:43
+doing is working out all the mentions in the piece of text so that pieces of text,
+04:49
+basically noun phrases that refer to some entity in the world.
+04:56
+And then once we've got those, we're trying to find
+04:59
+the ones that refer to the same real world entity that co-refers.
+05:03
+So there's one set them here which co-refer in this example
+05:07
+to Barack Obama and then there's another set,
+05:10
+which are these ones here, and they're the ones that co-refer to Hillary Clinton.
+05:17
+Okay so that's our task of coreference resolution,
+05:22
+and so I thought next we could just go through, really get a sense of what
+05:27
+goes on in coreference resolution, of go through an example text.
+05:32
+And this is where I signal to these guys here to flip me over to my other screen.
+05:39
+Look at that!
+05:40
+Okay, so here's our example text done,
+05:42
+this is from a short story, story by Shruthi Rao called, The Star.
+05:46
+Now, I have to admit, since this isn't a literature class,
+05:51
+I actually made some little cuts and edits to this story so
+05:54
+I could more easily fit it in a larger font size on my slide.
+05:59
+So the text is slightly mangled but it's basically part of the story,
+06:04
+so what have we got here when we do this, right?
+06:07
+So first of all, we have the named entities,
+06:12
+which is precisely what you were finding in assignment three, right?
+06:17
+So we have Vanaja, and Akhila, and
+06:21
+there's Akhila, and there's Prajwal, Akash,
+06:27
+Lord Krishna, He is a named entity, Akash.
+06:32
+So we've got all of those, but
+06:35
+then we have a lot of other kinds of phrases that refer in the text.
+06:41
+And the second prominent category is that we have pronouns.
+06:46
+So there's they and there's she.
+06:51
+There's this one thats a pronoun, that's kind of a special pronoun, herself.
+06:57
+And there's she and him.
+07:00
+And she, she, it, it.
+07:03
+then I admit, I noticed I missed at
+07:07
+least one of the named entities,
+07:12
+there's another named entity.
+07:16
+And there are probably other things I've missed, so
+07:19
+you can tell me what I've missed.
+07:20
+Okay, so those are both prominent categories, but
+07:23
+that's not all there is, there's really a third category.
+07:28
+Which are then things that are mentions but
+07:32
+are done with common nouns so that they're neither pronouns or named entities.
+07:37
+So that's something like the local park,
+07:42
+well, there's her son is such an example,
+07:46
+the same school, the preschool play.
+07:50
+So there's sort of, you get an interesting thing is you get embedded ones.
+07:55
+So the preschool play is in reference of a mention of an entity, but
+07:59
+inside that there's the preschool, which is another mention of an entity.
+08:08
+Okay so there is the naughty child,
+08:13
+a tree, the best tree, a brown T-shirt,
+08:19
+brown trousers, the tree trunk,
+08:23
+a large cardboard cut out.
+08:30
+Okay, then there is a circular opening, there are red balls.
+08:39
+So they are those ones and
+08:41
+then there are some other things that are common noun phrases and it's not quite so
+08:46
+clear whether they're actually mentions of anything in the world.
+08:51
+So there's a couple of years.
+08:54
+Is that a mention of anything in the world?
+08:56
+Not quite so clear.
+08:57
+And then there's this, a tree's foliage which
+09:02
+doesn't really seem like it's referring to anything concrete in the world.
+09:05
+So there are various complicated cases like that.
+09:10
+And in particular, there's another one of those more complicated cases at the end,
+09:14
+which I'll maybe come back to later, this, the nicest tree.
+09:18
+Okay, but somehow we work out what all our mentions are.
+09:22
+And then, the task we want to do is to start to then work out which ones corefer.
+09:31
+For a start, there's then Vanaja here.
+09:38
+Then, what's the next thing that refers to Vanaja?
+09:55
+Her, yes.
+09:55
+So this is her, which I guess I forgot to mark when I was marking the pronouns.
+10:00
+So embedded in the MP, her son, so again,
+10:04
+you can get mentions and side mentions, there's that her.
+10:10
+Is there anything else that is coreferent?
+10:15
+She, okay, so there's that she there.
+10:18
+And then the next one is, herself.
+10:24
+Right, and so here we have these reflexive pronouns.
+10:28
+And so reflexive pronouns are kind of special because they always
+10:33
+corefer very closely back to each other as in that example,
+10:38
+she resigned herself.
+10:41
+Okay, so there's she again.
+10:45
+Then she made, she attached.
+10:50
+So that goes right through.
+10:51
+Ok, so then we have.
+10:54
+Now we have Akhila, which is Akhila.
+10:59
+Sometimes you just get names being repeated as names.
+11:08
+Are there other things that corefer with Akhila?
+11:24
+Maybe not.
+11:25
+Note that this is kind of part of how it's tricky, right?
+11:29
+Because well here at the beginning, we have the names of two women.
+11:36
+Akhila's name is actually repeated in the second sentence.
+11:40
+But somehow we have to understand enough of the text beyond that
+11:44
+to understand that all these other references to a she and
+11:48
+a her aren't referring to Akhila at all, they're all referring to Vanaja.
+11:53
+So we have these two entity chains, and then we have some more entity chains.
+12:00
+So if we go to the next one, the local park, that one is just a singleton.
+12:08
+Nothing else refers, I believe, to the local parks.
+12:12
+There's something for a lot of background mentions,
+12:15
+things have just been mentioned once and never repeated.
+12:19
+And so then we have Prajwal, who sort of appears twice here.
+12:25
+Like, there's Akhila's son which is sort of a descriptive term and then his name,
+12:29
+Prajwal, so that's generally referred to as apposition.
+12:33
+So we get two mentions of him right there.
+12:35
+And then where else is Prajwal appearing?
+12:39
+Well, one's his name is right here.
+12:41
+Are there other places that Prajwal appears?
+12:46
+Okay, so here's a complicated one.
+12:49
+There is this they which refers to two people, right?
+12:52
+That refers to Prajwal and Akash.
+12:55
+So that's a phenomenon, maybe I'll start putting Akash in as well.
+13:02
+So we have this phenomenon here of when you have split antecedents.
+13:08
+So you can have a plural they that's referring back to two things that
+13:13
+are disassociated with each other, they're just discontinuous in different places.
+13:19
+When we start looking at co-ref algorithms that NLP people use a bit later,
+13:25
+one of the embarrassing things that you will notice is that the standard
+13:30
+algorithms that we use just can't handle this kind of split antecedents.
+13:35
+That you're looking at a mention and you're trying to decide what to make it
+13:38
+coreferent to, and you just can't get ones like that right.
+13:42
+So that's a bit of embarrassing but
+13:43
+that's the current state of natural language processing.
+13:47
+What else is coreferent to Prajwal?
+13:58
+Okay, we'll go on.
+14:01
+So Akash appears a lot.
+14:02
+We have Akash, Akash,
+14:09
+him, Akash.
+14:19
+Okay so, he goes through all the tree.
+14:23
+So what other entities are there that occur multiple times here?
+14:34
+The tree, okay.
+14:39
+If you think about it, there's definitely here a tree, but
+14:44
+if you think about it which of these things count as mentions in the real
+14:50
+world, and which one do you want to deem this coreferent, is actually tricky.
+14:57
+If you just half look at it, you just think, okay,
+15:02
+anytime I see the word tree in a noun phrase, I'm just gonna say all of those
+15:07
+coreferent with each other, but that doesn't actually seem to be right.
+15:12
+Cuz when it was here, Akash was to be a tree,
+15:15
+that's not talking about any specific tree that's referred in the world,
+15:20
+that's some intentional description.
+15:24
+She resigned herself to make Akash the best tree that anybody had ever seen.
+15:30
+Again, that doesn't seem to be referring to any particular tree that's
+15:33
+extant at any time, that's some kind of descriptive text.
+15:38
+On the other hand, when it's gone down to she bought him a brown T-shirt and
+15:42
+brown trousers to represent the tree,
+15:46
+this is now, it's an abstract tree costume obviously.
+15:50
+But that actually seems to be a real tree that's a thing in the will that you can
+15:54
+point at.
+15:56
+So, that's a real thing and then, well what about when it says a tree's foliage?
+16:02
+Is that referring to that tree that she's building?
+16:05
+Kind of a little bit unclear.
+16:09
+But by the time it says, she attached red balls to it.
+16:15
+That's clearly a reference to the tree that she's making and
+16:20
+it's a good clear one.
+16:22
+But then the last sentence says, it truly was the nicest tree.
+16:27
+So for that one, the it is clearly again,
+16:31
+referring to the tree that she's constructed.
+16:36
+So that one is clear.
+16:38
+The question is what to do about the nicest tree.
+16:42
+And, to be honest, if like for various other NLP tasks for
+16:47
+co-reference resolution, people have constructed data
+16:52
+sets where people have essentially done what I'm trying to do live in front of you
+16:57
+as to identify mentions and then say which one's a co-reference.
+17:01
+And so what we have here for something like it truly was the nicest tree.
+17:07
+The nicest tree is referred to as a predicate nominal.
+17:10
+So it's something in the form of a noun phrase, but
+17:13
+it's actually a property that is being predicated of the subject.
+17:17
+It is the nicest tree.
+17:19
+And so some of the data sets that people use for
+17:24
+co-reference, they declare predicate nominals like this
+17:28
+to be co-referent to the subject and therefore it would be purple.
+17:33
+But there's kind of an argument that that's actually just wrong and
+17:36
+the predicate nominal is actually kind of a descriptive property of the nicest tree
+17:41
+and it's not actually referent to anything.
+17:43
+And so then it wouldn't be what you're wanting to do.
+17:50
+But I'll leave my purple there for the moment, okay.
+17:54
+Are there any other interesting
+18:00
+things I should comment on?
+18:04
+There's obviously more things that we haven't done yet.
+18:08
+I could choose a different color.
+18:13
+So there's,
+18:22
+Yeah, so I mean, there are obviously lot's of other things that are mentioned that
+18:27
+aren't in change, right?
+18:29
+So something like Akash's face is a mention that's a singular mention.
+18:33
+There's a circular opening I guess that's kind of an interesting one cuz
+18:37
+it seems like that is an entity in the real world.
+18:40
+But it's an entity that's a hole in the world as opposed to a thing that's in
+18:44
+the world.
+18:45
+So there are lots of real world complications as to how things pan out in
+18:50
+co-reference, but that's sort of an idea of that task and the problems.
+18:55
+Does that make sense?
+18:58
+Okay, I will go on from there by sending back my person, awesome.
+19:06
+Okay, right, so what we've seen from that is basically
+19:11
+what we're working with is the noun phrases.
+19:15
+Most of them refer to entities in the world.
+19:20
+There are many of them that in pairs refer to the same entity of the world and
+19:24
+they're the ones we're gonna call co-referent.
+19:28
+And then the other interesting thing that's different
+19:32
+to what we tried to do with named identity recognition is
+19:36
+that there are lots of cases in which you get nesting, right?
+19:41
+So when you have CFO of Prime Corp, that Prime Corp is a mention,
+19:46
+but CFO of Prime Corp is also a mention.
+19:50
+His pay is a mention, but the his inside is also a mention.
+19:55
+And we've got another one there.
+19:55
+So you got lots of these nested examples.
+19:58
+I mean, in truth you'd get the same thing happening also in
+20:03
+named identity recognition.
+20:05
+And some people, including a former student of mine, Jennie Finkle,
+20:08
+actually looked at that.
+20:09
+Because there are a whole bunch of cases that also in sort of names of things,
+20:15
+when you have something like Palo Alto Utility Company,
+20:18
+that you have the organization, which is Palo Alto Utility Company.
+20:23
+And inside that you have a location, that's Palo Alto.
+20:26
+Though in general, in NER, people just do it flat, and
+20:30
+you kind of lose those embedded locations.
+20:33
+But if you're wanting to follow along co-reference links like John Smith, and
+20:37
+his pay, that you're sort of really losing a lot in your ability to
+20:41
+interpret texts if you aren't dealing with those embedded mentions.
+20:46
+And so normally, people do.
+20:48
+So co-reference resolution is a really key task.
+20:52
+It's used in all sorts of places.
+20:55
+Essentially, anywhere where you want to do a fuller job of text understanding,
+21:00
+you need to have co-reference.
+21:02
+So if you want to sort of understand a story, like the story of the star,
+21:06
+where you definitely need to be able to follow along the co-reference.
+21:09
+It helps in lots of other tasks.
+21:11
+So if you wanna do machine translation, if you're doing machine translation from
+21:16
+one of the many languages like Turkish that don't distinguish gender in pronouns.
+21:22
+And you want to then translate into say, English and it does have gender.
+21:27
+Then what you need to do is follow along the co-reference chains to be work
+21:32
+out which ones should be he and which ones should be she.
+21:35
+It's been observed and complained about by a number of people
+21:40
+recently that current MT systems don't do that.
+21:44
+If you take Turkish and you translate into English, everything comes out male, sorry.
+21:48
+That's a state of NLP on that.
+21:52
+So text summarization, including things like web snippets right,
+21:57
+if you're trying to cut out sort of a little snippet to put on web results.
+22:01
+And it contains a pronoun in it, it would be much cleverer if you could replace
+22:04
+it with its reference so its interpretable.
+22:06
+And then also tasks like information extraction, relation extraction,
+22:11
+question answering.
+22:14
+This doesn't apply to the squad task the way it's formulated,
+22:19
+but a lot of the time we have questions like, who married Claudia Ross in 1971?
+22:25
+And you start searching the text for the answer to that question.
+22:29
+And you say, yeah, I found the right place to look.
+22:31
+Here's the sentence.
+22:32
+He married Claudia Ross in 1971.
+22:35
+And you're sure you've got the answer if only you could work out what he
+22:39
+was co-referent to and that's why you need co-reference resolution.
+22:44
+So when we've made all of these attempts to link things together,
+22:48
+I'll just explain now how we go about evaluating co-reference resolution.
+22:53
+So effectively co-referenced scoring it's kind of like clustering.
+22:58
+And basically any metric that people have used for cluster evaluation,
+23:03
+people have also tried to use the co-reference resolution.
+23:07
+And so the one that we're gonna emphasis in today's lecture is one called B cubed,
+23:11
+which is one of the widely used clustering evaluation metrics.
+23:15
+So what you have here I mean, I've sort of just duplicated on both sides.
+23:19
+So I can show you precision, recall, is so
+23:22
+the colors of my little balls are the gold answers of what's correct.
+23:28
+And then the circles that I've drawn around it is how my system has
+23:33
+decided to gather things that it thinks its co-reference.
+23:36
+And so what you do for the B cubed metric is you sort of
+23:42
+align system clusters and the gold clusters.
+23:48
+So I've chosen to align this system cluster with the blue color here,
+23:52
+which I've shown by that black around the circle.
+23:55
+And then I say, okay, well of the things that I put in my system cluster,
+24:01
+what is the precision of what I put in there?
+24:04
+And well, it turns out that four out of the five of them are blue and
+24:08
+one of them is pink.
+24:10
+And so I say my precision is 4 5ths For this cluster.
+24:15
+Then I do it the other way around, and I work out a recall.
+24:19
+So I say, well, I aligned the blue things with this system cluster.
+24:25
+And, well, actually,
+24:27
+this system cluster only contains four out of the six blue things.
+24:31
+So my recall for that alignment is then four-sixths or two-thirds.
+24:36
+And I'm gonna put those together in an F measure and
+24:40
+that's then going to give me the B cubed measure.
+24:44
+And so that's sort of the main idea.
+24:46
+It's just a little bit more complex than that.
+24:49
+I mean, first of all, obviously I want to do it not only with that cluster.
+24:52
+I also want to align this cluster with the oranges and
+24:55
+say they're precision recall one, cuz they're completely correct.
+24:59
+And this cluster and the pinks,
+25:05
+and then I wanna say precision,
+25:10
+four sixths and recall, four fifths.
+25:16
+So there are a couple of other tricks.
+25:18
+One is that you're weighting the different precisions and
+25:22
+recalls based on the size of the clusters.
+25:26
+So, it matters more to get high precision on really big clusters.
+25:31
+The other bit that I sort of slightly glossed over is I said, well, you align
+25:36
+these system found clusters with a gold cluster.
+25:42
+And as you might know from some other class,
+25:47
+in the general case if you're doing a bipartite alignment, or
+25:51
+things of that sort, that's actually an NP-hard problem.
+25:56
+So it's sort of almost impossible to guarantee that you've found
+26:01
+the optimal B-CUBED score.
+26:03
+So normally, what you're actually finding in your system
+26:06
+is sort of a lower bound on a possible B-CUBED score.
+26:10
+But in practice, provided your system is reasonably good, it's fairly easy and
+26:15
+a greedy manner to start aligning together system clusters and
+26:20
+gold clusters, starting with the ones that you did best.
+26:23
+And in practice, there's greedy matching software that's used for
+26:28
+B-CUBED, which seems to nearly always work and give you the right answer.
+26:32
+And so that hasn't been a huge problem in practice.
+26:35
+That's only one measure that's been used for coreference.
+26:39
+There are a whole bunch of other ones that have been used.
+26:43
+Most of which relate to clustering algorithms,
+26:46
+evaluations that people have used elsewhere.
+26:49
+Okay, so before getting to the halfway point, I then want to say just a little
+26:54
+bit more about what goes on in coreference from sort of a linguistic point of view.
+27:01
+And this is actually a little bit interesting and
+27:03
+hasn't actually been much dealt with by NLP systems.
+27:06
+So what kinds of things do we have?
+27:09
+So we have referring expressions, so things that directly refer,
+27:13
+like John Smith, as named entities or the President as common nouns.
+27:18
+We then have things that aren't directly referring, but or
+27:21
+sort of variables that are contingent on something else.
+27:25
+And there ones that are free variables.
+27:27
+So his pay, that's sort of a free variable, but
+27:30
+it's reference is dependent on the reference of Smith.
+27:34
+And then we have these reflexives,
+27:35
+the bound variables which are sort of closely connected with something nearby.
+27:42
+And so in linguistic theory most of the work is dealt with these variables and
+27:47
+trying to interpret what they are going to be coreferent with.
+27:52
+Whereas, in doing practical coreference of a real text,
+27:57
+there's quite a lot of pronouns.
+27:59
+But a lot of the actions was actually dealing with these proper noun and
+28:04
+common noun referring expressions.
+28:06
+And it turns out in practice, getting these guys right is actually
+28:10
+harder than getting these guys right, which is sort of interesting.
+28:15
+So things to notice.
+28:17
+Not all noun phrases are referring.
+28:20
+So, if we have every dancer twisted her knee, her knee does not refer to anything
+28:25
+because it's sort of embedded under this quantifier of every dancer.
+28:30
+That's perhaps more clearly seen if you look at the second example.
+28:33
+No dancer twisted her knee.
+28:35
+There's no her knee being talked about, right?
+28:38
+So that's a clearly non-referring noun phrase.
+28:43
+Okay, and similarly,
+28:44
+no dancer isn't a noun phrase that refers to any dancer either.
+28:51
+So in linguistics, people normally distinguish two relations.
+28:58
+So one of them is coreference,
+29:01
+which is when two mentions refer to the same entity in the world.
+29:06
+And that has nothing to do with the structure of text.
+29:09
+And the other one is a relation of anaphora,
+29:12
+which is a textual relation when a term, the anaphor,
+29:17
+refer gains reference with respect to another term, the antecedent.
+29:23
+So you're using it for its interpretation.
+29:26
+So if you go back to Greek roots,
+29:29
+an anaphor meant that you had this word whose interpretation
+29:34
+was dependent on something that preceded it in the text.
+29:39
+And so anaphora was distinguished from the opposite relationship,
+29:43
+which was called Cataphora, where you actually
+29:47
+had a dependent term that was dependent on something after it in the text.
+29:51
+So here's a lovely example of Cataphora from Oscar Wilde.
+29:56
+From the corner of the divan of Persian saddle-bags on which he was lying,
+30:00
+smoking, as was his custom, innumerable cigarettes.
+30:05
+Lord Henry Wotton cold just catch the gleam of the honey-sweet and
+30:08
+honey-colored blossoms of a laburnum.
+30:12
+This is a Laburnum, in case you were wondering.
+30:14
+>> [LAUGH] >> So this is a beautiful example of
+30:18
+cataphora, because the referential noun phrase is Lord Henry Wotton.
+30:24
+And then both he and his then cataphors on the following Lord Henry Wotton.
+30:31
+Again, it turns out in nearly all of our NLP systems, we never try and do this.
+30:38
+So we're always coming across mentions and
+30:43
+then we're trying to assign them to something before them.
+30:47
+So we always treat them as backward looking anaphora.
+30:50
+So we'd be actually hoping to say this he doesn't refer to anything before it.
+30:55
+And then we'd be, later on, saying Lord Henry Wotton is coreferent with the he.
+31:02
+But that's actually sort of linguistically bad and doesn't make terribly much sense.
+31:09
+So a lot of the time, things that are anaphoric are coreferencial
+31:15
+because the textural dependence is one of identity.
+31:19
+So an anaphor is coreferencial with its antecedent.
+31:24
+But that's not always true, either.
+31:26
+So you have things, anaphoric relations that aren't identity relationships and
+31:31
+then they're not coreferential.
+31:33
+And so here's an example of this.
+31:35
+We went to see a concert last night.
+31:38
+The tickets were really expensive.
+31:40
+So the tickets here is an anaphor that's dependent on reference to this antecedent.
+31:47
+Because it's meaning that the tickets for the concert were really expensive.
+31:52
+But it's not an identity relationship, so
+31:54
+those are referred to as bridging anaphors.
+31:57
+And there's been a little NLP work on trying to interpret bridging anaphors,
+32:02
+but extremely little.
+32:03
+For most of the coreference systems, a concert is a mention of an entity.
+32:09
+The tickets are a mention of an entity.
+32:11
+And you just don't learn the relationship between them.
+32:15
+Okay, so there are really kind of two different things.
+32:18
+So you can have anaphoric relationships in the text which may or
+32:22
+may not imply (co)reference, 90% of the time they do but
+32:26
+not always, and then you have (co)referential relationships with two
+32:31
+things in the text referred to the same thing in the world.
+32:35
+But that may just be because they refer to the same thing in the world.
+32:39
+There isn't necessarily any textual dependence relationship between them, and
+32:44
+so something that you might like to think about is maybe those two phenomenas should
+32:49
+actually be handled somewhat differently in our models, and the truth is for
+32:55
+most of the models we build at the moment they're really not handled differently.
+32:59
+You could hope if you crossed your fingers really hard, that somehow the way
+33:03
+our neural network model works will end up treating the pronouns,
+33:08
+which are normally anaphors, sort of differently to the way it's treating You
+33:13
+know the various mentions of a cache which were just (co)reference relationships but
+33:18
+you know sort of a crush your fingers really hard there's nothing
+33:21
+really that model structure that's sort of really distinguishing these two notions.
+33:26
+Okay, so on the second half of getting to say how we build (co)reference systems but
+33:31
+before we do that we're onto the research highlight and
+33:34
+James is going to talk about that.
+33:41
+So, hello everyone.
+33:43
+Today's research highlight will be summarizing source code using a neural
+33:46
+attention model.
+33:47
+This paper was published in ACL 2016, and its by authors from
+33:51
+University of Washington, Computer Science and Engineering Department.
+33:56
+So the main task in a dataset that they define is to generate sentences
+34:00
+that describe C# and SQL queries, and they use a dataset from StackOverflow.
+34:06
+Essentially, what they do is they just query the whole dataset for
+34:09
+all the posts that have tags that have C#, SQL or Database, or Oracle in them.
+34:15
+Well, as you would expect, just doing this naively doesn't work
+34:17
+very well because there's lots and lots of noise in the dataset.
+34:20
+So one of the cleaning sets that they do beforehand is to remove all the posts
+34:24
+where the question and
+34:25
+the text doesn't actually have any relevance with the content of the code.
+34:29
+For example like people often ask questions about codes such as like how can
+34:33
+I make these code run faster and
+34:34
+in that sense that won't be a very good summary at all.
+34:37
+A second thing that they do in order to, a more technical thing that they do is
+34:40
+they actually try to parse the code in the sense that like a lot of
+34:45
+code contains like literals, they have specific variable names Things like this,
+34:49
+which are not very general, like general systems, to try to summarize code, and
+34:53
+what they do in this case is they actually replace literals with their types.
+34:56
+They also replace the table and column names with something more generic,
+34:59
+and then they also remove in-line comments in order to make the system
+35:03
+less reliant on those things.
+35:05
+And two examples of the code are shown on the side, where one is C# code for
+35:10
+getting the whiff of a text block in some view, I think, and the second
+35:15
+is source code for SQL where you're trying to get the second largest element.
+35:21
+Okay.
+35:21
+And specifically, like they define two tasks that they're actually going to try
+35:25
+to attempt, and these are to generate text, specifically a sentence
+35:30
+to describe some code sequence that maximizes a scoring function.
+35:34
+A second task is the information retrieval task, which is to go through,
+35:37
+essentially their corpus, and find the code snippet that most
+35:43
+closely relates to the input question, which would in a natural language.
+35:47
+The scoring function is shown to the side.
+35:49
+It's essentially the product of the next word probabilities, and
+35:54
+these are proportional to what the output that we get from their model,
+35:58
+which takes into account the hidden states of the LSTM and
+36:01
+also some attention on the source code.
+36:04
+Specifically, here's an example of how
+36:07
+they generate their text using their model which they call CODE-NN.
+36:11
+You feed in some starting token and then you make some form of prediction
+36:16
+based on the attention and based on the LSTM to get on the next word, N1,
+36:20
+and then you keep doing this iteratively again and
+36:23
+again, and this is how they generate their full sequence.
+36:27
+So to evaluate their system, they did, first on the text generation side they
+36:32
+compared against, well they used existing MT metrics such as METEOR and BLEU, and
+36:37
+they took some existing translation system and information retrieval baseline
+36:42
+system called Moses which is a phrase based translations system and
+36:47
+then on a previous model that also know that and
+36:50
+they found that their models get higher scores on essentially METEOR and
+36:55
+BLEU and then they also did something that's a user study,
+36:58
+where they got five people, and they had them rank the result.
+37:01
+Like manually score the results, in terms of naturalness, which is how well
+37:05
+does the sentence actually read, in terms of fluency and informativeness.
+37:09
+In terms of how much of the content of the code was actually captured
+37:12
+by the summary, and
+37:14
+they found that their model unsurprisingly does better than existing approaches.
+37:19
+And then their information retrieval task they use a metric called
+37:23
+Mean Reciprocal Rank, and they compared against some existing previous papers and
+37:28
+existing baseline out there.
+37:32
+So what's more interesting is the actual example outputs that the model generates.
+37:36
+Here's an example of a C# code which is to
+37:42
+add children to some tree node, and
+37:46
+in particular, this is C#, so treenode is actually part of a TreeView,
+37:51
+and in this case, CODE-NN actually gets pretty close,
+37:54
+where they recognize that these tree nodes are related to tree views but
+37:58
+it doesn't quite get the idea that you're trying to add instead of get them all.
+38:02
+On the second example where the CODE-NN actually got the right result is this
+38:07
+query where we're trying to select random rows from a table and
+38:10
+CODE-NN actually get's it exactly.
+38:13
+Cool, and that's all.
+38:16
+>> [APPLAUSE] >> Okay,
+38:24
+so now for the remaining 40 minutes, it's now algorithms to try and
+38:30
+do (co)reference resolution, and so I guess for
+38:33
+about the first 15 minutes, I'm gonna sort of say something about sort of
+38:38
+the history of ways of doing (co)reference resolution,
+38:43
+anaphora resolution in general, and just the sort of space and traditional methods.
+38:48
+And then sort of for the last 25 minutes I'm gonna talk about one particular
+38:52
+way of doing it which is actually from a paper that Kevin Clark did.
+38:57
+The most famous thing in the space of (co)reference resolution,
+39:03
+actually just an algorithm for
+39:05
+determining the pronominal anaphora resolution, working out.
+39:10
+What, you know, he, him, she, hers, its, refer to
+39:15
+is an algorithm that was proposed by a long time ago by Jerry Hobbs,
+39:21
+which these days is normally referred to as the Hobbs' Algorithm.
+39:26
+But actually in Jerry Hobbs' paper he refers to as the naive algorithm for
+39:32
+a reason that I will explain in a minute.
+39:35
+And so this algorithm, I'm not gonna read through it,
+39:39
+it's a complex mechanistic procedure for deciding what a pronoun refers to.
+39:46
+So you begin at the noun phrase, so it's assuming a syntactic pass of the sentence,
+39:50
+begin at the noun phrase immediately above the pronoun.
+39:53
+Go up the tree to the first NP or S.
+39:55
+Call this X, and the path p.
+39:57
+Traverse all branches below X, to the left, blah, blah, blah, and
+40:01
+this is in all of it.
+40:02
+It keeps on going on the next page, and it's got go-tos, go to step 4.
+40:10
+So, the sort of embarrassing thing is that,
+40:14
+not in the system I'm gonna present at the end part of class.
+40:18
+But if you look at the sort of machine learning approaches to
+40:23
+co-reference resolution that were done in the 2000s and
+40:29
+the first half of the 2010s, nearly all of them used this algorithm as a feature.
+40:37
+So if you had a regular statistical classifier,
+40:40
+you can take any kind of little sub routine and
+40:43
+sort of put its judgment in as a feature, into your logistic regression.
+40:48
+And it turned out that what this calculated was sort of a useful enough
+40:53
+approximation to getting out most likely anaphoric relationships out of
+40:57
+syntactic trees.
+40:58
+That most machine learning systems use this and
+41:01
+got value out of that as a feature.
+41:04
+So here's the kind of idea of how it was meant to work.
+41:07
+So "Niall Ferguson is a prolific well-paid and a snappy dresser.
+41:14
+Stephen Moss hated him." Okay, so here's a him and
+41:20
+you're wanting to work out what that's co-referent to.
+41:23
+And so you start at this noun phrase here.
+41:27
+And so what it said was that you started from this noun phrase and
+41:30
+you went up to the next S or NP and you called that X, and
+41:36
+the path that you'd gone up p.
+41:39
+And then it says, traverse
+41:44
+branches below X to the left of p,
+41:48
+propose as antecedent any NP that has an NP or S between it and X.
+41:55
+So I traverse things to the left and I can find here a noun phrase.
+42:01
+But that doesn't have anything else in between that and so,
+42:05
+therefore, it's not a candidate.
+42:08
+And so, at that point,
+42:11
+I'm going to be at the highest S in the sentence and I'm gonna traverse
+42:15
+the parse trees of the previous sentences in the order of recency.
+42:20
+And I traverse each tree left-to-right, breadth first.
+42:25
+So there's a lot of stuff embedded in this very complex mechanistic procedure.
+42:31
+But most of it is sort of correct, and gets first order linguistics right.
+42:37
+And so what's going on here?
+42:39
+So what's going on here?
+42:41
+So when we see him, the first thing to suspect
+42:44
+is maybe it refers to something to the left in this same sentence.
+42:49
+But that's where the kind of linguistic constraints on pronouns come in, right?
+42:53
+So that if Stephen Moss referred to him, he couldn't of said him,
+42:59
+he would of needed to say himself, right, you have to use a reflexive there.
+43:06
+So that's why it says, unless there's some intervening NP or
+43:10
+S in between, it's not a candidate anymore.
+43:15
+But precisely,
+43:15
+if there was a more complex sentence structure, it would be a candidate.
+43:20
+So if you had something like a more complex noun phrase in which
+43:24
+Stephen Moss was a modifier, then co-reference would become possible.
+43:28
+So if it was something like, Stephen Moss' brother hated him,
+43:32
+then it'd be possible for him to refer to Stephen Moss, right?
+43:35
+And so that will be captured because then there would an extra
+43:40
+NP node in between here then it would be okay.
+43:45
+So that didn't work and so we went backwards and so
+43:48
+then again now instead of using software heuristics.
+43:51
+So the heuristics are usually right, it said to go backwards to sentences and
+43:56
+order of recency.
+43:57
+So if the antecedent isn't in the current sentence,
+44:00
+it's mostly in the immediately preceding sentence, so you look there first.
+44:04
+And then it says, within the sentence, go from left to right.
+44:09
+Well, what's going on there?
+44:10
+There's sort of an obliqueness hierarchy in sentences.
+44:14
+And actually within a sentence, a subject, which at least in English is on the left
+44:19
+side, is more likely to be the antecedent than something that's an object or
+44:23
+an indirect object or object of a preposition that's buried down here.
+44:27
+So it's saying the first thing you should try is Niall Ferguson and so
+44:32
+that's then a candidate.
+44:33
+It doesn't get disqualified on page two from reasons of gender or
+44:38
+anything like that.
+44:39
+And so we propose it as an answer and the Hobbs Algorithm gets it right.
+44:44
+And so the Hobbs Algorithm gets the right answer for
+44:48
+pronouns about 80% of the time, it's actually pretty good.
+44:54
+Of course, sometimes it gets it wrong,
+44:55
+it's easy to come up with sentences that won't get it right for.
+45:00
+So I just wanted to, before going on, deviate for
+45:04
+a minute and talk about what Jerry Hobbs was actually interested in.
+45:09
+So what Jerry Hobbs was actually interested in was knowledge-based
+45:13
+pronominal coreference.
+45:15
+And so, from the early days of AI,
+45:18
+there's been sort of observations about how to actually get coreference right
+45:23
+in many cases, you actually have to understand sentences.
+45:27
+And so there was this famous pair of sentences, which was
+45:32
+proposed by Terry Winograd, who until very recently, was on the Stanford faculty.
+45:36
+Though he had kind of dropped out of doing NLPN and moved onto HCI.
+45:40
+And so, Terry contrasted these two sentences.
+45:44
+The city council refused the women a permit because they feared violence.
+45:48
+And the city council refused the women a permit because they advocated violence.
+45:53
+This was back in the 60s and 70s, when there was more protests around, I guess.
+45:57
+So anyway, so in the first sentence, the natural reading is
+46:03
+the they, is coreferent with the city council.
+46:09
+And in the second sentence, the natural reasoning with reading is
+46:12
+with the they being coreferent with the woman, right?
+46:16
+And the crucial thing to notice is this isn't something that the Hobbs
+46:20
+naive algorithm could possibly get right cuz both of these sentences
+46:24
+have completely identical structure.
+46:29
+And so the answer that was suggested at the time was well,
+46:32
+what we actually need to do is have knowledge of the world and
+46:38
+being able to sort of represent these actions, and
+46:41
+representing relationships that are likely to occur.
+46:45
+And that we just need to know, we have to sort of understand about city councils and
+46:50
+permits.
+46:50
+To understand that if you're refusing a permit,
+46:55
+that would happen if someone was advocating violence but
+46:59
+it would happen if the people who would be getting the permit
+47:04
+were doing the advocation of violence.
+47:08
+And so this is an idea that people have actually tried to resurrect recently.
+47:12
+So, Hector Levesque a good old-fashioned AI guy.
+47:17
+And I guess he gave an invited talk in 2013 where he sort of suggested,
+47:23
+gee, we should kind of try and get back to these kind of Winograd sentences and
+47:27
+actually be trying to understand them as interesting, co-referenced challenges.
+47:32
+And so people have tried to, more recently, run a Winograd schema challenge.
+47:37
+So, really this is what Jerry Hobbs was interested in.
+47:41
+And so actually why he proposed his naive algorithm,
+47:45
+it was actually one of the first instances of NLP when someone said, gee,
+47:50
+before proposing something really complex, I should have a baseline.
+47:55
+So I've got a good baseline to compare against as to how well something
+47:59
+simple works.
+48:00
+And what he discovered.
+48:02
+Was the kind of systems he built couldn't possibly beat his baseline,
+48:08
+because trying to do knowledge-based pronominal coreference was way too
+48:13
+hard for what could be done back in the 1970s.
+48:19
+But this is what he wrote about it.
+48:21
+So he said, the naive approach is quite good.
+48:24
+Computationally speaking, it will be a long time before a semantically based
+48:28
+algorithm is sophisticated enough to perform as well.
+48:32
+And these results set a very high standard for any other approach to aim for.
+48:37
+Yet there is every reason to pursue a semantically based approach.
+48:40
+The naive algorithm does not work.
+48:42
+Anyone can think of examples where it fails.
+48:45
+In these cases it not only fails, it gives no indication that it has failed and
+48:50
+offers no hope in finding the real antecedent.
+48:53
+So in one sense, since 1978 we have progress because we now
+48:58
+have algorithms that are significantly better than the Hobbs' naive algorithm.
+49:06
+So we've passed that bar for at least a decade, so that's a good news.
+49:11
+On the other hand, Jerry Hobbs could very viably argue,
+49:17
+that actually the second paragraph that I quoted there
+49:21
+hasn't been addressed whatsoever, cuz we're writing.
+49:25
+They might have more machine learning than them but we're writing the same kind of
+49:28
+mechanistic algorithms that usually get things right, sometimes get things wrong.
+49:33
+And that's just how it is and
+49:37
+we don't really have any way of telling when it's failing.
+49:42
+Okay, so how do people do coreference.
+49:44
+So there are different ways that people approach the coreference problem.
+49:49
+So actually the most common way of doing it is what's
+49:53
+referred to as mentioned pair models.
+49:55
+And that's what we gonna look at for the end part of this class.
+49:58
+So we try and work out all the coreference relationships
+50:02
+by just making a sequence of pairwise links.
+50:06
+So we're gonna take pairs of mentions and say, are these coreference or
+50:10
+not, yes or no.
+50:11
+So we're doing binary classification decisions independently.
+50:16
+And then as a result of those binary decisions we sort of
+50:21
+induce a kind of clustering of mentions into entities, and
+50:25
+we just do that in a simple deterministic way.
+50:28
+We just join everything together into a lump that's been put together by
+50:33
+these binary decisions.
+50:35
+And we just say, and they all close together by transitivity.
+50:39
+There are a couple of other approaches that people have used for
+50:42
+coreference resolution.
+50:44
+Rather than simply doing binary yes/no decisions,
+50:48
+another choice is to say that you can actually use a ranking algorithm.
+50:52
+Something that's gone very prominent in certain areas of machine learning
+50:58
+that you kind of don't cover in your basic ML class, is doing ranking problems.
+51:03
+But they have come up in a lot of places.
+51:06
+Think things like, Netflix recommending you a movie.
+51:11
+Google recommending you a web page, all of those things are ranking problems.
+51:16
+And so you can think of coref as a ranking problem, because if you have a pronoun,
+51:21
+well it should be coreferent with something.
+51:24
+And maybe there are seven prior mentions in the document.
+51:29
+And then you're doing a ranking task as to which one of those seven it would be.
+51:33
+And then there's a third way of doing coreference resolution,
+51:37
+which is arguably really the right way.
+51:40
+Which is, what are referred to as entity mention models.
+51:43
+And that's just explicitly think about the entities.
+51:48
+They're actual real entities that your discourse is about.
+51:53
+And when you see a mention, you should be saying, that's a mention of a particular
+51:58
+entity, or maybe this mention introduces a new entity in to your discourse and
+52:02
+you've got this set of underlying entities.
+52:05
+So in some sense, your entities are your clusters or mentions, but
+52:09
+you're actually giving them first class status as objects in your model
+52:13
+rather than them just appearing as a result of some linking process.
+52:18
+And so, a number of people then tried to work on models that explicitly represent
+52:23
+entities and then do some kind of joint inference, or have some
+52:28
+kind of generative model of how the mentions are created from the entities.
+52:33
+But the simplest case and what we're look at mainly, are these mention-pair models.
+52:41
+And so mention-pair models are normally trained to supervise learning models.
+52:46
+What you do is you have some data, you have mentions.
+52:52
+And so there's this prior problem of finding the mentions, but
+52:56
+we can roughly think of the mentions as our noun phrases.
+53:00
+And then here's a He, and
+53:02
+what we're gonna say is that gonna be coreferent with something.
+53:06
+Well, if we have gold standard data we'll know that the right answer would
+53:12
+be either Mr. Obama or the president, cuz both of them are coreferent.
+53:18
+And if you have multiple choices, you'd normally just choose the nearest one.
+53:21
+And you say, the correct answer for this one is the president.
+53:26
+And then you have negative examples which are things that are not coreference.
+53:30
+So Milwaukee is a negative example.
+53:33
+So you get positive and
+53:35
+negative examples, you train a binary classifier and you're done.
+53:40
+So if a conventional coref people then used all
+53:45
+sorts of features, that were indicators of coreference.
+53:50
+So for pronouns in English, they're things like person, number, and gender agreement.
+53:55
+So Jack gave Mary a gift.
+53:57
+She was excited.
+53:58
+That has to be Mary because of gender, rather than Jack.
+54:03
+There are softer notions like semantic compatibility.
+54:07
+So if there's a reference to the mining conglomerate,
+54:09
+that could be coreferent with the company because that's sorta semantically
+54:13
+compatible, that's much harder to do.
+54:16
+Some things that we've already mentioned are hard syntactic constraints.
+54:21
+So John bought him a new car, him can't be John, that'd have to be himself.
+54:26
+So that's a feature we can use.
+54:28
+But there are lots of softer things which I was mentioning before.
+54:31
+So, recency is a good indicator.
+54:36
+John went to a movie.
+54:37
+Jack went as well.
+54:38
+He was not busy.
+54:39
+That sort of sounds like it was probably Jack that wasn't busy, at least to me.
+54:44
+And that's presumably a recency effect, but
+54:47
+it's not really categorical, it has to be.
+54:51
+Subjects are commonly preferred.
+54:53
+John went to a movie with Jack.
+54:55
+He was not busy.
+54:56
+I think the most natural reading of that is that John was not busy,
+55:00
+so that's preferring subjects.
+55:03
+Parallelism, John went with Jack to a movie.
+55:06
+Joe went with him to a bar.
+55:08
+I think the most natural reading of that is that that is Jack that Joe went with.
+55:14
+And that seems to make sense not according to grammatical role preference,
+55:18
+which would give you John, but
+55:20
+in terms of the parallelism of the two sentences and interpreting it that way.
+55:24
+So there are lot's linguistic features that you would start to build
+55:28
+features from and put them into a classifier and try and
+55:32
+determine coreference, and people built these things where loosely,
+55:36
+they are big logistic regression classifiers with hundreds of thousands of
+55:41
+features that try to capture some of these kind of relationships.
+55:46
+But for the last 25 minutes what I want to tell you then is
+55:49
+about what people have done with deep learning and coreference.
+55:53
+And the answer to that in two words is, not much.
+55:57
+And so at this point in time There are basically four papers that have tried
+56:03
+to use neural networks, deep learning, to do coreference by two authors.
+56:08
+So there's Sam Wiseman at Harvard who's worked on the problem in
+56:13
+a couple of papers.
+56:14
+And then there's Kevin who's worked on the problem in a couple of papers.
+56:19
+And so there is some sort of connections and
+56:21
+there's some different approaches here.
+56:24
+I mean, in particular, there are a couple of papers, both sorta Sam's second
+56:29
+paper and Kevin's first paper, which we're both trying to do entity-mention models.
+56:35
+And actually try to have explicit representations for entities and
+56:39
+doing more global inference in terms of entities.
+56:43
+And I think most people who have tried to do coreference a bit really do believe
+56:48
+that surely they should be good power from doing things jointly over these entities
+56:53
+and that should give some real advantages.
+56:55
+In practice, it's repeatedly sort of proven hard to get sustained advantages
+57:00
+from doing that and so there's sort of been this continuing use of entity pair,
+57:05
+sorry, mention-pair models, which are very simple to implement, and
+57:10
+you keep on thinking to work out how to make them work well.
+57:14
+So Kevin's most recent paper is actually back to a mention-pair model and
+57:20
+that produces great results.
+57:21
+And I'd thought I'd actually show that one, not only because it's the most recent
+57:26
+and best, but because it might be kind of a good chance to sort of show a couple
+57:31
+of other techniques of doing things, in the context of deep learning.
+57:35
+Okay, so here we go, so the first couple of bits may be fairly similar, right?
+57:42
+So, we wanna find these coreference clusters.
+57:45
+And so we're gonna be doing it simply as a mention-ranking model
+57:50
+where you want to assign a score to each candidate antecedent.
+57:54
+So, we want to be saying, what does my refer to?
+57:59
+And we're picking the preceding mentions, and then we add on one extra candidate,
+58:05
+cuz for any mention you have one possibility is this is a new referent in
+58:10
+the discourse and it's not co-referent with anything that appears before it.
+58:16
+So, we then have this new up the end.
+58:20
+So you can say this a NEW referent.
+58:22
+And so for each of these mention pairs,
+58:25
+we're gonna build a model that scores them.
+58:29
+And so, it's just gonna score a pair of mentions for
+58:33
+coreference, independently still, and give them a score.
+58:37
+And then what we're gonna do is say, well, which one has the best score?
+58:41
+Okay, that's putting I and my together.
+58:45
+And so that one, we're going to rejoin.
+58:47
+And so then we can literally just go through the mentions in the discourse from
+58:52
+left to right and run this mention-pair classifier
+58:57
+on each successive mention and sort of then assign them.
+59:00
+And that will give us our model.
+59:03
+And so then the question is, how can we go about designing and
+59:08
+training a good mention-pair classifier?
+59:12
+Then yeah, cuz at the end of the day, our actual set of
+59:17
+coreferent things will just be the result of these local decisions.
+59:22
+So if we say, I as a new thing, Nader as a new thing,
+59:27
+he refers to Nader, my refers to I, she refers to my.
+59:32
+Then the result of that is we've sort of constructed these two
+59:36
+coreferent clusters as a result of these local decisions.
+59:40
+And as a result of imputing transitivity.
+59:43
+So we're then saying that she is also coreferent to I.
+59:48
+Okay, so I hope the setting in general is clear enough.
+59:53
+How is that done?
+59:54
+And so for doing the neural mention-pair model,
+59:58
+this is being done as a feed-forward network.
+60:02
+It's sort of, in some sense, it's no more complicated than that.
+60:06
+But what are the parts that go into it?
+60:08
+So down at the bottom we have two kinds of things.
+60:12
+So firstly, for both the mention and
+60:16
+the candidate antecedent, we have embeddings of words.
+60:22
+And so this model didn't use any kind of recurrent neural network or
+60:27
+something like that that goes through the mentions.
+60:30
+I mean, Kevin actually experimented with that a little bit and
+60:34
+found no particular value in it.
+60:36
+And so it actually kind of like the dependency powers of Danqis
+60:40
+that you did in assignment two if you remember back to that one.
+60:44
+And so it picks out particular words and uses their word representations.
+60:49
+So it will use the head word of the mention, the last word of the mention, and
+60:53
+things like that, and so that gives you some word embedding features.
+60:59
+And so the word embedding features are gonna be good for capturing similarities.
+61:05
+I mean, certainly when it's just the same word, right?
+61:07
+They both say Akash, you'll get that.
+61:10
+But you hope to also get things like conglomerate and company having similar
+61:14
+word representations that you can do things with.
+61:19
+But there are some relationships that that's clearly not capturing.
+61:23
+If you think of some of those properties that we've already mentioned like recency
+61:27
+and grammatical role and things like that, they're not being captured.
+61:31
+So there are also, then, a few features that are calculated for
+61:35
+each mention that are also put into it.
+61:38
+So after that it's really a straightforward architecture.
+61:42
+It's a deep feed-forward network of sort of ReLus at every level
+61:46
+that take you up to the top, and then at the top you're turning that into a score
+61:51
+which is a numeric score of how likely it is to be coreferant.
+61:56
+Yeah, so the tradition, compared to traditional systems,
+62:02
+the number of handcrafted features is getting smaller over time,
+62:05
+but there are still just the number that really help.
+62:08
+Distance is one that really helps.
+62:11
+And if you have any kind of dialogue doing tracking of speakers and
+62:15
+change of speakers also really helps you, and you don't just get for
+62:19
+free out of word embeddings.
+62:22
+Okay, users pretrained word embeddings.
+62:25
+I mentioned the no RNNs, deep network, dropout.
+62:30
+So, that part is all pretty straightforward.
+62:33
+So what's a novel more interesting part of the model?
+62:38
+And so that was to say, well, you aren't necessarily gonna do well
+62:43
+if you just train such a model as a straightforward classifier.
+62:48
+You either got this decision right or wrong.
+62:50
+You could do that but that's non optimal and the reason why it's non
+62:55
+optimal is that some mistakes matter much, much more than others.
+63:00
+Because even though the mention pair classifier
+63:05
+is just an independent classifier of a pair of mentions.
+63:09
+The reality is that as a result of making a sequence of those
+63:15
+mention pair classifications, you're then going to end up
+63:18
+with these clusterings of mentions that are your entities.
+63:22
+And you have the quality of your co-reference is going to be decided
+63:27
+by how good are those clusters mentions that your
+63:30
+entities that you formed at the end of the day.
+63:33
+And so what that means in particular
+63:35
+is that some mistakes you can make are really bad mistakes.
+63:40
+So if you've started along saying Bill Clinton coreferent with he,
+63:44
+Clinton coreferent with he, and Hillary is coreferent with Clinton, her.
+63:48
+If you then said let's make these two Clinton's coreferent,
+63:52
+that sort of collapses your.
+63:55
+Two partial clusterings together into one huge hair ball.
+64:00
+And that sort of destroys your ability to kind of do discourse interpretation
+64:04
+because you've collapsed two individuals in your discourse into one individual.
+64:10
+So that's gonna really destroy you.
+64:12
+But there are other ways in which you can make little errors
+64:15
+which don't really matter.
+64:16
+So, it was raining, but the car stayed dry because it was under cover.
+64:20
+So this first it is what's referred to as the pleonastic it.
+64:24
+That it's just not really referential at all.
+64:26
+Just somehow in English we like to have subject.
+64:29
+So rather than just saying it's raining as you would in many other languages,
+64:33
+you say it is raining.
+64:34
+But it's not really referring to anything, so It was
+64:39
+a mistake to make that co-reference, the car, but it sort of doesn't really matter.
+64:44
+It's not gonna destroy your understanding of the dialogue,
+64:48
+you've just got sort of one thing wrong.
+64:50
+So that's a minor error.
+64:51
+And so the question is couldn't we train a model so that it's
+64:56
+actually sensitive to these ideas of what a major error is and minor error is.
+65:01
+and the secret of that is to say Well,
+65:05
+that means that we can't work out the loss simply of individual decisions.
+65:11
+We've gotta work out what impact those decisions have at the end of the day.
+65:17
+And if you're in that situation in which you can't locally
+65:22
+work out the loss of individual decisions, but you have to wait around and
+65:28
+say how does things turn out later in the day cuz I'll have to use that.
+65:33
+That's the space in which you need to use reinforcement learning.
+65:37
+And so, that's one possibility that this paper talks about.
+65:43
+So, previously people had done something about this problem.
+65:50
+And I'll show you that in just a minute which is to say, gee,
+65:53
+some of these decisions are more important than others.
+65:56
+So we could come up with heuristics to decide how important different things are.
+66:02
+And then we could For different kinds of errors.
+66:05
+We can kind of set hyperparameters to weight those kind of errors and
+66:09
+adjust those to maximize our performance.
+66:13
+And to some extent, you can do that.
+66:15
+But it seems like the more right and principled way to do it would be to say,
+66:18
+no, this can be done, this reinforcement learning problem.
+66:21
+And if we too wanna be finding local decisions,
+66:25
+which lead to the end of the day as a good clustering.
+66:29
+Say that our reward function for
+66:31
+reinforcement learning is do we a get good clustering at the end of the day?.
+66:35
+And if we do that we can get rid of having to, manually find,
+66:43
+things to weight and setting the weights of them with hyper parameters.
+66:47
+And we can get some gains, not huge gains, but some gains, from doing that.
+66:51
+So the thing that are being done in prior work is to say, well,
+66:55
+there are different classes of co-reference decisions and
+66:59
+their importance we might want to weight differently.
+67:03
+So the mistakes you can make is you can do a false new.
+67:07
+You can claim that something is a new cluster
+67:10
+when really it should have been made coreference to something.
+67:13
+So that's failing to cluster when you should have.
+67:16
+There's a false anaphoric.
+67:18
+Something should have been it's own cluster, but
+67:21
+you've joined it to an existing cluster.
+67:23
+And then there's a wrong link where you should have been joining it with some
+67:27
+previously established cluster and you chose a different one.
+67:32
+So these notions still don't really get at sort of making a big scale mistake,
+67:37
+like the Clinton mistake, versus small scale mistakes.
+67:40
+But they sort of distinguish different decisions.
+67:43
+And some of these are worse than others.
+67:46
+So in general, doing a Wrong Link is worse than doing a False New.
+67:52
+Cuz a False New doesn't thave the same knock on effects that a Wrong Link has.
+67:57
+Yeah, so what prior work had said is okay, we have these four kinds of things.
+68:03
+They can actually be coreferent.
+68:05
+And done correctly or you can make these three different kinds of errors.
+68:10
+And so what we could do is manually set weights for
+68:14
+these different kinds of errors and adjust them to try and maximize our score.
+68:18
+And so Sam Wiseman had proposed doing that In the kind of margin loss scenario.
+68:25
+So that we are taking the maximum choice of
+68:29
+candidate antecedents for each mentioned.
+68:33
+And then here we have the usual kind of margin loss
+68:38
+that we are looking at the score difference of the model.
+68:41
+For the true antecedent versus this candidate.
+68:47
+And they're both being scored by a current model.
+68:49
+And so, again, we wanna adjust the scores according to our model to sort of
+68:54
+minimize that kind of large margin loss.
+68:57
+But we add this one extra factor to our loss function which we say is well,
+69:02
+scale how much it cost's you to make this mistake
+69:05
+based on what kind of an error you're making.
+69:08
+Which is sort of classifying it as one of these different kinds errors.
+69:15
+Okay and so that kind of idea wasn't actually original to Sam Weisman.
+69:20
+So really sort of a whole bunch of papers really kind of just about all
+69:25
+the coref papers that were done in the 2010s, had used this kind of idea.
+69:30
+Because there's a way to push up coreference numbers a bit.
+69:34
+But it doesn't seem perfect firstly you have to do the hyper parameter search.
+69:40
+And secondly those error types are a bit correlated with badness,
+69:46
+but they don't seem to be very directly correlated with badness.
+69:50
+And so Kevin was wanting to try and do things better than that.
+69:55
+These are the ways he approached it and he introduced two approaches.
+69:59
+What we can say is when we are doing coreference,
+70:02
+what we're doing is we're taking a sequence of actions.
+70:06
+And so each action is looking at one mention as we head through and
+70:11
+choosing something as it to be coreferent to,
+70:15
+where one possibility is you are co-referent to NEW.
+70:20
+So you're making this sequence of actions.
+70:22
+So you are deciding what to do with I, deciding what to do with Nader,
+70:26
+deciding what to do with he.
+70:27
+That these are your sequence of actions.
+70:30
+And so what we'd like to do is chose the sequence of actions that maximizes
+70:36
+getting a good coreference clustering at the end of the day.
+70:42
+So how do we decide what's a good coreference clustering?
+70:46
+Well, what we do is we actually just believe our metric.
+70:50
+So I showed you the BQ metric for coreference and
+70:54
+that seemed kind of sensible it was sort of
+70:56
+is F measure of getting your links right and precision and recall.
+71:00
+So we call that our reward function.
+71:03
+So if you kind if you get everything right, your BQ metric Is 100 or
+71:07
+a 1 depending on whether you make it a point or make it a percentage.
+71:12
+And so we then have no loss and if you make some mistakes,
+71:17
+we can then work out the reward for different coreference algorithm.
+71:22
+The reward will then be a lower award corresponding the b cubed score.
+71:28
+And so Kevin explored two methods of doing this.
+71:30
+One's sort of the REINFORCE algorithm which is the most common reinforcement
+71:34
+learning algorithm that's used in deep learning techniques and elsewhere.
+71:41
+And then reward-rescaling.
+71:44
+So for the REINFORCE algorithm,
+71:46
+what you're doing is you're defining a probability distribution over actions.
+71:50
+And the way he was doing that was sort of taking the scores from
+71:55
+the mentioned pair model and exponentiating those and normalizing them,
+72:00
+so sort of standard soft max function.
+72:02
+And saying that's the probability for taking different actions.
+72:07
+And then what you're wanting to do is work out four action
+72:12
+sequences with their probabilities, you want to maximize your expected reward.
+72:19
+So the REINFORCE Algorithm maximizes your expected reward.
+72:22
+So you're taking the expectation over action sequences,
+72:26
+according to this probability distribution and then working out the reward,
+72:31
+the B-cubed score, having taken that action sequence.
+72:35
+The problem, is of course, that there are sort of an, oops,
+72:39
+the problem is that there are an exponential number of different action
+72:44
+sequences that you can take here.
+72:47
+And so you can't actually explore all of them.
+72:49
+But what you can do is then sample trajectories to estimate that expectation
+72:55
+and to approximate the gradient and you can learn according to that.
+73:01
+So using the REINFORCE Algorithm for
+73:04
+reinforcement learning, it basically worked.
+73:08
+It's sort of competitive with the heuristic
+73:11
+loss functions that people had found.
+73:13
+But it still seemed to have a small disadvantage,
+73:16
+which is that the REINFORCE Algorithm maximizes performance in expectation but
+73:22
+that's not what we actually want here.
+73:25
+We actually want to sorta maximize the highest scoring action sequence,
+73:29
+cuz that's where we're actually gonna use in practice.
+73:31
+And so Kevin explored this other idea, which is to sort of say,
+73:36
+let's actually continue with this idea
+73:40
+of incorporating rewards into the max margin objective slack rescaling.
+73:45
+But instead of using these sort of handset hyperparameters like before,
+73:50
+what we will do is actually we can work out how to set those
+73:58
+sort of losses for rescaling the large margin objective.
+74:02
+So the idea there is for our training data,
+74:06
+we can actually just look at the effect of different decisions.
+74:10
+So since each action is independent from every other action,
+74:15
+we can change one action and see what effect it had for the reward.
+74:20
+So, this is the correct set of actions when our Reward = 100.
+74:25
+And so, we can just say for AI there, suppose we made that decision differently,
+74:31
+suppose we had said AI then declared that mention to be NEW.
+74:36
+Well, we can just say this is what our system returned what's the B-cubed
+74:41
+score for that?
+74:42
+And the answer is 85, and so
+74:45
+our Regret = 15 because we could have gotten the right answer and 100.
+74:50
+And then we could say, well, let's consider a different possibility.
+74:53
+We could have put my as coreferent to he, what's the B-cubed score then?
+74:58
+And the B-cubed score is 66 and so now our Regret is larger, our Regret = 34.
+75:04
+So we can actually empirically over the training data
+75:08
+work out what the cost of different mistakes is in terms of B-cubed score.
+75:14
+So, then what we can do, is sort of incorporate that,
+75:19
+so that now, the sort of, the scaling factor over our max
+75:25
+margin loss function is being taken as the difference
+75:30
+between the best action we could have taken at that point.
+75:36
+Which may no longer be the perfect action because we might have previously made
+75:41
+mistakes versus the actions that we did choose.
+75:44
+So that the cost is then sort of the regret for taking a particular action,
+75:49
+and that replaces the heuristic cost we used previously, for actually
+75:53
+what is the actual cost of this mistake in the context of a particular sentence?
+75:59
+Okay, so that was the system or the second system that was built.
+76:04
+And so then this was evaluated on coref.
+76:06
+So most of the recent work on coreference has used, there were these CoNLL shared
+76:12
+task in 2011 and 2012, the coreference.
+76:16
+It was, it had English and Chinese in it and
+76:21
+these are scored with the sort of CoNLL score.
+76:24
+The people who did the CoNLL competition, I guess they didn't wanna take sides as to
+76:28
+which was the best metric for co-reference so they came up with the CoNLL score for
+76:32
+co-reference, which was actually just the arithmetic mean
+76:35
+of three co-reference metrics, B-cubed and two other ones.
+76:40
+And so these are how things performed.
+76:42
+So the kind of heuristic losses that people had used previously
+76:46
+actually work quite well.
+76:48
+So using the REINFORCE algorithm is a smidgen better but
+76:54
+not really better than using the current heuristic loss functions.
+76:59
+But what you could find is that using Reward Rescaling
+77:04
+actually did work significantly better because you could then
+77:10
+sort of actually use the real losses that were incurred in different environments.
+77:16
+Now, these results and differences may not look very impressive.
+77:20
+But that's partly because even the heuristic loss
+77:23
+is being run on a good neural coreference system.
+77:26
+So I should also show you these other results,
+77:29
+just to give you a sense of things.
+77:31
+So this is the sort of progress that's really been made
+77:34
+in coreference resolution.
+77:37
+So at the time of CoNLL 2012, the best Chinese system was
+77:42
+this Chen & Ng which got 57 on the CoNLL score, the best English system got 60.
+77:49
+There had been some work on non-neural systems since then, so there's
+77:54
+a better Chinese system, and there's also a bit better English in this system.
+78:01
+So the Wiseman was sort of the first neural system,
+78:05
+so that was actually now starting to do a lot better.
+78:09
+And then here is Kevin's two system and
+78:12
+it sort of starting to get some decent gains beyond that going up.
+78:16
+So the neural systems actually have given
+78:18
+a nice new level of gain beyond previous coreference systems.
+78:24
+And so I just wanted to end in the last minute it by saying, well why is that?
+78:28
+So, one of the biggest gains is just the sort of general goodness of embedding.
+78:34
+So, one of the places where you get the biggest gains is what turns out to be one
+78:39
+the hardest cases of coreference in practice, is when you have these common
+78:44
+noun nominals and you have to realize they're coreferent.
+78:47
+And so that's things like the country's leftist rebels and
+78:51
+the guerillas, the gun, the rifle, 216 sailors from the USS Cole,
+78:56
+the crew, these are the kind of ones that are very hard to get, right.
+79:01
+If you're just doing conventional system with word features and things like that.
+79:06
+But that's precisely the kind of place where having our word vectors actually
+79:10
+does give us some purchase that these are still hardest cases to get right.
+79:15
+But the other place you were getting gains
+79:18
+is from using this Reward Rescaling algorithm.
+79:21
+And the kind of interesting thing that the results actually turned out, is compared
+79:26
+to the heuristic loss function, that using Reward Rescaling, that
+79:32
+the Reward Rescaling system actually made more mistake than heuristic loss function.
+79:38
+But was cleverer at deciding where to make its mistakes and so
+79:43
+it made mistakes that were less important.
+79:46
+So, even thought it made more mistakes, overall it was able to achieve
+79:51
+a better B-cubed score by concentrating on making less important mistakes.
+79:57
+And that reflects the fact that is for different mistakes,
+80:02
+there is a wide variety of different costs.
+80:05
+So this is an empirical graph of looking at all cases of false new,
+80:10
+and then this is the distribution over how much they cost You.
+80:15
+Even though, as you can see, there is a clear mode to this graph.
+80:19
+So if you were doing a heuristic loss you would say,
+80:22
+okay, customer false new is about 0.28 or something like that.
+80:27
+For different situations there's an enormous distribution as
+80:31
+to what the real cost of a false new is and
+80:34
+that's precisely what could be captured by the Reward Rescaling.
+80:37
+Okay, that's it for coreference and then back on Thursday for
+80:42
+doing the dynamic memory networks.

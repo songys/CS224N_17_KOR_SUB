@@ -1,0 +1,3470 @@
+00:04
+Stanford University I am very excited to
+00:08
+introduce to you now veep Nephi did his
+00:11
+PhD at Toronto with Jeff Fenton my
+00:15
+godfather of deep learning I've done
+00:18
+some really exciting work on end to end
+00:20
+speech recognition I really is his name
+00:23
+is on most of the exciting breakthrough
+00:26
+papers of the last couple of years when
+00:27
+it comes to speech so very excited to
+00:29
+have him here he's now at Nvidia and I'm
+00:32
+guessing continuing to work on speech
+00:34
+recognition ok are you ok
+00:51
+hi everyone so today I thought I'd give
+00:55
+a high-level overview of methods that
+00:58
+we're looking at for end to end speech
+01:01
+processing so here's the plan for the
+01:04
+lecture today I'll start by taking a
+01:07
+brief look at traditional speech
+01:08
+recognition systems then I'll give a
+01:11
+little motivation and a description of
+01:13
+what I mean by an end to end model then
+01:17
+I'll talk about two different models for
+01:20
+an end to end speech recognition systems
+01:22
+one by the name of connectionist
+01:24
+temporal classification and another
+01:26
+recent one based on listen attendant
+01:28
+spell which is a sequence to sequence
+01:30
+model something I believe you guys are
+01:32
+familiar with it at this point then I'll
+01:34
+talk about some of the work we've been
+01:35
+doing on making improvement of these
+01:39
+end-to-end models and end with talking a
+01:43
+little bit about how language models
+01:45
+influence speech recognition and some
+01:48
+efforts at improving decoding which is
+01:50
+an important part of these models ok so
+01:54
+starting with a basic definition of what
+01:56
+is automatic speech recognition in the
+02:00
+era of ok Google I I guess I don't
+02:01
+really need to describe it but here it
+02:04
+goes you have a person or an audio
+02:07
+source saying something textual and you
+02:10
+have a bunch of microphones which are
+02:12
+receiving the audio signals
+02:13
+and what is received at the microphone
+02:16
+and of course depends on how it is
+02:18
+oriented with respect to the person and
+02:21
+you get these signals from the devices
+02:23
+one or many devices and you pass it to
+02:26
+an automatic speech recognition system
+02:28
+whose job is now to infer the audio the
+02:32
+original source transcript that the
+02:35
+person spoke or that the device blade so
+02:40
+why is this far so important
+02:42
+well firstly it's a very natural
+02:44
+interface for human communication now
+02:47
+you don't need a mouse or keyboard so
+02:50
+it's obviously a good way to interact
+02:53
+with with machines you don't really need
+02:58
+to learn any new techniques because we
+03:00
+most people have learned how to speak by
+03:03
+a certain time and of course it's a very
+03:05
+natural interface for talking with
+03:08
+simple devices such as cars or handheld
+03:11
+phones or even more complicated
+03:13
+intelligent devices such as your call
+03:18
+center people our chat BOTS and
+03:19
+eventually our robotic overlords or so I
+03:24
+think we need a good speech recognition
+03:26
+system okay so how is how the this done
+03:30
+classically I'll be focusing mostly on
+03:33
+unstuff we've been doing lately which
+03:36
+are all neural inspired models but I
+03:38
+thought it would be a nice start by
+03:39
+talking about how these things have been
+03:41
+built classically and see how they've
+03:44
+been replaced with single delimit over
+03:46
+the time okay so the classic model for
+03:50
+speech recognition is to build something
+03:52
+called a generative model I don't know
+03:55
+how many people are familiar with
+03:56
+generative models here perfect so the
+04:00
+classic way of building a speech
+04:02
+recognition system is just to build a
+04:03
+generative model you big build a
+04:06
+generative model of language on the Left
+04:09
+you you say you produce a certain
+04:12
+sequence of words from language models
+04:15
+and then for each word you have a
+04:17
+pronunciation model which says hey this
+04:19
+is how this particular would word is
+04:22
+spoken
+04:23
+typically it's written out as a sequence
+04:25
+of phonemes which are basic units
+04:27
+but for our vocabulary we'll just say
+04:30
+it's a sequence of tokens where tokens
+04:33
+have been a class of things that have
+04:35
+been defined by a linguistic expert so
+04:39
+you have the pronunciation models which
+04:41
+now convert the sequence of text into a
+04:43
+sequence of pronunciation tokens and
+04:45
+then the models feed into an acoustic
+04:47
+model which basically says how does a
+04:50
+given token sound like and typically
+04:53
+these are built using a Gaussian mixture
+04:55
+model or they were in the past and these
+04:59
+Gaussian mixture models would have very
+05:00
+specific sort of architectures
+05:02
+associated with them you'd have three
+05:03
+state left-to-right Gaussian mixture
+05:05
+models that would output frames of data
+05:08
+and these models were now used to
+05:11
+describe the data themselves so here the
+05:13
+data would be X which is a sequence of
+05:17
+frames of of audio features X 1 to X T
+05:22
+typically these features are something
+05:24
+that signal processing experts have
+05:27
+defined things like features that look
+05:30
+at frequency components of the audio
+05:32
+waveforms that are captured things
+05:35
+called spectrograms and male filter Bank
+05:38
+spectrograms that are sort of bias is
+05:40
+very similar to human beings so the
+05:44
+classical pipeline proceeds as described
+05:48
+now each of these different components
+05:50
+in this pipelines uses a different
+05:52
+statistical model in the past log
+05:55
+language models were typically Engram
+05:57
+models this served very well so here
+06:00
+obviously in this class I don't really
+06:03
+need to define language model for you
+06:05
+you have essentially tables describing
+06:08
+probabilities of sequences of tokens the
+06:11
+pronunciation models were was just
+06:13
+simple look-up tables with probabilities
+06:14
+associated with pronunciations most most
+06:17
+words will have at least a couple of
+06:19
+pronunciations and if you have an accent
+06:21
+exchange further
+06:22
+so these pronunciation tables would
+06:24
+would just be very large tables of
+06:27
+different pronunciations acoustic models
+06:30
+as I said would be Gaussian mixture
+06:31
+models and the speech processing was
+06:36
+predefined so the way what you have this
+06:40
+model built you can do record
+06:41
+Nishan by just doing inference on the
+06:45
+data you receive so you get some
+06:46
+waveform you compute the features for it
+06:49
+and you get X you look into your model
+06:52
+and then using some fancy search
+06:55
+procedure you figure out okay what's the
+06:58
+what sequence of Y's that would give
+07:01
+rise to this sequence of X with the
+07:03
+highest probability so in a nutshell
+07:06
+that's basically all the way classical
+07:09
+speech recognition systems happen and
+07:11
+all the magic is in how these little
+07:13
+pieces are are are refined okay so now
+07:21
+welcome to the neural network invasion
+07:23
+over time people started noticing that
+07:25
+each of these components could be done
+07:27
+better if we use the neural network so
+07:30
+if you take an Engram language model and
+07:32
+you build a neural language model and
+07:34
+fed that into a speech recognition
+07:36
+system to rescore things that were
+07:39
+produced by a first pass speech
+07:41
+recognition system then results are
+07:43
+improved a lot also they looked into
+07:48
+pronunciation models and figured out hey
+07:50
+how do we do pronunciations for new
+07:52
+sequences of characters that we've never
+07:54
+seen before
+07:55
+so most pronunciation tables will not
+07:57
+cover everything that you can hear they
+08:00
+found that they could use a neural
+08:01
+network and then learn to predict token
+08:03
+sequences from character sequences and
+08:05
+that improved pronunciation model so
+08:07
+very you know more profession more
+08:13
+production related speech recognition
+08:16
+systems such as the Google one will will
+08:18
+build pronunciation models too from our
+08:21
+end acoustic models also the same story
+08:25
+people used to use Gaussian mixture
+08:27
+models and they found that if you could
+08:29
+use DNN deep neural networks or lsdm
+08:33
+based models then you could actually get
+08:36
+much better scores for weather frames
+08:39
+were real or wrong interestingly enough
+08:43
+even the speech processing that was
+08:46
+built with analytical type process in
+08:51
+mind about the production of speech
+08:55
+and those were found to be replaceable
+08:57
+with convolutional neural neural
+08:58
+networks on raw speech signals so each
+09:00
+of the pieces over time people have
+09:03
+found that neural networks just do
+09:04
+better however there's still a problem
+09:08
+there's neural networks in every
+09:10
+component but the errors in each one are
+09:14
+different so they may not play well
+09:15
+together so that's the basic motivation
+09:19
+for trying to go to a process where you
+09:22
+train the entire model as one big model
+09:26
+itself and so the stuff I'll be talking
+09:30
+about from here is basically an attempt
+09:33
+or different attempts to do the same
+09:34
+thing
+09:35
+we call these end-to-end models because
+09:37
+they try and encompass more and more of
+09:40
+the pipeline that I described before the
+09:43
+first of these models is called
+09:44
+connection is temporal classification
+09:45
+and is in wide use these days in Baidu
+09:49
+and even at Google the production
+09:51
+systems however see it has a lot of it
+09:56
+requires a lot of training and recently
+10:00
+the trend in the area has been to try
+10:02
+and build an end-to-end model but does
+10:04
+not require hand customization and
+10:06
+sequence of sequence models are very
+10:08
+useful for that and I'll talk about
+10:09
+listen attendance fell which is one of
+10:12
+these models okay so the most basic
+10:16
+motivation is we want to do end to end
+10:18
+speech recognition we're given some
+10:19
+Audio X it's a sequence of frames x1 to
+10:22
+XP
+10:23
+and we're also given during training the
+10:26
+corresponding output text y y1 - y el
+10:29
+and each of these Y's is one of whatever
+10:34
+2728 some number of tokens letters ABCDE
+10:37
+F not sounds we're trying to go straight
+10:40
+towards a model that goes from audio
+10:42
+straight to text so we we didn't want to
+10:45
+use any predefined notions of what it
+10:47
+means to be a different phoneme instead
+10:49
+these models will start with X and they
+10:51
+have a goal to try and model Y so Y is
+10:54
+just the transcript and X is the audio
+10:57
+possibly processed with some very
+11:00
+minimal amount of frequency based
+11:02
+processing so now what we want to do is
+11:05
+perform speech recognition by just
+11:06
+learning a very very powerful model
+11:08
+P of Y given X so the first model that I
+11:13
+described the classical way of doing
+11:15
+these things is the one at the top you
+11:18
+start with y it's a language model we
+11:21
+look into pronunciation models and you
+11:22
+look into acoustic models and you get
+11:24
+some scores these models for end-to-end
+11:26
+actually just collapse them into one big
+11:29
+model and reverse the flow of the arrows
+11:31
+so they're discriminative you start with
+11:34
+data which is X in the features and your
+11:37
+goal is to directly predict the target
+11:39
+sequence applied themselves obviously
+11:42
+this requires a very powerful language
+11:44
+ma a very powerful probabilistic model
+11:46
+because you're doing a very difficult
+11:48
+line version task and I'd say the only
+11:51
+reason this is possible now it's because
+11:53
+we have these very strong probabilistic
+11:55
+models that can do that ok so the first
+12:00
+of these models is connectionist
+12:02
+temporal classification this is a
+12:05
+probabilistic model P of Y given X where
+12:07
+again X is a sequence of frames of data
+12:10
+X 1 X 2 X T y itself with the output
+12:14
+tokens of length L y 1 to y L we
+12:18
+required because of the way the model is
+12:21
+constructed that T be greater than L and
+12:25
+this model has a very specific structure
+12:27
+that makes it suited for speech and I'll
+12:29
+describe that in a second so again X is
+12:31
+the spectrogram Y is the corresponding
+12:33
+output transcript in this case this is a
+12:36
+spectrogram ok so the way this model
+12:40
+works is as follows you get the
+12:42
+spectrogram at the bottom X you feed
+12:44
+into a recurrent neural network all
+12:46
+right you'll notice that there arrows
+12:48
+are pointed both directions but this is
+12:51
+just my way of just throwing out a
+12:53
+bi-directional RNN I'm assuming
+12:56
+everybody know for the bi-directional
+12:57
+rnns
+12:59
+right ok so it's a bi-directional RNN as
+13:03
+a result the Fossett's this arrow
+13:07
+pointing at any time step depends on the
+13:09
+entire input data so it can compute a
+13:12
+fairly complicated function of the
+13:14
+entire data X now this model at the top
+13:17
+has soft maxes at every time frame
+13:19
+corresponding to the input and the
+13:21
+softmax is on a vocab
+13:22
+which is the size of vocabulary are
+13:24
+interested in say in this case you had
+13:26
+lowercase letters A to Z and some
+13:28
+punctuation symbols so the vocabulary
+13:32
+for connectionist for CTC would be all
+13:35
+that and an extra token called a blank
+13:37
+token and I'll get into the reason for
+13:40
+why the blank token exists in a second I
+13:45
+think I forgot to point out one
+13:48
+important thing here each frame of the
+13:52
+prediction here is basically producing a
+13:55
+probably log probability for a different
+13:58
+token class at that time step and we
+14:00
+call that a score in this case of score
+14:02
+SK of T is the log problem the
+14:05
+probability of category K not the letter
+14:08
+K but a category K at time step T given
+14:12
+the data X so you'd have it let's say
+14:15
+you took X 4 here the probability of if
+14:18
+you look at the softmax the first let's
+14:21
+say the first index corresponding to
+14:22
+probability of character a the second
+14:25
+symbol corresponds to the probability of
+14:27
+character b c and so forth
+14:29
+v so forth in the last symbol in this
+14:32
+softmax would correspond to the blank
+14:34
+symbol itself so when you look at the
+14:36
+softmax
+14:37
+at any frame you can get a probability
+14:39
+of the class itself okay so what CDC
+14:45
+does is if you look at just the soft
+14:47
+Max's that are produced by the recurrent
+14:49
+neural network over the entire time step
+14:51
+you're interested in finding the
+14:53
+probability of a transcript through
+14:55
+these individual soft maxes over time
+14:57
+what it does is it says I can represent
+15:01
+all these paths I can take a path
+15:03
+through the entire space of soft Maxis
+15:07
+and look at just the symbols that
+15:09
+correspond to each of the time steps so
+15:10
+if you take the third symbol let's see
+15:13
+in the first time step if you take the
+15:15
+first the third symbol again at the
+15:18
+second time step C and then you go
+15:20
+through a blank symbol it's it's
+15:23
+essential that every symbol go through a
+15:25
+blank symbol that's a constraint that
+15:27
+the model has and now you go to a blank
+15:29
+symbol and then you produce the next
+15:31
+character a and then you produce a again
+15:33
+for another frame then you have to
+15:35
+produce a blank
+15:36
+and you can transition to tea and then
+15:38
+you have to produce a blank again so
+15:41
+when you go through these paths with the
+15:44
+constraint that you can only transition
+15:46
+between either the same phoneme from one
+15:50
+step to the next one are take from not a
+15:52
+phoneme but a label either from the same
+15:56
+label to itself or from that label to a
+15:58
+blank symbol you end up with different
+16:00
+ways of representing an output sequence
+16:02
+so here we had the output symbol output
+16:05
+sequence cats being represented in these
+16:07
+frames as CC blank a blank T blank
+16:11
+there's many other paths that also
+16:14
+correspond to the character sequence cat
+16:17
+so for example if you wanted to produce
+16:19
+cat from the sequence of tokens here you
+16:22
+could also have produced it from this
+16:25
+the way the second line here maps it out
+16:27
+where you would say CC blank blank and
+16:31
+then produce an A then you produce a
+16:33
+blank and then you produce of T and then
+16:34
+you produce a blank so all this sounds
+16:37
+complicated but really all it is is
+16:39
+saying there's some paths you can take
+16:41
+through the let through this sequence of
+16:43
+softmax and it's got a certain
+16:45
+constraint that you have to follow
+16:46
+namely you can only transition between
+16:48
+yourself and the same symbol again or
+16:50
+yourself and a blank so given these
+16:53
+constraints it turns out even though
+16:56
+there's an exponential number of paths
+16:57
+by which you can produce the same output
+16:59
+symbol you can actually do it correctly
+17:03
+because there exists a dynamic
+17:05
+programming algorithm I want actually
+17:06
+I'll spare you the details of that
+17:08
+dynamic programming algorithm today but
+17:10
+it's not as complicated as it sounds I'd
+17:13
+refer you to the paper if you're
+17:15
+interested in finding out what that is
+17:17
+about anyhow the nice thing about this
+17:19
+model is you are able to sort of take in
+17:22
+input and produce output tokens and
+17:25
+learn this mapping because the
+17:27
+probabilities can be computed accurately
+17:28
+and not only can the probabilities for
+17:30
+an output sequence we computed
+17:32
+accurately you can get a gradient which
+17:34
+is the learning signal that you require
+17:36
+to learn a model and once you get the
+17:38
+gradient from that learning signal you
+17:40
+can back propagate that into a recurrent
+17:42
+neural network and learn the parameters
+17:43
+of the model
+17:47
+for you to ask any questions at any time
+17:48
+I'm happy to answer questions
+17:59
+sure
+18:05
+you
+18:12
+so the question is are we using process
+18:17
+spectrograph process raw audio or can we
+18:19
+actually do raw audio or maybe even what
+18:22
+do we do in practice so we found some
+18:26
+years ago that we could actually use raw
+18:28
+audio however it didn't actually beat
+18:31
+the best way of processing the raw audio
+18:33
+minimally which would be just computing
+18:35
+a spectrogram and then adding the sort
+18:38
+of bias that human hearing apparatus has
+18:40
+turns out the human hearing apparatuses
+18:43
+and have a linear resolution on
+18:44
+frequencies you're able to separate
+18:46
+frequencies that are fairly close by and
+18:48
+low ranges and then it becomes
+18:51
+logarithmic and you have to be really
+18:53
+far apart in frequency space to tell
+18:55
+them apart so if you impose that bias
+18:57
+you get a log mouth back rogram instead
+18:59
+of just a linear spectrogram people have
+19:02
+tried to improve upon the log melt Sacro
+19:05
+Graham but the attempts have been not
+19:08
+very good when it comes to single
+19:10
+channel there's the case where you might
+19:12
+have multiple devices where you have
+19:14
+multiple microphones that are recording
+19:16
+things and there you can actually pick
+19:18
+up subtleties such as one microphone
+19:21
+being closer to a person than the other
+19:22
+and then then it turns out that you can
+19:25
+actually use raw waveforms to produce
+19:27
+better results then and spectrograms so
+19:30
+I haven't talked about that much here
+19:31
+but what you feed in is is really not
+19:36
+that important for sake of calling it
+19:38
+into and let's just say it's a little
+19:41
+convolutional model that works on frames
+19:43
+of raw waveforms so you just take the
+19:45
+original drive away from and you split
+19:47
+it up into into little frames and that
+19:50
+works just as well unfortunately it
+19:53
+doesn't work better yet as we had
+19:56
+originally hoped
+19:57
+it's unless you have multiple
+19:59
+microphones in which case it does so
+20:05
+here are some results for CT see how it
+20:07
+how it functions on a given audio this
+20:10
+audio audio stream corresponds to his
+20:14
+friends and if you look at the model of
+20:17
+a line to list it from the paper so we
+20:19
+have aligned a raw waveform at the
+20:21
+bottom and the corresponding predictions
+20:23
+at the top
+20:25
+so you'll see it's producing the symbol
+20:28
+H at certain point it gets a very high
+20:31
+probability goes straight from 0 to 1 so
+20:34
+it's confident it's heard the sound
+20:37
+corresponding to H there's a faint line
+20:40
+here which corresponds to the blank
+20:42
+symbol and you'll see that when you want
+20:44
+to emit symbols the blank symbol
+20:46
+probability starts to dip down to zero
+20:48
+so this this swap out in terms of
+20:51
+probability space because you're now
+20:52
+confident you want to produce an H
+20:54
+symbol over time you can see this page
+20:57
+now dives down to zero and of course as
+21:00
+the audio proceeds you start getting
+21:03
+high probabilities for the other
+21:05
+characters corresponding to the sound to
+21:11
+give you some examples on what this is
+21:13
+how this looks like when you just take
+21:16
+about 81 hours of data and just train to
+21:20
+the text corresponding to 81 hours of
+21:22
+audio so imagine you're a child you're
+21:25
+born you listen for 10 days and you
+21:28
+start producing text like this so the
+21:31
+the target is to illustrate the point
+21:34
+that is if you sleep if you listen eight
+21:37
+hours a day which most kids don't the
+21:39
+toilet to illustrate the point
+21:41
+a prominent middle is middle east
+21:43
+analyst in Washington recounts a call
+21:45
+from one campaign to illustrate the
+21:49
+point
+21:50
+a prominent middle Middle East analyst
+21:53
+in Washington recounts a call from one
+21:56
+campaign here's another one I'll let you
+22:00
+read that it you yourself I'll just
+22:04
+point out boutique we can boutique it's
+22:07
+kind of cute and sometimes it gets it
+22:11
+quite good so so it's pretty interesting
+22:16
+that it produces very much produces text
+22:20
+that very much is like the output text
+22:21
+that you desire of course turns out
+22:25
+these sound very good if you if you read
+22:28
+out the transcripts it sounds like what
+22:30
+you've heard so clearly something's
+22:32
+missing and what's missing is correct
+22:35
+spelling and also notion of grammar
+22:38
+so if you had some way of figuring out
+22:41
+of ranking these different paths that
+22:43
+you produce from your model and really
+22:45
+rank them by just the language model you
+22:47
+should get much better turns out in this
+22:49
+case the original based model had a word
+22:52
+error rate of 30% that means of the
+22:55
+words that it was producing 30% was were
+22:58
+were wrong which seems like a very big
+23:01
+number but like even a small spelling
+23:03
+mistake will cause that error
+23:05
+now if you use a language model to sort
+23:07
+of rear anks different hypotheses you
+23:10
+can get that word error right down 28.7%
+23:12
+which is just using 81 hours of data
+23:17
+subsequent to this work Google looked
+23:20
+into using CTC where they actually have
+23:22
+a language model as part of the model
+23:24
+itself during training and that's kind
+23:27
+of the production model you use now when
+23:28
+you call in with OK Google and that fix
+23:31
+all a lot of these issues and of course
+23:33
+they use thousands of hours of data
+23:35
+instead of 81 hours of data and there's
+23:38
+no such thing as as big data or big
+23:41
+enough so if you look at their paper and
+23:45
+look at some interesting results when
+23:47
+you change the targets so instead of
+23:48
+using characters you can actually use
+23:50
+words you can have a different
+23:52
+vocabulary size for words and see how
+23:54
+the recognition system performs so here
+23:56
+the top one top panel is where there are
+23:59
+7,000 words in the vocabulary in the
+24:01
+bottom panel is where there's 90,000
+24:03
+words in the vocabulary the actual text
+24:06
+to be produced is to become a dietary
+24:08
+nutritionist what classes should I take
+24:11
+for 2-year program in a community
+24:13
+college if you look carefully in the
+24:18
+panel not sure if it's entirely visible
+24:20
+all the way back
+24:21
+but these things are color coded in
+24:24
+terms of the different words that were
+24:25
+produced in this window and the height
+24:28
+corresponds to the probability so here
+24:31
+there's the blank symbol again which
+24:34
+goes up and down depending on whether
+24:36
+symbol being produced or not it has this
+24:39
+word 2 which is the first word here in
+24:42
+green so it's got a high probability
+24:44
+also note that it can also is confused a
+24:47
+little bit about the word do at the same
+24:49
+time so it's either 2 or do do have
+24:52
+it's lower probability so it produces
+24:54
+two and then it produces nothing but a
+24:57
+blank symbol and then it gets to the
+24:59
+next word and the produce of the word
+25:01
+become and then the word a shows up and
+25:06
+then dietary turns out dietary is not in
+25:09
+the vocabulary size of 7,000 so it just
+25:12
+produces diet which is in the vocabulary
+25:16
+and you'll see this this row here
+25:17
+corresponding to diet being yellow it
+25:20
+also produces Terry the name it doesn't
+25:24
+have dietary but it just produces Terry
+25:26
+as a response it also produces military
+25:29
+and some other targets but overall it
+25:32
+gets most of the words that it's
+25:33
+expecting correct if you increase the
+25:35
+vocabulary size to be large enough so
+25:38
+that by it dietary is in the vocabulary
+25:40
+you find that it actually also produces
+25:42
+dietary as an output in there although
+25:44
+it also produces diet so language model
+25:48
+would fix that kind of an issue so
+25:52
+that's what I have to say about CDC I'm
+25:55
+afraid I have to switch here and let's
+26:02
+see there we go I promised to manage
+26:06
+that for switches yeah okay so now
+26:19
+switching gears in terms of the models
+26:21
+the CDC model is interesting but it if
+26:24
+you were paying attention very carefully
+26:26
+from a modeling perspective you'd find
+26:28
+that the model makes predictions just
+26:30
+based on the data and once it's done
+26:32
+with making those predictions for each
+26:34
+frame there's no way of adjusting that
+26:36
+prediction it has to do the best it can
+26:38
+with those predictions an alternative
+26:41
+model is the sequence of sequence models
+26:42
+which you guys have been reading about
+26:45
+from looking at your lectures so I won't
+26:49
+talk too much about the basics and jump
+26:52
+straight in we have a model here which
+26:54
+basically does next a prediction you're
+26:56
+given some data X and you've produced
+26:59
+some symbols y 1 to y I and your models
+27:02
+just going to predict the probability of
+27:04
+the next symbol
+27:06
+the fYI +1 and your goals I basically to
+27:09
+learn a very good model for P and if you
+27:12
+can do that then you have a model for P
+27:14
+of any arbitrary Y given X so this model
+27:19
+that does speech recognition with the
+27:20
+sequence of sequence framework changes X
+27:22
+in translation this would be a source
+27:24
+language in speech the X itself is this
+27:28
+huge sequence of audio that is now
+27:31
+encoded with a recurrent neural network
+27:34
+what it needs to function is the ability
+27:38
+to look at different parts in temporal
+27:40
+space because the input is really really
+27:42
+long I think if you look at translation
+27:44
+results you'll find that translation
+27:46
+gets worse as the source sentence
+27:48
+becomes larger this is because it's
+27:50
+really hard for the model to look
+27:52
+precisely at the right place turns out
+27:55
+that problem is aggravated a lot more
+27:57
+when you have audio streams audio
+27:58
+streams are much longer typically a
+28:00
+frame is like you have a hundred frames
+28:02
+for a second and when you want to
+28:04
+transcribe something let's ten seconds
+28:06
+long that's about a thousand tokens
+28:09
+thousand input time steps long as
+28:10
+opposed to in translation you might have
+28:13
+like 40 tokens 40 token words that
+28:15
+you're going to translate so it's a very
+28:17
+aggravating problem and you need to do
+28:19
+attention if you want to make this model
+28:22
+work at all whether it's with
+28:23
+translation you can get by without
+28:24
+attention so what exactly does attention
+28:27
+work here you're trying to produce the
+28:29
+first character C and you have this way
+28:34
+of producing producing an attention
+28:35
+vector I'll go into that shortly how
+28:37
+that's done but it's fairly standard
+28:39
+this attention vector essentially looks
+28:42
+at different parts of the time steps of
+28:46
+the input here it's saying I want to
+28:49
+produce the next token and to produce
+28:51
+that token I should really look at the
+28:53
+features that were over here and the
+28:55
+features that were over here so once it
+28:58
+looks at the features corresponding to
+29:00
+those time steps it's able to produce a
+29:01
+character C and then it feeds in the
+29:04
+character C to itself and produces the
+29:06
+next character which is a after changing
+29:09
+the attention so the attention now looks
+29:12
+further down from where it was looking
+29:14
+at the first time step and then you feed
+29:17
+in the character a into your model and
+29:19
+and you recompute attention and ematic
+29:22
+Lee just moves forward once it's learned
+29:23
+so if you keep doing this over the
+29:28
+entire input stream hopefully I don't
+29:37
+move then you get it moving forward
+29:39
+attention just learn by the model itself
+29:42
+and so here it's producing the output
+29:45
+sequence cancel cancel cancel
+29:52
+the question was are we no longer doing
+29:55
+predict the previous token or the break
+29:57
+so this is a different model which is a
+30:00
+sequence of sequence model you feed in
+30:02
+the entire data as an input conditioning
+30:04
+and there is no notion of consuming a
+30:08
+little bit of the input and then
+30:09
+producing output instead the entire
+30:11
+input is looked at at every time step
+30:13
+and so you don't really need to add
+30:15
+breaks anywhere you just produce one
+30:17
+token then you produce an excellent
+30:19
+condition on the last token you produced
+30:22
+so it's going back it's essentially
+30:26
+doing next step prediction
+30:32
+so it's just doing next-step prediction
+30:34
+in this model you have a neural net
+30:39
+which is the decoder in a sequence of
+30:40
+sequence model that looks at the entire
+30:42
+input which is the encoder feeds in the
+30:45
+past symbols that you produce because
+30:46
+it's a recurrent neural network you can
+30:48
+just keep reading symbols and the length
+30:50
+issue does not arise so you're fed in
+30:52
+the past symbols of the recurrent neural
+30:54
+network and then you're just ridiculous
+30:56
+the next open itself as the output
+31:10
+okay they need to switch a third time
+31:19
+this is the second last one I promise so
+31:27
+how does this attention model work so
+31:31
+you have firstly you have an encoder on
+31:34
+the left-hand side it seems to have a a
+31:37
+special structure I'll go into that in a
+31:41
+few slides for now just forget the fact
+31:44
+that it has a special structure and just
+31:45
+remember that for every time step of the
+31:48
+input it's producing some vector
+31:50
+representation which encodes the input
+31:52
+and that's represented as H T at time
+31:55
+step T so you have hidden vector H T at
+31:58
+time step T and you're generating the
+32:02
+next character at every time step with a
+32:03
+decoder so what you do is you take the
+32:06
+state vector of the decoder the bottom
+32:08
+layer of the recurrent neural network
+32:09
+that is the decoder and you now compare
+32:12
+this state vector against each of the
+32:14
+hidden time steps of the encoder and the
+32:17
+way you do that so semantically what
+32:20
+that means is you kind of have this
+32:21
+query in mind which is the state F and
+32:23
+you have places HT that you're looking
+32:27
+at as possible places where the
+32:28
+information is present so you take this
+32:30
+query and you compare it to every HT you
+32:34
+could have done something very simple
+32:35
+like take a dot product in which case
+32:37
+the vectors would have to be the same
+32:39
+same sort of size or you could have
+32:41
+something done something much more
+32:42
+sophisticated which is you take the
+32:45
+hidden state that you want to compare
+32:47
+the query against concatenate them into
+32:49
+a vector and then put them in a neural
+32:50
+network which produces a scalar value
+32:52
+and then turns out that hope we do so
+32:55
+you basically have this function here
+32:58
+function f which takes in a
+33:00
+concatenation of the hidden state at a
+33:02
+time step T with the state of the
+33:05
+recurrent neural network which is the
+33:07
+decoder state and then produces a single
+33:09
+number EST now you do that for every
+33:12
+time step of the encoder and so you have
+33:14
+a trend in time in the encoder space and
+33:17
+that's kind of like a similarity between
+33:18
+your query and your source
+33:22
+from the encoder so you get this trend
+33:25
+EFT and of course these are just scalars
+33:28
+you want to keep these magnitudes under
+33:31
+control so you can pass them through a
+33:33
+soft max which normalizes across the
+33:36
+time steps so you get something that
+33:37
+sums to one and that's what's called the
+33:40
+attention becker the turns I was showing
+33:42
+you was basically the trend of these
+33:44
+attention vectors as the query changed
+33:46
+over time so every time step you get an
+33:48
+attention vector which shows you where
+33:50
+you look at for that time step then you
+33:52
+move to the next time step you would
+33:53
+compute a new attention vector and you
+33:55
+do that over and over again so now that
+33:59
+you have an attention vector what you
+34:01
+can do is now use these probabilities
+34:03
+over time step to blend the hidden
+34:05
+states together and get one context
+34:07
+value which is this representation that
+34:10
+is of interest to you in actually doing
+34:12
+the prediction for that time step so
+34:14
+here you would take all the hidden
+34:16
+states and the corresponding attention
+34:18
+value and just multiply them and add
+34:21
+them together and that gives you a
+34:23
+context vector in this context vector is
+34:25
+really the content that will guide the
+34:28
+prediction that you make so you take
+34:29
+this content vector you can catenate
+34:31
+that with the state of your RNN and you
+34:35
+pass it through a neural net and you get
+34:37
+a prediction at that time cell and this
+34:41
+prediction of course is the probability
+34:43
+of the next token given all the pass
+34:46
+tokens you produced and all the input
+34:49
+that in let's run it into the encoder
+34:54
+aha this is exciting for me I don't have
+34:58
+to switch after this
+35:23
+okay so now what
+35:27
+what's this funny business with the
+35:28
+encoder you're used to seeing a
+35:31
+recurrent neural network which basically
+35:33
+proceeds at the same time step at the
+35:35
+input so you get an input you process it
+35:38
+through some hidden states you pass it
+35:39
+to one your current step and you move on
+35:42
+we found that for when we did that for
+35:45
+audio sequences that were really long
+35:46
+such as realistic speech in walter
+35:49
+journal which is one of the speech
+35:50
+corpora it was just not able to learn a
+35:54
+very good attention model like things
+35:56
+just wouldn't go off the ground and that
+35:57
+makes sense because you have a lot of
+35:58
+things of time steps to look over so
+36:01
+typically you'll get something like
+36:02
+seven seconds which would be 700 frames
+36:04
+and you're doing a soft max over 700
+36:07
+time steps it's hard for you to sort of
+36:09
+initially learn where to propagate the
+36:11
+signal down to to predict what the token
+36:14
+is so it never really catches on very
+36:16
+fast
+36:17
+so this hierarchical encoder is a
+36:20
+replacement for a recurrent neural
+36:22
+recurrent neural network so that instead
+36:24
+of just one frame of processing at every
+36:27
+time step you collapse neighboring
+36:30
+frames as you feed into the next layer
+36:32
+what this does is that every time step
+36:34
+it reduces the number of time steps that
+36:37
+you have to process and it also makes
+36:39
+the processing faster so if you do this
+36:41
+a few times by the time you get to the
+36:42
+top layer of the encoder your number of
+36:44
+time steps have been reduced
+36:45
+significantly and your attention model
+36:47
+is able to work a lot better so here's
+36:53
+some example output that this model
+36:55
+produces and I specifically want to
+36:59
+point out that the outputs are very
+37:01
+multimodal and what do I mean by that so
+37:04
+you have an input the truth is called
+37:07
+AAA roadside assistance the model
+37:10
+produces call a roadside assistance as
+37:12
+the first output but it also produces
+37:15
+call triple-a roadside assistance so the
+37:19
+same audio can be used to produce very
+37:22
+different kinds of transcripts which is
+37:24
+really the power of the model and says
+37:25
+how this model can actually learn very
+37:28
+calm
+37:28
+flex functions and actually solve this
+37:30
+task with just one model instead of
+37:32
+requiring many so interestingly if you
+37:36
+look down you'll see the reason why this
+37:38
+model is able to produce call AAA and
+37:40
+call triple-a because the training set
+37:43
+has a lot of call X X X and so the model
+37:46
+learns a very specific pattern and it's
+37:49
+able to sort of transfer that to a
+37:51
+different domain another aspect of the
+37:57
+model is causality and what do I mean by
+37:59
+that here you have an output which is
+38:02
+st. Mary's st. Mary Mary's Animal Clinic
+38:07
+which is the transcript so if you look
+38:10
+at the attention vector over time when
+38:12
+you produce the first token s it just
+38:14
+looks at this little blob at the top and
+38:16
+then when you look at T it looks moves
+38:19
+forward as it produces every character
+38:21
+now the models very multimodal so
+38:23
+instead of just producing st marys it
+38:26
+can also produce sa int mary's which is
+38:30
+a totally different transcript for the
+38:31
+same audio and now if you look at where
+38:35
+the attention goes before it would
+38:37
+produce st and then start moving forward
+38:42
+when Mary came along here it's the same
+38:45
+word st. so it actually dwells at the
+38:47
+same time step in attention space that's
+38:50
+that's a notion where whatever symbol
+38:52
+you've produced really affects how the
+38:54
+neural network behaves at the next few
+38:56
+time steps and that's really a very
+38:58
+strong characteristic of this model
+39:08
+you
+39:28
+okay the question is is the fact that
+39:30
+the model produces two different
+39:32
+transcript a result of the fact that the
+39:36
+there's ambiguity in the pronunciation
+39:38
+model itself so I think that is
+39:44
+essentially what what this tries to the
+39:46
+model tries to capture the fact that the
+39:49
+same word can be pronounced multiple
+39:52
+ways or that the same word can be same
+39:54
+pronounciation can be written out
+39:55
+multiple ways are sort of two different
+39:57
+but related problems one is different
+39:59
+pronunciation producing the same token
+40:01
+another which does not require multi
+40:04
+modality in them in a model as long as
+40:07
+once or so sound only produces the same
+40:09
+token what's happening here is more
+40:11
+interesting in that the same sound can
+40:13
+be written out in multiple ways during
+40:16
+training clearly it must have heard both
+40:18
+sides like it's heard st. written out as
+40:21
+st and then another time it must have
+40:23
+heard st. written out
+40:24
+written out as an essay int so you need
+40:27
+it in the training data but what's nice
+40:29
+is that the models are really powerful
+40:30
+enough to realize that the same sound
+40:32
+can actually do this and it can actually
+40:35
+produce query different transcripts when
+40:44
+we did this about a year and a half ago
+40:46
+these are old results things are more
+40:49
+exciting now we found that our model was
+40:55
+when you didn't use a language model it
+40:57
+produced the word error rate of around
+40:58
+14% whereas the best system that we had
+41:02
+in Google at that time was was 8i at
+41:06
+this point I would say I was an intern
+41:09
+at Google of many years ago and then the
+41:11
+word error rate was 16% in that was that
+41:14
+was a result of 45 years of work where
+41:17
+people had customized all the speech
+41:19
+recognition components very carefully
+41:22
+for all these years in this model by one
+41:26
+just one single models that just go
+41:27
+straight from audio to track to text
+41:30
+gets a lower word error rate than what
+41:32
+we were getting in 2011 so that's I
+41:36
+think something to write home about
+41:38
+which is pretty exciting turns out it
+41:40
+still benefits from having a
+41:42
+which model so if you feed in the
+41:44
+language model the 14% murder it comes
+41:46
+down to ten point three so obviously
+41:50
+there's no substitute for billions and
+41:52
+billions of written text sentences in
+41:58
+trying to disambiguate speech
+42:00
+recognition better but just the basic
+42:04
+model by itself does very well so now
+42:09
+what are the limitations of this model
+42:11
+one of the big limitations preventing
+42:14
+its use in an online system is that if
+42:17
+you notice the output is produced
+42:19
+conditioned on the entire input so you
+42:21
+get this next step prediction of XT plus
+42:23
+1 given all the input X and all be sorry
+42:28
+YT plus 1 given all the inputs X and all
+42:31
+the tokens you've produced so far which
+42:33
+is why 1 to YT so it's really just doing
+42:35
+next step prediction but the next step
+42:37
+prediction is conditioned on the entire
+42:39
+input so if you were going to try and
+42:42
+put it in a real speech recognition
+42:44
+system you'd have to first wait for the
+42:46
+entire audio to be received before you
+42:48
+can start outputting the symbol because
+42:50
+by definition the mathematical model is
+42:52
+the next token in this condition on the
+42:54
+entire input and the past tokens another
+42:59
+problem is that the attention model
+43:01
+itself is a computational bottleneck for
+43:04
+every time step you have to look at the
+43:05
+entire input sequence so there's this
+43:08
+you know comparison as long as the
+43:10
+length of the input which makes it a lot
+43:13
+slower and a harder to and harder to
+43:15
+learn as well further as the input
+43:20
+recedes and becomes longer the word
+43:22
+error rate goes down this this is really
+43:25
+an old slide this doesn't happen much
+43:26
+anymore but I'll talk about the methods
+43:30
+we who came up with Superman this a
+43:32
+little later so I'm going to now switch
+43:38
+gears to an other model which is called
+43:41
+the online sequence of sequence model
+43:43
+this model has was designed to try and
+43:46
+overcome the limitations of sequence of
+43:47
+sequence models where we don't want to
+43:49
+wait till the entire input is produced
+43:51
+has arrived before we start producing
+43:54
+the output
+43:55
+and also want to try and avoid a tension
+43:58
+model itself over the entire sequence
+43:59
+because that seems to be an overkill as
+44:01
+well so you want to produce output to
+44:04
+the input inputs arrive and it has to
+44:07
+solve this problem which is am I ready
+44:10
+to produce an output now that I've
+44:11
+received this much input so the model
+44:14
+has changed a little bit not only does
+44:16
+it have to produce the symbol it has to
+44:18
+know when it has enough information to
+44:20
+produce the next symbol so this model is
+44:23
+called the neural transducer and in
+44:26
+essence it's a very simple idea you take
+44:28
+the input as it comes in and every so
+44:31
+often at regular intervals you run a
+44:33
+sequence the sequence model on what
+44:36
+you've received in the last block and so
+44:39
+you have this situation here where you
+44:43
+basically have the encoder and now
+44:45
+instead of the encoder attention looking
+44:48
+at the entire input it just looks at
+44:49
+this little block and this decoder which
+44:52
+we call the transducer here will now
+44:55
+produce the output symbols now notice
+44:58
+that since we've blocked up the input we
+45:02
+have the situation where you may have
+45:04
+received some input but you can't
+45:06
+produce an output and so now we're sort
+45:09
+of we need this blank symbol back again
+45:13
+in this model because it really can be
+45:16
+the situation where you got a long pause
+45:18
+you have no you haven't heard any words
+45:20
+so you really shouldn't be producing any
+45:22
+symbols so we reintroduce this symbol
+45:25
+called the end of black symbol here in
+45:28
+this model to sort of encapsulate the
+45:31
+situation that you shouldn't be
+45:33
+producing any output one nice thing
+45:37
+about this model now is that it
+45:39
+maintains causality so if you remember
+45:41
+the CTC model it also had this notion of
+45:43
+not producing any output but when you
+45:46
+produce these symbols you did not feed
+45:49
+back what you had produced in the past
+45:50
+and so it didn't have these notions
+45:52
+where the same input can produce
+45:53
+multiple output and it didn't have the
+45:56
+notion of causality where depending on
+45:58
+what you produced so far you would
+46:00
+really just change the computation
+46:02
+thereon so here in the neural transducer
+46:05
+it preserves this advantage of a
+46:08
+sequence of sequence model
+46:09
+and it also of course now introduces an
+46:12
+alignment problem just like these slides
+46:15
+have an alignment problem too so in in
+46:20
+essence what you want to know is you
+46:23
+have to produce some symbols as output
+46:25
+but you don't know which chunk should
+46:27
+these symbols be aligned to and you have
+46:29
+to solve that problem during learning I
+46:33
+won't describe this very carefully but
+46:37
+I'll make a go of it you have some
+46:41
+output symbols y1 to f that have to be
+46:43
+produced and now if you have an input
+46:46
+that is B blocks you have you can now
+46:49
+output these F symbols along with B end
+46:53
+of block markers anywhere to describe
+46:56
+the actual alignment in the way the
+46:58
+symbols are produced and of course
+47:00
+there's a combinatorial number of ways
+47:01
+in which you can align the original
+47:04
+input to the actual block symbols so I
+47:07
+the probability distribution turns out
+47:11
+to be the probability of y 1 to y is
+47:13
+given x is model f2 sum over all the
+47:16
+different ways in which you can produce
+47:18
+this you can align Y 1 to F 2 the
+47:21
+original B blocks and the B the extra B
+47:25
+in length comes from the fact that
+47:26
+there's the blocks and hand H Block in
+47:29
+to it and end o block symbol so now it's
+47:32
+similar to CTC you have some output
+47:34
+sequence you're going to produce them
+47:36
+from a bunch of different ways and all
+47:40
+of those ways have some probability and
+47:41
+if you have to learn in spite of that
+47:42
+model unlike CTC of course this model is
+47:46
+not independent at every time step you
+47:48
+once you make the predictions you feed
+47:51
+back your previous tokens that changes
+47:54
+the entire probability distribution at
+47:56
+the next time step what this means is
+47:58
+that there's no decomposition between
+48:00
+different parts of the input given the
+48:02
+data so you can't really do a dynamic
+48:04
+programming algorithm that just
+48:06
+simplifies this computation so we came
+48:09
+up with a simple way of of doing this
+48:12
+approximation of the sum which was let's
+48:15
+just find the best possible alignment
+48:16
+given your current model so you
+48:20
+basically try and do some kind of a beam
+48:22
+search
+48:23
+you find the best pad as the output and
+48:25
+then you use that during training
+48:30
+okay so sorry
+48:33
+one more point that I should make that's
+48:37
+the same process to use during inference
+48:39
+the model itself is you want to produce
+48:41
+these symbols y12 is you can do it in a
+48:44
+variety of ways during inference you
+48:46
+find the best one and you go with that
+48:48
+one as being the actual transcript
+48:50
+during learning if you take a gradient
+48:52
+of that combinatorial sum it comes down
+48:55
+to this particular form which boils down
+49:00
+to saying give me a sample from all the
+49:04
+probability of aligning the output given
+49:07
+the input and then I will train the log
+49:09
+probability of that sample if that
+49:12
+sounds like week I wouldn't worry too
+49:14
+much about it
+49:14
+but I'll say it one more time it's
+49:17
+basically you have this happens in cases
+49:19
+where models are a sum of a
+49:21
+combinatorial number of terms if you
+49:24
+want to optimize such a model
+49:26
+you basically have to take the gradient
+49:29
+of the log probe and the gradient of the
+49:30
+log rub turns out to be a sum of the log
+49:34
+probes over the posteriors of the
+49:36
+samples and that's the case in this
+49:38
+model as well of course this is really
+49:40
+hard to optimize and so we replace this
+49:44
+entire really complicated procedure for
+49:46
+optimization by given an output symbol
+49:49
+find the best alignment and just make
+49:51
+that alignment better it's kind of like
+49:53
+a Viterbi sort of trick so I'm just
+50:00
+going to skip this part
+50:08
+okay the finding of the best path is
+50:11
+kind of interesting so I'll I'll cover
+50:15
+this part turns out if you want to find
+50:19
+the best path there's also a
+50:21
+combinatorial number of ways and so what
+50:23
+you can do is kind of do a beam search
+50:25
+where you keep a bunch of candidates
+50:27
+around and then you extend them and as
+50:30
+you extend them you've you now reracked
+50:32
+them and throw away the best one however
+50:34
+it turns out if you do beam search it
+50:36
+doesn't really work and so what we
+50:39
+discovered was the dynamic programming
+50:41
+which is approximate that works very
+50:42
+well and the way this program this month
+50:45
+this works is you consider the best
+50:49
+candidates that are produced by at the
+50:51
+end of a block from producing either j
+50:55
+minus 1 tokens are J minus 2 tokens ei
+50:59
+minus 1 tokens or J tokens at the end of
+51:01
+Block B minus 1 so you know that if I
+51:04
+wanted to produce J minus 2 tokens at
+51:07
+the end of the previous block what's the
+51:09
+best probability and now that
+51:11
+corresponds to this dot here so from
+51:13
+that dot you can now extend either by 1
+51:17
+symbol or by 2 symbols or by 3 symbols
+51:20
+and you get different paths that reach
+51:22
+the source and so now if when you're
+51:24
+considering their different ways of
+51:26
+entering a source you just find the best
+51:28
+one and you keep that around and you
+51:32
+then now extend those ones in the next
+51:34
+time step
+51:34
+it's kind of an approximate procedure
+51:36
+because this ability ability to extend a
+51:40
+symbol is not Markovian and so if we
+51:43
+take this max as a max of the previous
+51:46
+step extended by one that may be wrong
+51:48
+because the correct path maybe two steps
+51:50
+away and that would have been better
+51:52
+however it seems to work very well
+51:55
+define an alignment that trains the
+51:57
+online sequence to see this model
+51:59
+properly so some results on this model
+52:02
+if you change the window size that's how
+52:05
+the block is constructed you find that
+52:07
+using different block sizes when there's
+52:11
+an attention model makes the model work
+52:14
+very well so in these blocks we can have
+52:16
+attention instead of just running a
+52:17
+sequence to sequence so it's not
+52:19
+affected by the window size
+52:21
+the blocks and those are these model
+52:23
+these lines at the bottom it also turns
+52:26
+out that you don't really need attention
+52:27
+if the window size is small which
+52:30
+sidesteps this problem of doing a
+52:33
+detention over the entire input sequence
+52:35
+and that's what we're really trying to
+52:37
+get at is to try and build a model that
+52:39
+could do sequence sequence
+52:41
+output symbols when when it needs to but
+52:45
+really not have to do all this compute
+52:47
+power of computation with respect to the
+52:51
+length so that was basically the online
+52:56
+sequence of sequence model I want to
+52:58
+touch a little bit about how you can
+53:00
+make the sequence of sequence models
+53:01
+better themselves one of the things that
+53:05
+people are doing these days
+53:06
+boring from vision is to use
+53:08
+convolutional neural networks so
+53:10
+envision related tasks convolutional
+53:12
+neural networks have been very powerful
+53:14
+some of the best models for object
+53:16
+detection and object recognition use
+53:18
+convolutional models they're also very
+53:20
+effective in speech so we tried to do
+53:22
+this architecture in speech for the
+53:26
+encoder side of things so you take the
+53:28
+traditional model for the pyramid and
+53:31
+instead of doing the pyramid by just
+53:33
+stacking two things together you can
+53:35
+actually put a fancy architecture when
+53:38
+you do the stacking so don't just stack
+53:40
+to time step and feed it to the next
+53:42
+layer but instead stack them as feature
+53:45
+Maps and put a convolutional neural
+53:47
+network on top I think you guys have not
+53:50
+been exposed to convolutional neural
+53:53
+networks yet but let's let's just say
+53:56
+it's a very specific kind of model that
+53:58
+looks at some subset of the input
+54:00
+instead of the entire input and so the
+54:04
+subsets that it looks at has to be
+54:06
+matched to the structure so if you are
+54:08
+in a task such as vision an image patch
+54:10
+is a natural structure substructure to
+54:13
+look at instead of the entire image for
+54:15
+speech the also if you look at the
+54:18
+frequency bands and the time steps of
+54:20
+the features that corresponds to a
+54:22
+natural structure substructure to look
+54:24
+at so convolutional model will just look
+54:26
+at the sub structure so what we did in
+54:29
+this work was to say okay now we're
+54:31
+going to change this this computation
+54:33
+which is a pyramid and
+54:34
+and a lot of death to it by adding these
+54:38
+convolutional architectures in every
+54:40
+step so in the past it was just a simple
+54:42
+linear projection of two time steps
+54:45
+together but now it's a very deep
+54:47
+convolutional model which of course in
+54:49
+for deep learning experts is great
+54:51
+because we believe the deeper the number
+54:54
+of non-linearity is the better it is and
+54:55
+this model actually actually adds a lot
+54:57
+of depth that way when we did that we
+55:02
+found very good results if you take a
+55:04
+baseline on a task called Wall Street
+55:07
+Journal it goes from something like
+55:09
+fourteen point seven six where their
+55:11
+rate down to ten point five just by
+55:13
+using this very specific trick on how to
+55:15
+do these convolutions so deeper
+55:19
+continues to be a good model
+55:22
+okay now switching to what is the output
+55:24
+space that's a very appropriate one for
+55:29
+speech so in in translation what happens
+55:34
+is there's multiple ways people have
+55:35
+discovered on how to encode the output
+55:37
+sequence you might produce character
+55:39
+sequences you might produce words and
+55:41
+character sequences or you might produce
+55:44
+a subset of characters and use as the
+55:47
+output vocabulary in speech that seems
+55:50
+not natural because what you want to do
+55:53
+is you want to produce output tokens
+55:55
+that corresponds to to some notion of
+55:58
+the sound that was being produced in the
+55:59
+input so what you'd like to do is change
+56:01
+the vocabulary so it's not just
+56:03
+characters but maybe by grams or
+56:05
+trigrams of characters that corresponds
+56:07
+to some audio token so the basically
+56:12
+these are I guess this slide is talking
+56:14
+about the different ways to do it as I
+56:15
+said you can either represent the word
+56:17
+or the characters are the words and
+56:20
+characters but for speech you want to
+56:23
+use engrams however there's a problem
+56:25
+here should we decide the engrams
+56:29
+beforehand and then just use those
+56:31
+during training that kind of defies the
+56:34
+end-to-end model where we want to
+56:37
+actually learn the entire process as one
+56:39
+big model so we decided okay what we
+56:44
+could do is build this vocabulary which
+56:46
+is unigram spy Graham
+56:48
+trigrams and like whatever number of
+56:51
+engrams of characters and put them in a
+56:53
+soft max and now the problem arises if
+56:57
+you have a word like hello it can be
+56:59
+decomposed in multiple ways my spell as
+57:01
+h-e-l-l-o or it might spell as h-e-l-l-o
+57:06
+if a chi happens to be in the target set
+57:09
+that you've chosen
+57:10
+so it's really an in defined undefined
+57:13
+problem or it's a problem where now you
+57:15
+have to deal with multiple ways of
+57:16
+outputting the same sequence so how
+57:22
+should we make this choice one way of
+57:23
+making this choice is you get a word
+57:25
+such as catch it you could just look in
+57:28
+your token space if you have ca in your
+57:32
+tokens you just say I I'm going to
+57:34
+choose CA as the input then you do T and
+57:38
+then CI absorb I and then T and F so
+57:42
+this is just very greedy in terms of how
+57:45
+you produce the tokens and other ways to
+57:48
+look at the compression the sequence of
+57:50
+tokens that have the highest probability
+57:53
+here it's basically about reuse is like
+57:56
+encoding and you would just sort of use
+57:59
+the minimum description line so 80
+58:01
+happens to be a lot more frequent than
+58:03
+CA so you would rather choose 80 as a
+58:06
+token in this case and the decomposition
+58:09
+for cats hits would be C 80s I and TS
+58:13
+that would be another way of course you
+58:18
+know it's not clear for the audio which
+58:20
+is the best way so our approach was to
+58:24
+try and learn this automatically so you
+58:26
+have some output Y star which is the
+58:30
+correct output sequence and you try out
+58:32
+all the possible decompositions of the
+58:35
+same output so you basically look at all
+58:37
+possible ways of producing the token and
+58:41
+when you when when you do the learning
+58:43
+you take the gradient of all possible
+58:45
+ways of producing the output sequence
+58:46
+and propagate that error signal down
+58:50
+just to know when when does the class
+58:52
+end
+58:59
+if you look at how this model performs
+59:04
+turns out it helps to use larger and
+59:07
+grand pieces so if you take a character
+59:09
+based model which was just CDC with no
+59:12
+language model it had 27% word error
+59:14
+rate if you take the sequence of
+59:16
+sequence model of the last model with
+59:18
+character output it produces 14.7 word
+59:21
+error right if you use a 2 gram does
+59:23
+better with the 3 gram it does even
+59:26
+better
+59:27
+the 4 gram does better on training but
+59:29
+worse generalization presumably because
+59:32
+our data set was really limited just 81
+59:35
+hours of data and once you start using
+59:37
+larger and larger tokens you can imagine
+59:38
+it doesn't have enough evidence for a
+59:41
+lot of the longer tokens similarly for 5
+59:44
+grams to show you an example the actual
+59:51
+test is shamrocks pre-tax profit from
+59:54
+the sale was 125 million dollars a
+59:57
+spokeswoman said the character model
+60:01
+produces shamrock SCH am ROC K the
+60:06
+foreground model will take the chef
+60:09
+sound straight up as Sh which is nice
+60:11
+and then there's a lot of these things
+60:13
+with single characters but you can see
+60:16
+common my grams and trigrams being used
+60:22
+as a result of this if you look at
+60:28
+whether or not the models actually using
+60:30
+it numerically you find out that if you
+60:33
+had trained the model by just one kind
+60:35
+of algorithm where you just did the
+60:38
+maximize connection it it used the
+60:41
+engrams more because it was trained to
+60:43
+use these longer engrams however if you
+60:46
+look at the results that come out where
+60:48
+you actually learn to use the engrams it
+60:51
+still does a better job does a good job
+60:55
+of learning the engrams and it gets a
+60:56
+lower were died right so that's quite
+61:00
+promising in terms of achieving what we
+61:02
+wanted to do so now I'm switching gears
+61:07
+here and going into some of the final
+61:10
+shortcomings of sequence of sequence
+61:12
+models when they're applied
+61:14
+to speech recognition if you look at the
+61:17
+transcripts that are produced in terms
+61:19
+of the probabilities of every token you
+61:22
+find an interesting pattern here at the
+61:25
+top is the actual sequence so South
+61:28
+Africa the solution by Francis candled
+61:30
+and oh actually on low it's actually
+61:34
+this is not the right solution this is
+61:36
+the the highest probability one below
+61:40
+each token you have the alternate tokens
+61:42
+that had a specific that had a
+61:45
+probability which was some threshold
+61:48
+lower than the probability of the best
+61:50
+token so if there's no tokens below a
+61:53
+token that means there's no ambiguity
+61:54
+it's really sure that that's the token
+61:56
+that got the right answer if there's
+61:59
+many that means it's a little confused
+62:01
+at this part of the token when it's
+62:03
+producing the next open so you find a
+62:05
+very interesting trend that there's a
+62:08
+lot of ambiguity at the start at the
+62:10
+first characters but as soon as you've
+62:12
+produced the first few characters there
+62:14
+will very little ambiguity as to what
+62:16
+the next characters are unless if things
+62:18
+like names so Francis here there's some
+62:21
+confusion on how to sound it out and
+62:24
+candle have some probability issues as
+62:26
+well so this is this might seem
+62:31
+surprising but it's natural if you're
+62:33
+doing language modeling on a character
+62:34
+level once you have the first few
+62:36
+characters of word you pretty much know
+62:38
+what the word is and so what you really
+62:40
+want to do is produce these be much more
+62:43
+discriminative at the starts of words
+62:45
+instead of because that's where you'll
+62:48
+make an error if you make an error at
+62:50
+the start of a word you're never going
+62:52
+to recover from it and so if we want to
+62:57
+do we want to fix this problem we need
+63:00
+to sort of address this issue the
+63:03
+repercussions of the this problem is
+63:05
+that if you're overconfident about the
+63:07
+wrong word it's not even a line of
+63:09
+language models can help you because
+63:11
+you've basically decided early on what
+63:13
+the words is going to be and you need
+63:14
+very precise language model
+63:16
+probabilities to kind of get you out of
+63:18
+the rut so we found that there's this
+63:22
+little technique called entropy
+63:23
+regularization would prevent your
+63:25
+softmax from ever being too confident
+63:27
+that
+63:27
+really just solve this problem so every
+63:30
+time you predict the next character you
+63:31
+make sure you're not becoming
+63:33
+probability of one for one symbol
+63:35
+instead you say if you're getting too
+63:37
+confident and penalize it you're forced
+63:40
+to spread the probability distribution
+63:41
+to the other characters once you do that
+63:43
+the problem really just goes away and
+63:46
+the baseline model that we had just
+63:49
+improved massively so if you remember we
+63:51
+had CTC on an end-to-end task for Wall
+63:54
+Street Journal which had some error like
+63:56
+27.3 then we had there's a baseline
+64:00
+sequence of sequence models that wasn't
+64:01
+ours but but a yoshua bengio is group
+64:04
+that had in 18.6 word irate our baseline
+64:08
+for some reason was twelve point nine
+64:10
+where they're read and then once we
+64:14
+applied this technique of entropy
+64:16
+regularization that error rate went down
+64:19
+to ten point five there's different ways
+64:23
+by which you can do this regularization
+64:24
+one is you just do entropy and other is
+64:28
+you say the probability distribution
+64:29
+must look like the unigram probability
+64:32
+distributions of the output tokens and
+64:33
+that seems to work better than just
+64:36
+doing fully entropy regularization so
+64:41
+that's one problem another big problem
+64:43
+that arises during decoding is this lack
+64:45
+of generative penalty I think there was
+64:48
+a slide in your translation a lecture
+64:51
+which talked about this in a different
+64:53
+setting but I'll talk about it in the
+64:56
+context of audio when you have a very
+64:58
+long input sequence and you're decoding
+65:02
+it one character at a time what you're
+65:05
+doing is you're comparing your
+65:06
+hypotheses against all those alternative
+65:08
+hypotheses so every time you produce a
+65:12
+new token you pay a cost for that extra
+65:15
+token if your input very long then
+65:17
+you're going to obviously associate it
+65:21
+with the long inputs have to produce a
+65:22
+lot of tokens because probably the
+65:24
+transcript that you're producing is very
+65:25
+long so let's say you have to produce
+65:27
+hundred transcripts and you're playing
+65:29
+an average cost of one that means you're
+65:31
+going to pay a cost of 100 for even a
+65:33
+correct transcript now in your beam
+65:37
+search you'll probably get some examples
+65:40
+which are sick
+65:41
+which say the end of token symbol has a
+65:44
+probability less than minus hundred I
+65:46
+think this is a very subtle point but
+65:47
+that the upshot of it is your model
+65:51
+thinks it's okay to terminate an output
+65:54
+without even looking at the rest of the
+65:56
+input when it's not and the reason this
+65:58
+happens is the model has no notion of
+66:00
+explaining the entire input and because
+66:03
+it doesn't have to explain the entire
+66:04
+input it just terminates early and very
+66:08
+often you'll produce very short output
+66:10
+sequences when you should be producing
+66:11
+very large output sequences so to give
+66:17
+an example if the output transcript is
+66:19
+chases nigeria's registrar and the
+66:22
+society is an independent organization
+66:24
+hard to count vote if you look at the
+66:27
+language model cost is minus 108 if you
+66:30
+look at the model cost it's this is just
+66:34
+the model from the last model it's minus
+66:36
+34 and you look at the other
+66:38
+alternatives you get chases Nigeria's
+66:41
+registrar which has a low cost of minus
+66:44
+31 so it's just happy to just produce a
+66:47
+short token instead of this really long
+66:48
+one if you look at chases Nigeria's or
+66:52
+is Jace's nature is registered that also
+66:56
+has a small probability in fact the best
+66:58
+probability is just to produce nothing
+66:59
+which is minus 12.5 so this is kind of
+67:04
+an issue where discriminative models
+67:06
+don't explain the entire data and so
+67:09
+they can make make such errors what we
+67:12
+found that worked quite simply was train
+67:16
+as usual but during test time
+67:18
+add a little penalty which says I'm
+67:21
+going to try and make sure the sum of
+67:25
+probabilities over a given output time
+67:29
+step is greater than a threshold so look
+67:32
+at all the frames of the input have has
+67:34
+someone looked at them or not if there's
+67:36
+enough frames that nobody nobody's
+67:39
+looked at them hardly with some
+67:40
+thresholds how then you pay a cost for
+67:42
+life and when you do that all these
+67:45
+other hypotheses that terminate early
+67:46
+are now paying a lot of costs for every
+67:49
+frame that they did not explain and so
+67:51
+they fall down and re ranked out
+67:56
+so when you do this little trick our
+67:59
+model now really performs quite well
+68:04
+this model for sequence of sequence is
+68:07
+now able to get six point seven weird
+68:09
+error rate on Wall Street Journal which
+68:11
+is the lowest four into n models
+68:14
+including CTC with the language model so
+68:16
+it's very very promising in that this
+68:18
+sequence of sequence models can achieve
+68:20
+such low numbers with such low amount of
+68:22
+data I should point out that this really
+68:26
+is changing the model you train a model
+68:29
+with one objective but during test I'm
+68:31
+really fiddles with the loss that you
+68:34
+claimed was the best one so technically
+68:37
+there's something wrong with the model
+68:38
+that that needs fixing so finally
+68:46
+something very relevant to an NLP class
+68:49
+is what do you do about language models
+68:51
+here no matter how much audio you have
+68:53
+you'll always have more text and that
+68:57
+text can be really useful in correcting
+68:59
+up errors that this model will have so I
+69:02
+could train on 2,000 hours of data but
+69:04
+that would just be about three million
+69:05
+small utterances and the language model
+69:08
+you learn from that is not going to be
+69:10
+very powerful so the speech recognizer
+69:13
+is going to make a mistake no matter
+69:14
+what
+69:22
+you
+69:25
+since I'm an Nvidia now I cannot take
+69:27
+claim for for that not working so the
+69:33
+question arises how can we do better
+69:35
+language model blending in in these
+69:37
+models because they're really end-to-end
+69:38
+models and you just are basically
+69:41
+training the entire task you're doing an
+69:42
+acoustic model you're doing a language
+69:44
+model all in one model and now suddenly
+69:46
+you're saying hey you know can i connect
+69:49
+please revert back and find ways to add
+69:51
+my language model in here well one
+69:54
+obvious way is to add log probabilities
+69:57
+every time when you do a next step
+69:58
+prediction you make a prediction for the
+70:00
+next time step and then you blend in a
+70:02
+language model prediction with it and
+70:05
+then hopefully that fixes a lot of these
+70:08
+errors there's some cool work from
+70:11
+yoshua bengio group which tries a bunch
+70:13
+of other tricks to do this which they
+70:15
+call shallow and diffusion models and
+70:19
+it's basically an extension of the
+70:21
+simple idea that I just described but it
+70:23
+it kind of does a little bit more in how
+70:28
+the blending is done instead of just
+70:30
+blending the actual feature at the
+70:33
+actual log route it uses model that does
+70:36
+a linear projection and it learns that
+70:38
+together I think fundamentally these mod
+70:41
+this is an interesting approach where
+70:43
+you basically have two streams of
+70:46
+predictions and you combine them however
+70:50
+one of the things that was lacking about
+70:52
+this model is that the model in this
+70:56
+case it's for translation the
+70:57
+translation model predictions don't
+71:00
+actually affect the internals of the
+71:02
+language model and vice versa what you
+71:05
+would like to do is sort of have a model
+71:07
+let that where diffusion actually means
+71:11
+changing of all the features that are
+71:13
+computed rather than just something the
+71:14
+loaded but it's a it's a pretty good
+71:16
+start
+71:22
+I apologize I forgot what this meant
+71:24
+what this slide was ah so when you're
+71:28
+producing very long sequences with next
+71:30
+step prediction what it's doing is just
+71:32
+looking at the next token and I
+71:35
+highlighted why that can be a problem
+71:36
+for example when you're producing words
+71:38
+if you produce two characters the next
+71:40
+one is almost necessarily just decided
+71:43
+right away so when you have a loss
+71:46
+function that's just looking at the next
+71:48
+step it doesn't have a very long horizon
+71:50
+when it makes a mistake here it might
+71:53
+just go into a wrong path that it can
+71:56
+never correct out of so people have been
+71:58
+looking at how did how to fix this
+71:59
+problem one of the ways is scheduled
+72:02
+sampling and I think you guys have have
+72:03
+looked at this Oracle talked about this
+72:05
+in the last lecture but what it does is
+72:07
+instead of taking the model and feeding
+72:11
+in the ground truth at every time step
+72:13
+you feed in the predictions of the model
+72:15
+itself or you sample from the model so
+72:18
+what you're learning is during test time
+72:20
+I'm going to screw up and feed in
+72:22
+something wrong a training time let me
+72:24
+do the same so that I'm resilient to
+72:26
+that kind of mistake what that does is
+72:28
+it's actually changing a model so it
+72:30
+respects a long-range structure much
+72:32
+better there are other methods also
+72:34
+which would be based on reinforcement
+72:36
+learning that optimize the word error
+72:38
+rate directly I won't talk about this at
+72:41
+all but other than to say that it's
+72:45
+another way of letting your model roll
+72:47
+forward and generate a bunch of
+72:49
+different candidates and then compute an
+72:51
+error based on the candidates that you
+72:52
+that you've computed a very cool paper
+72:56
+is this one called sequence of sequences
+72:58
+beam search optimization and this kind
+73:02
+of also runs your model forward but with
+73:04
+some interesting tricks where it runs
+73:07
+the model forwards until you've made
+73:08
+some mistakes and then it stops and does
+73:11
+it again so finally what what can we do
+73:17
+with this model that we couldn't have
+73:19
+done before there are some things that
+73:21
+you can do which is one of which is
+73:23
+multi speaker multi channel setup that
+73:26
+people don't really do yet so flashback
+73:29
+to some years ago the motivating problem
+73:32
+for speech recognition was this thing
+73:34
+called a cocktail party problem
+73:36
+you want it to be in a room walking
+73:38
+around listening to a bunch of things
+73:39
+happening and get your recognizer to
+73:41
+produce all the entire output somewhere
+73:45
+along the way people forget about that
+73:47
+particular problem and they've been
+73:49
+focused on just single microphone setups
+73:51
+where you're stationary with respect to
+73:54
+another speaker and you kind of produce
+73:56
+only one output as a transcript I'd say
+73:59
+the reason this happened is because you
+74:00
+have a generative model traditionally
+74:02
+which have some transcripts in mind and
+74:05
+then it generatively describes the data
+74:07
+and that's not very natural way to sort
+74:10
+of do the inverse problem where you can
+74:13
+mix in a bunch of people in many
+74:14
+different ways the inverse problem is
+74:16
+just followed track one particular
+74:18
+individual and that's much easier to do
+74:20
+then try and sort of invert a generative
+74:24
+model where you have a bunch of sources
+74:25
+so a model such as this such a sequence
+74:29
+of sequence models should work very well
+74:31
+in trying to do multi speaker
+74:33
+multi-channel setup and then there's
+74:37
+this really cool paper that came out
+74:38
+recently which talks about direct
+74:41
+translation and transcription at the
+74:43
+same time so it takes in audio in in
+74:47
+French and it produces English text as
+74:50
+an output with just one sequence the
+74:51
+sequence model which just blends the
+74:53
+last model and a translation model
+74:56
+together which is quite exciting if you
+74:59
+look at their paper it's got this really
+75:01
+exciting attention plot so if you take
+75:03
+the neural machine translation attention
+75:05
+model they're translating how much is
+75:08
+the breakfast to combien could look
+75:11
+petit dejeuner or whatever in french
+75:13
+it's how much does it cost how much of
+75:17
+the little breakfast class whatever if
+75:21
+you look at the attention model it's
+75:23
+looking at the right words how pairs
+75:27
+with cambia which means how in french
+75:29
+and much pairs with the two of them as
+75:33
+well if you look at the corresponding
+75:36
+attention model from the wave form and
+75:38
+the text it also focuses on the same
+75:40
+sort of part even though it was trained
+75:42
+in a different way with a different
+75:45
+modality as input so it's really cool
+75:47
+that it's labeled to learn too
+75:49
+focus on the audio even though it's
+75:52
+translating at the same time and so I'd
+75:57
+like to end here do some acknowledgement
+76:00
+a lot of this most of this work was was
+76:04
+done at brain at least the ones that I
+76:06
+was involved in and I've had the luck to
+76:11
+work with some phenomenal interns Google
+76:14
+brain gets a very fantastic bunch of
+76:17
+students going by and I've been lucky to
+76:20
+work with them and the Google brain team
+76:24
+is a phenomenal place to work at so I
+76:26
+want to thank them
+76:30
+[Applause]
