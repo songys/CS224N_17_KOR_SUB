@@ -5,7 +5,7 @@ CS224n 2017 video subtitles translation project for everyone
 
 Translation project of [CS224n 2017 lecture](http://web.stanford.edu/class/cs224n/archive/WWW_1617/syllabus.html)
 
-
+2강 77:42초에 나오는 배치 경사하강법과 관련하여서는 핸즈온 머신러닝 4.2장 경사하강법에서 배치 경사하강법, 확률적 경사 하강법, 미니배치 경사 하강법을 다루고 있다.  관련 코드는 [역자 github](https://github.com/rickiepark/handson-ml/blob/master/04_training_linear_models.ipynb)를 참고할 수 있다.
 
 
 ## Table of Contents (CS224d 2017)
@@ -14,7 +14,7 @@ Translation project of [CS224n 2017 lecture](http://web.stanford.edu/class/cs224
 | Lecture  | Description       |Videos(youtube)      |Slides      | Subtitles|
 |:--------:|:-----------------:|:-----------:|:--------:|:--------:|
 | 1        |Intro to NLP and Deep Learning|[video](https://www.youtube.com/watch?v=OQQ-W_63UgQ&list=PL3FW7Lu3i5Jsnh1rnUwq_TcylNr7EkRe6)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-lecture1.pdf)|[english](https://github.com/songys/CS224d_17_KOR_SUB/blob/master/eng/en_1.txt)<p>[korean](https://github.com/songys/CS224d_17_KOR_SUB/blob/master/kor/ko_1.txt)
-| 2        |Word Vector Representations: word2vec|[video](https://www.youtube.com/watch?v=ERibwqs9p38)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-lecture2-highlight.pdf)|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_2.txt)<p>[korean]
+| 2        |Word Vector Representations: word2vec|[video](https://www.youtube.com/watch?v=ERibwqs9p38)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-lecture2-highlight.pdf)|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_2.txt)<p>[korean](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/kor/kor_2.txt)
 | 3        |GloVe: Global Vectors for Word Representation|[video](https://www.youtube.com/watch?v=ASn7ExxLZws&t=267s)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-lecture3.pdf)|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_3.txt)<p>[korean]
 | 4        |Word Window Classification and Neural Networks|[video](https://www.youtube.com/watch?v=uc2_iwVqrRI&t=523s)|[slide]|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_4.txt)<p>[korean]
 | 5       |Backpropagation and Project Advice|[video](https://www.youtube.com/watch?v=isPiE-DBagM&t=950s)|[slide]|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_5.txt)<p>[korean]
