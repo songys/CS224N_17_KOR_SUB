@@ -7,6 +7,8 @@ Translation project of [CS224n 2017 lecture](http://web.stanford.edu/class/cs224
 
 2강 77:42초에 나오는 배치 경사하강법과 관련하여서는 핸즈온 머신러닝 4.2장 경사하강법에서 배치 경사하강법, 확률적 경사 하강법, 미니배치 경사 하강법을 다루고 있다.  관련 코드는 [역자 github](https://github.com/rickiepark/handson-ml/blob/master/04_training_linear_models.ipynb)를 참고할 수 있다.
 
+3강에서 자주 나오는 용어인 co-occur는 대체로 동시 발생으로 co-occurrence matrices는 공기 관계로 번역하였습니다.
+
 
 ## Table of Contents (CS224d 2017)
 
