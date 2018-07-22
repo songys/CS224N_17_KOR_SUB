@@ -9,11 +9,13 @@ Translation project of [CS224n 2017 lecture](http://web.stanford.edu/class/cs224
 강의와 관련된 Pytorch 코드는 Kim SungDong [DeepNLP-models-Pytorch](https://github.com/DSKSD/DeepNLP-models-Pytorch)이 있습니다.     
 
         
-2강 77:42초에 나오는 배치 경사하강법과 관련하여서는 핸즈온 머신러닝 4.2장 경사하강법에서 배치 경사하강법, 확률적 경사 하강법, 미니배치 경사 하강법을 다루고 있다.  관련 코드는 [역자 github](https://github.com/rickiepark/handson-ml/blob/master/04_training_linear_models.ipynb)를 참고할 수 있다.    
+2강 77:42초에 나오는 배치 경사하강법과 관련하여서는 핸즈온 머신러닝 4.2장 경사하강법에서 배치 경사하강법, 확률적 경사 하강법, 미니배치 경사 하강법을 다루고 있습니다.  관련 코드는 [역자 github](https://github.com/rickiepark/handson-ml/blob/master/04_training_linear_models.ipynb)를 참고할 수 있습니다.    
 
 2강에서 자주 나오는 용어는 representations은 words와 함께 쓰일 때는 표상으로 번역하였고 distributed representation과 같은 경우는 분산 표현으로 번역하였습니다. 
 
-3강에서 자주 나오는 용어인 co-occur는 대체로 동시 발생으로 co-occurrence matrices는 공기 관계로 번역하였습니다.    
+3강에서 자주 나오는 용어인 co-occur는 대체로 동시 발생으로 co-occurrence matrices는 공기 관계로 번역하였습니다. 
+
+[glove](http://www.foldl.me/2014/glove-python/)에 대한 추가 설명과 깃헙의 [demo](https://github.com/hans/glove.py)파일을 참고하시면 도움이 될 것입니다.
 
 
 
@@ -26,7 +28,7 @@ Translation project of [CS224n 2017 lecture](http://web.stanford.edu/class/cs224
 | 1        |Intro to NLP and Deep Learning|[video](https://www.youtube.com/watch?v=OQQ-W_63UgQ&list=PL3FW7Lu3i5Jsnh1rnUwq_TcylNr7EkRe6)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-lecture1.pdf)|[english](https://github.com/songys/CS224d_17_KOR_SUB/blob/master/eng/en_1.txt)<p>[korean](https://github.com/songys/CS224d_17_KOR_SUB/blob/master/kor/ko_1.txt)
 | 2        |Word Vector Representations: word2vec|[video](https://www.youtube.com/watch?v=ERibwqs9p38)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-lecture2-highlight.pdf)|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_2.txt)<p>[korean](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/kor/ko_2.txt)
 | 3      [code](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/glove/Glove_keras.ipynb)        |GloVe: Global Vectors for Word Representation|[video](https://www.youtube.com/watch?v=ASn7ExxLZws&t=267s)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-lecture3.pdf)|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_3.txt)<p>[korean](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/kor/ko_3.txt)
-| 4        |Word Window Classification and Neural Networks|[video](https://www.youtube.com/watch?v=uc2_iwVqrRI&t=523s)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-lecture4.pdf)|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_4.txt)<p>[korean]
+| 4        |Word Window Classification and Neural Networks|[video](https://www.youtube.com/watch?v=uc2_iwVqrRI&t=523s)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-lecture4.pdf)|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_4.txt)<p>[korean](https://github.com/songys/CS224N_17_KOR_SUB/tree/master/kor)
 | 5       |Backpropagation and Project Advice|[video](https://www.youtube.com/watch?v=isPiE-DBagM&t=950s)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-lecture5.pdf)|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_5.txt)<p>[korean]
 | 6        |Dependency Parsing|[video](https://www.youtube.com/watch?v=PVShkZgXznc)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-lecture6.pdf)|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_6.txt)<p>[korean]
 | 7        |Introduction to TensorFlow|[video](https://www.youtube.com/watch?v=PicxU81owCs&t=709s)|[slide](http://web.stanford.edu/class/cs224n/archive/WWW_1617/lectures/cs224n-2017-tensorflow.pdf)|[english](https://github.com/songys/CS224N_17_KOR_SUB/blob/master/eng/eng_7.txt)<p>[korean]
