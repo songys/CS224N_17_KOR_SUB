@@ -1,9 +1,7 @@
 # CS224n_17_KOR_SUB
 CS224n 2017 video subtitles translation project for everyone
 # cs224n 자막번역
-
-
-Translation project of [CS224n 2017 lecture](http://web.stanford.edu/class/cs224n/archive/WWW_1617/syllabus.html)
+https://www.youtube.com/watch?v=OQQ-W_63UgQ&list=PLRQmQC3wIq9zEMK0UjtLtmE65ob3ovSqe
 
 
 강의와 관련된 Pytorch 코드는 Kim SungDong [DeepNLP-models-Pytorch](https://github.com/DSKSD/DeepNLP-models-Pytorch)이 있습니다.     
